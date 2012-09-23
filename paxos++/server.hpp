@@ -26,10 +26,66 @@
 
  */
 
-#ifndef LIBPAXOS_CPP_PAXOS_HPP
-#define LIBPAXOS_CPP_PAXOS_HPP
+#ifndef LIBPAXOS_CPP_SERVER_HPP
+#define LIBPAXOS_CPP_SERVER_HPP
+
+#include <string>
+#include <stdint.h>
+
+#include <boost/asio.hpp>
+
+#include "detail/tcp_connection.hpp"
+#include "detail/quorum.hpp"
 
 namespace paxos {
+
+/*!
+  \brief Represents a paxos server.
+
+  This is the main entry point which communications within the paxos quorum take place.
+  The open () function will open the server socket and makes it ready to accept connections
+  from the quorum. 
+
+  However, it does not process any messages until handle_events () is called. 
+ */
+class server
+{
+public:
+
+   /*!
+     \brief Opens socket to listen on port
+     \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
+     \param address     Interface/ip to listen for new connections
+     \param port        Port to listen for new connections
+    */
+   server (
+      boost::asio::io_service & io_service,
+      std::string const &       address,
+      int16_t                   port);
+   
+   /*!
+     \brief Stops listening for new connections
+    */
+   void
+   close ();
+
+private:
+
+   void
+   accept ();
+
+   void
+   handle_accept (
+      detail::tcp_connection::pointer   new_connection,
+      boost::system::error_code const & error);
+
+
+private:
+
+   boost::asio::ip::tcp::acceptor       acceptor_;
+   detail::quorum                       quorum_;
+};
+
 }
 
-#endif  //! LIBPAXOS_CPP_PAXOS_HPP
+#endif  //! LIBPAXOS_CPP_SERVER_HPP

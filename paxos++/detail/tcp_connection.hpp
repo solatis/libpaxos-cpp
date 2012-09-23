@@ -26,10 +26,55 @@
 
  */
 
-#ifndef LIBPAXOS_CPP_PAXOS_HPP
-#define LIBPAXOS_CPP_PAXOS_HPP
+#ifndef LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP
+#define LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP
 
-namespace paxos {
-}
+#include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
-#endif  //! LIBPAXOS_CPP_PAXOS_HPP
+namespace paxos { namespace detail {
+
+/*!
+  \brief Represents a connection to another paxos server.
+ */
+class tcp_connection 
+   : public boost::enable_shared_from_this <tcp_connection>
+{
+public:
+
+   typedef boost::shared_ptr <tcp_connection>   pointer;
+
+   static pointer 
+   create (
+      boost::asio::io_service &        io_service);
+
+   boost::asio::ip::tcp::socket &
+   socket ();
+
+   void
+   write (
+      std::string const &       message);
+   
+private:
+
+   tcp_connection (
+      boost::asio::io_service & io_service);
+
+   void
+   start_write ();
+
+   void
+   handle_write (
+      boost::system::error_code const & error,
+      size_t                            bytes_transferred);
+
+private:
+
+   boost::asio::ip::tcp::socket socket_;
+   std::string                  buffer_;
+};
+
+}; };
+
+#endif //! LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP

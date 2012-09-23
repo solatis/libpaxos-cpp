@@ -26,10 +26,31 @@
 
  */
 
-#ifndef LIBPAXOS_CPP_PAXOS_HPP
-#define LIBPAXOS_CPP_PAXOS_HPP
+#ifndef LIBPAXOS_CPP_DETAIL_QUORUM_HPP
+#define LIBPAXOS_CPP_DETAIL_QUORUM_HPP
 
-namespace paxos {
-}
+#include <set>
+#include <boost/asio.hpp>
 
-#endif  //! LIBPAXOS_CPP_PAXOS_HPP
+namespace paxos { namespace detail {
+
+/*!
+  \brief Quorum of servers in the pool
+ */
+class quorum
+{
+public:
+   
+   void
+   add (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+
+private:
+
+   std::set <boost::asio::ip::tcp::endpoint>    servers_;
+
+};
+
+}; };
+
+#endif //! LIBPAXOS_CPP_DETAIL_QUORUM_HPP
