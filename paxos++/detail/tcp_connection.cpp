@@ -14,7 +14,6 @@ tcp_connection::tcp_connection (
 {
 }
 
-
 /*! static */ tcp_connection::pointer 
 tcp_connection::create (
    boost::asio::io_service &    io_service)

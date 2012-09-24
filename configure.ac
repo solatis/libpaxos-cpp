@@ -13,6 +13,9 @@ LT_INIT([shared static])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
 # Checks for programs.
+if test -z $CXXFLAGS; then
+    CXXFLAGS='-Wall -Werror -g -ggdb'
+fi
 AC_PROG_CXX
 
 # Checks for libraries.

@@ -1,10 +1,6 @@
-check_PROGRAMS = test1 test2
+check_PROGRAMS = test1
 
-test1_LDADD = -lboost_system -L../paxos++/ -lpaxos
-test2_LDADD = -lboost_system -L../paxos++/ -lpaxos
+test1_LDADD    = -lboost_system -L../paxos++/ -lpaxos
+test1_SOURCES  = test1.cpp
 
-test1_SOURCES = test1.cpp
-test2_SOURCES = test2.cpp
-
-
-TESTS=test1 test2
+TESTS=test1

@@ -1,13 +1,23 @@
 
-#include <paxos++/server.hpp>
+#include <paxos++/local_server.hpp>
 
 
 int main ()
 {
    boost::asio::io_service io_service;
 
-   paxos::server server1 (io_service, "127.0.0.1", 1337);
-   paxos::server server2 (io_service, "127.0.0.1", 1338);
+
+   paxos::quorum quorum;
+   quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337);
+   quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338);
+
+   paxos::local_server server1 (io_service, 
+                                boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337,
+                                quorum);
+
+   paxos::local_server server2 (io_service, 
+                                boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338,
+                                quorum);
 
    io_service.run ();
    
