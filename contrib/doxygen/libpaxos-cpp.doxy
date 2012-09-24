@@ -31,7 +31,7 @@ PROJECT_NAME           = libpaxos-cpp
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         =
+PROJECT_NUMBER         = 0.1
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -708,7 +708,7 @@ INLINE_SOURCES         = NO
 # doxygen to hide any special comment blocks from generated source code
 # fragments. Normal C and C++ comments will always remain visible.
 
-STRIP_CODE_COMMENTS    = NO
+STRIP_CODE_COMMENTS    = YES
 
 # If the REFERENCED_BY_RELATION tag is set to YES
 # then for each documented function all documented
@@ -851,7 +851,6 @@ HTML_ALIGN_MEMBERS     = YES
 # page has loaded. For this to work a browser that supports
 # JavaScript and DHTML is required (for instance Mozilla 1.0+, Firefox
 # Netscape 6.0+, Internet explorer 5.0+, Konqueror, or Safari).
-
 HTML_DYNAMIC_SECTIONS  = NO
 
 # If the GENERATE_DOCSET tag is set to YES, additional index files
@@ -1023,7 +1022,6 @@ ENUM_VALUES_PER_LINE   = 4
 # is generated for HTML Help). For this to work a browser that supports
 # JavaScript, DHTML, CSS and frames is required (i.e. any modern browser).
 # Windows users are probably better off using the HTML help feature.
-
 GENERATE_TREEVIEW      = NO
 
 # By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories,
@@ -1437,7 +1435,6 @@ PERL_PATH              = /usr/bin/perl
 # this option is superseded by the HAVE_DOT option below. This is only a
 # fallback. It is recommended to install and use dot, since it yields more
 # powerful graphs.
-
 CLASS_DIAGRAMS         = YES
 
 # You can define message sequence charts within doxygen comments using the \msc
@@ -1542,16 +1539,14 @@ INCLUDED_BY_GRAPH      = YES
 # or class method. Note that enabling this option will significantly increase
 # the time of a run. So in most cases it will be better to enable call graphs
 # for selected functions only using the \callgraph command.
-
-CALL_GRAPH             = YES
+CALL_GRAPH             = NO
 
 # If the CALLER_GRAPH and HAVE_DOT tags are set to YES then
 # doxygen will generate a caller dependency graph for every global function
 # or class method. Note that enabling this option will significantly increase
 # the time of a run. So in most cases it will be better to enable caller
 # graphs for selected functions only using the \callergraph command.
-
-CALLER_GRAPH           = YES
+CALLER_GRAPH           = NO
 
 # If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen
 # will graphical hierarchy of all classes instead of a textual one.
@@ -1621,7 +1616,7 @@ DOT_MULTI_TARGETS      = YES
 # generate a legend page explaining the meaning of the various boxes and
 # arrows in the dot generated graphs.
 
-GENERATE_LEGEND        = YES
+GENERATE_LEGEND        = NO
 
 # If the DOT_CLEANUP tag is set to YES (the default) Doxygen will
 # remove the intermediate dot files that are used to generate

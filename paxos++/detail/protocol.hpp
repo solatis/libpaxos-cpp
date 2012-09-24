@@ -29,8 +29,9 @@ public:
 
    /*!
      \brief Constructor
-     \param io_service  Our link to the OS'es I/O services.
-     \param quorum      Quorum of servers we're communicating with.
+     \param io_service          Our link to the OS'es I/O services.
+     \param connection_pool     Used to create new connections
+     \param quorum              Quorum of servers we're communicating with.
     */
    protocol (
       boost::asio::io_service &         io_service,
