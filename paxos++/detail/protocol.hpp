@@ -5,8 +5,6 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_HPP
 
-#include "tcp_connection.hpp"
-
 namespace boost { namespace asio {
 class io_service;
 }; };
@@ -14,6 +12,11 @@ class io_service;
 namespace paxos { 
 class quorum;
 };
+
+namespace paxos { namespace detail {
+class connection_pool;
+class tcp_connection;
+}; };
 
 namespace paxos { namespace detail {
 
@@ -30,8 +33,9 @@ public:
      \param quorum      Quorum of servers we're communicating with.
     */
    protocol (
-      boost::asio::io_service & io_service,
-      paxos::quorum &           quorum);
+      boost::asio::io_service &         io_service,
+      paxos::detail::connection_pool &  connection_pool,
+      paxos::quorum &                   quorum);
 
 
    /*!
@@ -48,7 +52,7 @@ public:
     */
    void
    new_connection (
-      tcp_connection::pointer   connection);
+      tcp_connection &    connection);
 
 private:
 
@@ -57,14 +61,14 @@ private:
 
    void
    bootstrap_step2 (
-      tcp_connection::pointer           connection,
+      tcp_connection &                  connection,
       boost::system::error_code const & error);
-
 
 private:
 
-   boost::asio::io_service &    io_service_;
-   paxos::quorum &              quorum_;
+   boost::asio::io_service &            io_service_;
+   paxos::detail::connection_pool &     connection_pool_;
+   paxos::quorum &                      quorum_;
 
 };
 

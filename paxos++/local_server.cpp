@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/asio/ip/address.hpp>
@@ -17,7 +18,9 @@ local_server::local_server (
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (address, port)),
      quorum_ (quorum),
+     connection_pool_ (io_service),
      protocol_ (io_service,
+                connection_pool_,
                 quorum_)
 {
    //! Initialize our unique identification number.
@@ -38,13 +41,13 @@ local_server::local_server (
 void
 local_server::accept ()
 {
-   detail::tcp_connection::pointer new_connection =
+   detail::tcp_connection & new_connection = connection_pool_.create ();
       detail::tcp_connection::create (acceptor_.io_service ());
 
-   acceptor_.async_accept (new_connection->socket (),
+   acceptor_.async_accept (new_connection.socket (),
                            boost::bind (&local_server::handle_accept,
                                         this,
-                                        new_connection,
+                                        boost::ref (new_connection),
                                         boost::asio::placeholders::error));
 }
 
@@ -57,7 +60,7 @@ local_server::close ()
 
 void
 local_server::handle_accept (
-   detail::tcp_connection::pointer      new_connection,
+   detail::tcp_connection &             new_connection,
    boost::system::error_code const &    error)
 {
    if (!error)
