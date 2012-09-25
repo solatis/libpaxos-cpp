@@ -78,7 +78,7 @@ protocol::read_command_byte_array (
       return false;
    }
 
-   output = std::string (pos, end);
+   output.assign (pos, end);
    return true;
 }
 
