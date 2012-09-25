@@ -6,11 +6,9 @@
 #include <boost/detail/endian.hpp>
 
 #include "../util/debug.hpp"
-#include "../util/conversion.hpp"
 
 #include "../../quorum.hpp"
 #include "../connection_pool.hpp"
-#include "pb/adapter.hpp"
 #include "protocol.hpp"
 
 namespace paxos { namespace detail { namespace protocol {

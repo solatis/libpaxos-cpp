@@ -7,6 +7,8 @@
 
 #include <boost/bind.hpp>
 
+#include "../util/conversion.hpp"
+#include "pb/adapter.hpp"
 #include "pb/command.pb.h"
 #include "session.hpp"
 #include "elect_leader.hpp"
@@ -104,6 +106,17 @@ private:
       size_t                            bytes_transferred,
       Callback                          callback);
 
+   /*!
+     \brief Reads byte array of command from stream
+     \returns Returns true if succesful, false otherwise
+    */
+   template <typename Iterator>
+   static bool
+   read_command_byte_array (
+      Iterator          begin,
+      Iterator          end,
+      std::string &     output);
+
 
 private:
 
@@ -118,3 +131,4 @@ private:
 #include "protocol.inl"
 
 #endif //! LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
+

@@ -29,6 +29,12 @@ tcp_connection::close ()
    socket_.close ();
 }
 
+boost::asio::streambuf &
+tcp_connection::read_buffer ()
+{
+   return read_buffer_;
+}
+
 boost::asio::ip::tcp::socket &
 tcp_connection::socket ()
 {
@@ -51,25 +57,25 @@ tcp_connection::write (
      is called.
     */
 
-   if (buffer_.empty () == true)
+   if (write_buffer_.empty () == true)
    {
-      buffer_ = message;
+      write_buffer_ = message;
 
       start_write ();
    }
    else
    {
-      buffer_ += message;
+      write_buffer_ += message;
    }
 }
 
 void
 tcp_connection::start_write ()
 {
-   PAXOS_ASSERT (buffer_.empty () == false);
+   PAXOS_ASSERT (write_buffer_.empty () == false);
 
    boost::asio::async_write (socket_,
-                             boost::asio::buffer (buffer_),
+                             boost::asio::buffer (write_buffer_),
                              boost::bind (&tcp_connection::handle_write, 
                                           shared_from_this(),
                                           boost::asio::placeholders::error,
@@ -81,13 +87,13 @@ tcp_connection::handle_write (
    boost::system::error_code const &    error,
    size_t                               bytes_transferred)
 {
-   buffer_ = buffer_.substr (bytes_transferred);
+   write_buffer_ = write_buffer_.substr (bytes_transferred);
 
    /*!
      As discussed in the write () function, if we still have data on the buffer, ensure
      that data is also written.
     */
-   if (buffer_.empty () == false)
+   if (write_buffer_.empty () == false)
    {
       start_write ();
    }

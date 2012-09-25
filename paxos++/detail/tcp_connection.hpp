@@ -71,7 +71,9 @@ private:
 private:
 
    boost::asio::ip::tcp::socket socket_;
-   std::string                  buffer_;
+
+   boost::asio::streambuf       read_buffer_;
+   std::string                  write_buffer_;
 };
 
 }; };
