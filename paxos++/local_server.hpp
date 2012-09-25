@@ -11,9 +11,9 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "quorum.hpp"
-#include "detail/protocol.hpp"
 #include "detail/connection_pool.hpp"
 #include "detail/tcp_connection.hpp"
+#include "detail/protocol/protocol.hpp"
 
 namespace boost { namespace asio { namespace ip {
 class address;
@@ -76,7 +76,7 @@ private:
 
    quorum                               quorum_;
    detail::connection_pool              connection_pool_;
-   detail::protocol                     protocol_;
+   detail::protocol::protocol           protocol_;
 };
 
 }

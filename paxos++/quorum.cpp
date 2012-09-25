@@ -15,6 +15,12 @@ quorum::we_are (
    assert (servers_.find (self_) != servers_.end ());
 }
 
+boost::asio::ip::tcp::endpoint const &
+quorum::self () const
+{
+   return self_;
+}
+
 void
 quorum::add (
    boost::asio::ip::address const &     address,

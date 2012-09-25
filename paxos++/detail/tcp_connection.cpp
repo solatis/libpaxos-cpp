@@ -22,6 +22,12 @@ tcp_connection::create (
       new tcp_connection (io_service));
 }
 
+void
+tcp_connection::close ()
+{
+   socket_.close ();
+}
+
 boost::asio::ip::tcp::socket &
 tcp_connection::socket ()
 {

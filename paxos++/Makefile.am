@@ -3,9 +3,11 @@ include_HEADERS = \
 	quorum.hpp \
 	local_server.hpp \
 	detail/connection_pool.hpp \
-	detail/protocol.hpp \
 	detail/remote_server.hpp \
-	detail/tcp_connection.hpp
+	detail/tcp_connection.hpp \
+	detail/protocol/protocol.hpp \
+	detail/protocol/session.hpp \
+	detail/protocol/elect_leader.hpp
 
 lib_LTLIBRARIES=libpaxos.la
 libpaxos_la_SOURCES = \
@@ -13,8 +15,9 @@ libpaxos_la_SOURCES = \
 	quorum.cpp \
 	local_server.cpp \
 	detail/connection_pool.cpp \
-	detail/protocol.cpp \
 	detail/remote_server.cpp \
-	detail/tcp_connection.cpp
+	detail/tcp_connection.cpp \
+	detail/protocol/protocol.cpp \
+	detail/protocol/elect_leader.cpp
 
 

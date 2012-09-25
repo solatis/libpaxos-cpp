@@ -52,6 +52,12 @@ public:
       boost::uuids::uuid const &        uuid);
 
    /*!
+     \brief Access to the endpoint we represent
+    */
+   boost::asio::ip::tcp::endpoint const &
+   self () const;
+
+   /*!
      \brief Adds a new server to the quorum with a default 'dead' state
     */
    void

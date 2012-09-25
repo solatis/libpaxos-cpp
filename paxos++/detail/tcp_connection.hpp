@@ -31,6 +31,9 @@ public:
    create (
       boost::asio::io_service &        io_service);
 
+   void
+   close ();
+
    boost::asio::ip::tcp::socket &
    socket ();
 
