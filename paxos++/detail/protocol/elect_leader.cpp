@@ -6,6 +6,7 @@
 #include <boost/foreach.hpp>
 
 #include "../../quorum.hpp"
+#include "../debug.hpp"
 #include "../connection_pool.hpp"
 #include "protocol.hpp"
 #include "elect_leader.hpp"
@@ -35,7 +36,7 @@ elect_leader::step1 ()
    {
       if (endpoint == quorum_.self ())
       {
-         std::cout << "skipping self: " << endpoint << std::endl;
+         PAXOS_DEBUG ("skipping self: " << endpoint);
          continue;
       }
 
@@ -57,11 +58,11 @@ elect_leader::step2 (
 
    if (error)
    {
-      std::cerr << "An error occured while establishing a connection: " << error.message () << std::endl;
+      PAXOS_WARN ("An error occured while establishing a connection: " << error.message ());
       return;
    }
 
-   std::cout << "established new connection yay!" << std::endl;
+   PAXOS_DEBUG ("Connection established!");
 }
 
 }; }; };

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 
 #include <boost/ref.hpp>
@@ -6,6 +5,7 @@
 #include <boost/foreach.hpp>
 
 #include "../../quorum.hpp"
+#include "../debug.hpp"
 #include "../connection_pool.hpp"
 #include "protocol.hpp"
 
@@ -24,7 +24,7 @@ protocol::protocol (
 void
 protocol::bootstrap ()
 {
-   assert (elect_leader_.size () == 0);
+   PAXOS_ASSERT (elect_leader_.size () == 0);
    
    elect_leader_.create ().start ();
 }
@@ -34,7 +34,7 @@ void
 protocol::new_connection (
    tcp_connection &     connection)
 {
-   std::cout << "received new connection!" << std::endl;
+   PAXOS_DEBUG ("received new connection!");
 }
 
 paxos::detail::connection_pool &
