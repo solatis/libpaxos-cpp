@@ -1,8 +1,10 @@
+#include <sstream>
 #include <iostream>
 
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
@@ -26,8 +28,11 @@ local_server::local_server (
    boost::uuids::basic_random_generator <boost::mt19937> gen;
    uuid_ = gen ();
 
+   std::stringstream id;
+   id << uuid_;
+
    //! Make sure the quorum can tell others who we are.
-   quorum_.we_are (address, port, uuid_);
+   quorum_.we_are (address, port, id.str ());
 
    //! Ensure that we start accepting new connections
    accept ();

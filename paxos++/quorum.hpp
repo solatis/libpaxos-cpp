@@ -6,11 +6,11 @@
 #define LIBPAXOS_CPP_DETAIL_QUORUM_HPP
 
 #include <set>
+#include <string>
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include <boost/uuid/uuid.hpp>
 
 #include "detail/remote_server.hpp"
 
@@ -38,23 +38,30 @@ class quorum
 {
 public:
 
+   struct self
+   {
+      boost::asio::ip::tcp::endpoint    endpoint_;
+      std::string                       id_;
+   };
+
    /*!
      \brief Denotes which server we are
      \param address     Our local IP address
      \param port        Port we're listening at
-     \param uuid        Our unique identification number
+     \param id          Our unique identification number within the quorum
      \pre The server is part of the quorum
     */
    void
    we_are (
       boost::asio::ip::address const &  address,
       uint16_t                          port,
-      boost::uuids::uuid const &        uuid);
+      std::string const &               id);
+
 
    /*!
      \brief Access to the endpoint we represent
     */
-   boost::asio::ip::tcp::endpoint const &
+   struct self const &
    self () const;
 
    /*!
@@ -75,8 +82,7 @@ private:
    typedef std::map <boost::asio::ip::tcp::endpoint, 
                      detail::remote_server> map_type;
 
-   boost::asio::ip::tcp::endpoint       self_;
-   boost::uuids::uuid                   uuid_;
+   struct self  self_;
 
    map_type                             servers_;
 

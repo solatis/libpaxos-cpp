@@ -5,6 +5,9 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 
+#include <boost/bind.hpp>
+
+#include "pb/command.pb.h"
 #include "session.hpp"
 #include "elect_leader.hpp"
 
@@ -41,6 +44,20 @@ public:
 
 
    /*!
+     \brief Access to the underlying connection pool
+    */
+   paxos::detail::connection_pool &
+   connection_pool ();
+
+   /*!
+     \brief Access to the underlying quorum
+    */
+   paxos::quorum &
+   quorum ();
+
+
+
+   /*!
      \brief Starts leader election
     */
    void
@@ -53,14 +70,40 @@ public:
    new_connection (
       tcp_connection &    connection);
 
-   paxos::detail::connection_pool &
-   connection_pool ();
+   /*!
+     \brief Serializes a protocolbuffers command to a string and sends it over the wire
+    */
+   static void
+   write_command (
+      pb::command const &       command,
+      tcp_connection &          output);
 
-   paxos::quorum &
-   quorum ();
-   
+   /*!
+     \brief Reads binary data from wire and parses command out of it
+    */
+   template <typename Callback>
+   static void
+   read_command (
+      tcp_connection &  input,
+      Callback          output);
 
 private:
+
+   template <typename Iterator>
+   static std::pair <Iterator, bool>
+   match_command (
+      Iterator,
+      Iterator);
+
+
+   template <typename Callback>
+   static void
+   parse_command (
+      tcp_connection &                  input,
+      boost::system::error_code const & error,
+      size_t                            bytes_transferred,
+      Callback                          callback);
+
 
 private:
 
@@ -71,5 +114,7 @@ private:
 };
 
 }; }; };
+
+#include "protocol.inl"
 
 #endif //! LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP

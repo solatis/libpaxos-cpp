@@ -1,3 +1,4 @@
+#include "detail/util/debug.hpp"
 #include "quorum.hpp"
 
 namespace paxos { 
@@ -7,15 +8,15 @@ void
 quorum::we_are (
    boost::asio::ip::address const &     address,
    uint16_t                             port,
-   boost::uuids::uuid const &           uuid)
+   std::string const &                  id)
 {
-   uuid_ = uuid;
-   self_ = boost::asio::ip::tcp::endpoint (address, port);
+   self_.endpoint_ = boost::asio::ip::tcp::endpoint (address, port);
+   self_.id_       = id;
 
-   assert (servers_.find (self_) != servers_.end ());
+   PAXOS_ASSERT (servers_.find (self_.endpoint_) != servers_.end ());
 }
 
-boost::asio::ip::tcp::endpoint const &
+struct quorum::self const &
 quorum::self () const
 {
    return self_;

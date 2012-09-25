@@ -17,6 +17,10 @@ namespace paxos { namespace detail { namespace protocol {
 class protocol;
 }; }; };
 
+namespace paxos { namespace detail { namespace protocol { namespace pb {
+class command;
+}; }; }; };
+
 namespace paxos { namespace detail { namespace protocol {
 
 /*!
@@ -54,6 +58,11 @@ private:
    step2 (
       tcp_connection &                          connection,
       boost::system::error_code const &         error);
+
+   void
+   step3 (
+      tcp_connection &                          connection,
+      pb::command const &                       command);
 
 private:
 

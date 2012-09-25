@@ -5,9 +5,10 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include "../util/debug.hpp"
 #include "../../quorum.hpp"
-#include "../debug.hpp"
 #include "../connection_pool.hpp"
+#include "pb/command.pb.h"
 #include "protocol.hpp"
 #include "elect_leader.hpp"
 
@@ -34,7 +35,7 @@ elect_leader::step1 ()
 
    BOOST_FOREACH (boost::asio::ip::tcp::endpoint const & endpoint, endpoints)
    {
-      if (endpoint == quorum_.self ())
+      if (endpoint == quorum_.self ().endpoint_)
       {
          PAXOS_DEBUG ("skipping self: " << endpoint);
          continue;
@@ -62,7 +63,29 @@ elect_leader::step2 (
       return;
    }
 
+   pb::command command;
+   command.set_type (pb::START_ELECTION);
+   command.set_host_id (quorum_.self ().id_);
+
    PAXOS_DEBUG ("Connection established!");
+
+   protocol::write_command (command,
+                            connection);
+
+   protocol::read_command (connection,
+                           boost::bind (&elect_leader::step3,
+                                        this,
+                                        boost::ref (connection),
+                                        _1));
+}
+
+
+void
+elect_leader::step3 (
+   tcp_connection &     connection,
+   pb::command const &  command)
+{
+   
 }
 
 }; }; };

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <boost/bind.hpp>
 
+#include "util/debug.hpp"
 #include "tcp_connection.hpp"
 
 namespace paxos { namespace detail {
@@ -65,7 +66,7 @@ tcp_connection::write (
 void
 tcp_connection::start_write ()
 {
-   assert (buffer_.empty () == false);
+   PAXOS_ASSERT (buffer_.empty () == false);
 
    boost::asio::async_write (socket_,
                              boost::asio::buffer (buffer_),
