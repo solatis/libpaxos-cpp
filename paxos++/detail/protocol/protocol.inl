@@ -17,8 +17,8 @@ protocol::read_command (
       boost::bind (&protocol::parse_command <Callback>,
                    /*!
                      \warning this assumes input still is valid when parse_command
-                     is called. This can be dangerous! Make sure it does not
-                     race with cleaning up the connection_pool!
+                              is called. This can be dangerous! Make sure it does not
+                              race with cleaning up the connection_pool!
                    */
                    boost::ref (input),
 
