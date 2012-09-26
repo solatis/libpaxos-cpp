@@ -32,8 +32,8 @@ elect_leader::step1 ()
 {
    std::vector <boost::asio::ip::tcp::endpoint> endpoints;
    quorum_.get_endpoints (std::back_inserter (endpoints));
-
-   BOOST_FOREACH (boost::asio::ip::tcp::endpoint const & endpoint, endpoints)
+   
+   for (boost::asio::ip::tcp::endpoint const & endpoint : endpoints)
    {
       if (endpoint == quorum_.self ().endpoint_)
       {

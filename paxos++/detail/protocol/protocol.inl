@@ -43,7 +43,7 @@ protocol::match_command (
    Iterator     begin,
    Iterator     end)
 {
-   BOOST_STATIC_ASSERT (sizeof (uint32_t) == 4);
+   static_assert (sizeof (uint32_t) == 4, "expected uint32_t to be 4 bytes");
    if (std::distance (begin, end) < 4)
    {
       return std::make_pair (begin, false);
@@ -65,7 +65,7 @@ protocol::parse_command (
    tcp_connection &                     connection,
    boost::shared_ptr <Callback>         callback)
 {
-   BOOST_STATIC_ASSERT (sizeof (uint32_t) == 4);
+   static_assert (sizeof (uint32_t) == 4, "expected uint32_t to be 4 bytes");
    char bytes_raw[4];
 
    PAXOS_ASSERT (connection.read_buffer ().sgetn (bytes_raw, 4) == 4);

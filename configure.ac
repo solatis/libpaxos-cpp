@@ -17,11 +17,11 @@ AC_ARG_ENABLE([debug],
 
 DEBUG=""
 AS_IF([test "x$enable_debug" == "xyes"], [
-        DEBUG="-DDEBUG"
+        DEBUG="-Wall -Werror -g -ggdb -DDEBUG"
 ])
 
 if test -z $CXXFLAGS; then
-    CXXFLAGS="-Wall -Werror -g -ggdb $DEBUG"
+    CXXFLAGS="-std=c++11 $DEBUG"
 fi
 AC_PROG_CXX
 
