@@ -46,7 +46,7 @@ void
 local_server::accept ()
 {
    detail::tcp_connection & new_connection = connection_pool_.create ();
-      detail::tcp_connection::create (acceptor_.io_service ());
+      detail::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (new_connection.socket (),
                            boost::bind (&local_server::handle_accept,

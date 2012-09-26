@@ -87,6 +87,8 @@ tcp_connection::handle_write (
    boost::system::error_code const &    error,
    size_t                               bytes_transferred)
 {
+   PAXOS_DEBUG ("written " << bytes_transferred << " bytes to other end");
+
    write_buffer_ = write_buffer_.substr (bytes_transferred);
 
    /*!

@@ -1,4 +1,4 @@
-#include <sstream>
+#include <iterator>
 
 namespace paxos { namespace detail { namespace protocol {
 
@@ -28,10 +28,12 @@ protocol::match_command (
 {
    std::string tmp;
 
-   return std::make_pair (begin,
-                          read_command_byte_array (begin, 
-                                                   end,
-                                                   tmp));
+   PAXOS_DEBUG ("got data on match_command, distance = " << std::distance (begin, end));
+
+   return std::pair <Iterator, bool> (begin,
+                                      read_command_byte_array (begin, 
+                                                               end,
+                                                               tmp));
 }
 
 template <typename Callback>
@@ -42,15 +44,21 @@ protocol::parse_command (
    size_t                               bytes_transferred,
    Callback                             callback)
 {
-   char const * data = 
-      boost::asio::buffer_cast <char const *> (connection.read_buffer ().data ());
+   char bytes_raw[4];
+   PAXOS_ASSERT (connection.read_buffer ().sgetn (bytes_raw, 4) == 4);
+   std::string bytes_string (bytes_raw, 4);
+   PAXOS_ASSERT (bytes_string.size () == 4);
 
-   std::string byte_array;
-   read_command_byte_array (data, 
-                            data + bytes_transferred,
-                            byte_array);
-   
-   callback (pb::adapter::from_string (byte_array));
+   uint32_t bytes = util::conversion::from_byte_array <uint32_t> (bytes_string);
+   char byte_array[bytes];
+   PAXOS_ASSERT (connection.read_buffer ().sgetn (byte_array, bytes) == bytes);
+
+   pb::command command = pb::adapter::from_string (std::string (byte_array, 
+                                                                bytes));
+
+   PAXOS_DEBUG ("has command!");
+   callback (command);
+   PAXOS_DEBUG ("called back!");
 }
 
 
@@ -62,23 +70,33 @@ protocol::read_command_byte_array (
    Iterator             end,
    std::string &        output)
 {
+   PAXOS_DEBUG ("reading command as byte array, bytes = " << (end - begin));
+   PAXOS_DEBUG ("reading command as byte array, bytes = " << (end - begin));
+
    if (std::distance (begin, end) < 4)
    {
+      PAXOS_DEBUG ("distance < 4");
       return false;
    }
 
    Iterator pos = begin;
-   pos += 4;
+   std::advance (pos, 4);
 
    uint32_t size = 
       util::conversion::from_byte_array <uint32_t> (std::string (begin, pos));
    
+
+   PAXOS_DEBUG ("command size = " << size);
+
    if (std::distance (pos, end) < size)
    {
       return false;
    }
 
    output.assign (pos, end);
+   PAXOS_ASSERT (output.size () == size);
+   PAXOS_DEBUG ("output.size () = " << output.size ());
+
    return true;
 }
 

@@ -7,6 +7,7 @@
 
 #include <boost/bind.hpp>
 
+#include "../util/debug.hpp"
 #include "../util/conversion.hpp"
 #include "pb/adapter.hpp"
 #include "pb/command.pb.h"
@@ -71,6 +72,14 @@ public:
    void
    new_connection (
       tcp_connection &    connection);
+
+   /*!
+     \brief Callback function for incoming command by conneciton
+    */
+   void
+   handle_command (
+      tcp_connection &          connection,
+      pb::command const &       command);
 
    /*!
      \brief Serializes a protocolbuffers command to a string and sends it over the wire

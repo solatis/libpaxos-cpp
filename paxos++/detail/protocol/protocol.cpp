@@ -48,7 +48,21 @@ void
 protocol::new_connection (
    tcp_connection &     connection)
 {
-   PAXOS_DEBUG ("received new connection!");
+   read_command (connection,
+                 boost::bind (&protocol::handle_command,
+                              this,
+                              boost::ref (connection),
+                              _1));
+}
+
+void
+protocol::handle_command (
+   tcp_connection &     connection,
+   pb::command const &  command)
+{
+   PAXOS_DEBUG ("got new command!");
+   
+   
 }
 
 
@@ -61,6 +75,8 @@ protocol::write_command (
    uint32_t size             = binary_string.size ();
 
    std::string buffer        = util::conversion::to_byte_array (size) + binary_string;
+
+   PAXOS_DEBUG ("sending command of " << buffer.size () << " bytes to other remote connection");
 
    destination.write (buffer);
 }

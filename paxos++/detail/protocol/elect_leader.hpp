@@ -56,13 +56,13 @@ private:
     */
    void
    step2 (
-      tcp_connection &                          connection,
-      boost::system::error_code const &         error);
+      tcp_connection &                  connection,
+      boost::system::error_code const & error);
 
    void
    step3 (
-      tcp_connection &                          connection,
-      pb::command const &                       command);
+      tcp_connection &                  connection,
+      pb::command const &               command);
 
 private:
 

@@ -85,7 +85,7 @@ elect_leader::step3 (
    tcp_connection &     connection,
    pb::command const &  command)
 {
-   
+   PAXOS_DEBUG ("received command!");
 }
 
 }; }; };

@@ -10,6 +10,9 @@ adapter::to_string (
 {
    std::string output;
    command.SerializeToString (&output);
+
+   PAXOS_DEBUG ("got command = " << output.size () << " bytes");
+
    return output;
 }
 
@@ -19,7 +22,11 @@ adapter::from_string (
 {
    command command;
 
+   PAXOS_DEBUG ("got command = " << string.size () << " bytes");
+
    PAXOS_ASSERT (command.ParseFromString (string) == true);
+
+   PAXOS_DEBUG ("parsed command!");
 
    return command;
 }

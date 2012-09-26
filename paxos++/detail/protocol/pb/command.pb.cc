@@ -2,6 +2,9 @@
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
 #include "paxos++/detail/protocol/pb/command.pb.h"
+
+#include <algorithm>
+
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -116,7 +119,6 @@ bool command_type_IsValid(int value) {
 
 // ===================================================================
 
-const ::std::string command::_default_host_id_;
 #ifndef _MSC_VER
 const int command::kTypeFieldNumber;
 const int command::kHostIdFieldNumber;
@@ -139,7 +141,7 @@ command::command(const command& from)
 void command::SharedCtor() {
   _cached_size_ = 0;
   type_ = 0;
-  host_id_ = const_cast< ::std::string*>(&_default_host_id_);
+  host_id_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -148,7 +150,7 @@ command::~command() {
 }
 
 void command::SharedDtor() {
-  if (host_id_ != &_default_host_id_) {
+  if (host_id_ != &::google::protobuf::internal::kEmptyString) {
     delete host_id_;
   }
   if (this != default_instance_) {
@@ -178,8 +180,8 @@ command* command::New() const {
 void command::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     type_ = 0;
-    if (_has_bit(1)) {
-      if (host_id_ != &_default_host_id_) {
+    if (has_host_id()) {
+      if (host_id_ != &::google::protobuf::internal::kEmptyString) {
         host_id_->clear();
       }
     }
@@ -250,13 +252,13 @@ bool command::MergePartialFromCodedStream(
 void command::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // optional .paxos.detail.protocol.pb.command_type type = 1;
-  if (_has_bit(0)) {
+  if (has_type()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       1, this->type(), output);
   }
   
   // optional string host_id = 2;
-  if (_has_bit(1)) {
+  if (has_host_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->host_id().data(), this->host_id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -273,13 +275,13 @@ void command::SerializeWithCachedSizes(
 ::google::protobuf::uint8* command::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
   // optional .paxos.detail.protocol.pb.command_type type = 1;
-  if (_has_bit(0)) {
+  if (has_type()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       1, this->type(), target);
   }
   
   // optional string host_id = 2;
-  if (_has_bit(1)) {
+  if (has_host_id()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->host_id().data(), this->host_id().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
@@ -339,10 +341,10 @@ void command::MergeFrom(const ::google::protobuf::Message& from) {
 void command::MergeFrom(const command& from) {
   GOOGLE_CHECK_NE(&from, this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    if (from._has_bit(0)) {
+    if (from.has_type()) {
       set_type(from.type());
     }
-    if (from._has_bit(1)) {
+    if (from.has_host_id()) {
       set_host_id(from.host_id());
     }
   }
