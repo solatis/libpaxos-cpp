@@ -6,6 +6,7 @@
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 
 #include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "../util/debug.hpp"
 #include "../util/conversion.hpp"
@@ -95,8 +96,8 @@ public:
    template <typename Callback>
    static void
    read_command (
-      tcp_connection &  input,
-      Callback          output);
+      tcp_connection &                  input,
+      Callback const &                  output);
 
 private:
 
@@ -111,21 +112,7 @@ private:
    static void
    parse_command (
       tcp_connection &                  input,
-      boost::system::error_code const & error,
-      size_t                            bytes_transferred,
-      Callback                          callback);
-
-   /*!
-     \brief Reads byte array of command from stream
-     \returns Returns true if succesful, false otherwise
-    */
-   template <typename Iterator>
-   static bool
-   read_command_byte_array (
-      Iterator          begin,
-      Iterator          end,
-      std::string &     output);
-
+      boost::shared_ptr <Callback>      output);
 
 private:
 
