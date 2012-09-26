@@ -5,6 +5,7 @@
 #ifndef LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP
 #define LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP
 
+#include <vector>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
@@ -42,18 +43,7 @@ public:
 
    void
    write (
-      std::string const &       message);
-   
-   /*!
-     \brief The read buffer of this connection
-
-     Since there can only be one async_read function invoked per connection at the
-     same time, it makes sense to allocate the buffer as part of the connection.
-
-     \todo Perhaps encapsulate the invocation of async_read_until in this class?
-    */
-   boost::asio::streambuf &
-   read_buffer ();
+      std::string const &       message);   
 
 private:
 
@@ -72,7 +62,6 @@ private:
 
    boost::asio::ip::tcp::socket socket_;
 
-   boost::asio::streambuf       read_buffer_;
    std::string                  write_buffer_;
 };
 

@@ -29,12 +29,6 @@ tcp_connection::close ()
    socket_.close ();
 }
 
-boost::asio::streambuf &
-tcp_connection::read_buffer ()
-{
-   return read_buffer_;
-}
-
 boost::asio::ip::tcp::socket &
 tcp_connection::socket ()
 {

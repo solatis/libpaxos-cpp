@@ -5,8 +5,10 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 
+#include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 
 #include "../util/debug.hpp"
 #include "../util/conversion.hpp"
@@ -101,18 +103,24 @@ public:
 
 private:
 
-   template <typename Iterator>
-   static std::pair <Iterator, bool>
-   match_command (
-      Iterator,
-      Iterator);
+   template <typename Callback>
+   static void
+   parse_size (
+      tcp_connection &                  connection,
+      boost::system::error_code const & error,
+      size_t                            bytes_transferred,
+      boost::shared_array <char>        buffer,
+      boost::shared_ptr <Callback>      callback);
 
 
    template <typename Callback>
    static void
    parse_command (
-      tcp_connection &                  input,
-      boost::shared_ptr <Callback>      output);
+      tcp_connection &                  connection,
+      boost::system::error_code const & error,
+      size_t                            bytes_transferred,
+      boost::shared_array <char>        buffer,
+      boost::shared_ptr <Callback>      callback);
 
 private:
 
