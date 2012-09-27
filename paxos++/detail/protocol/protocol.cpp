@@ -17,9 +17,12 @@
 namespace paxos { namespace detail { namespace protocol {
 
 protocol::protocol (
+   boost::asio::io_service &            io_service,
    paxos::detail::connection_pool &     connection_pool,
    paxos::quorum &                      quorum)
-   : connection_pool_ (connection_pool),
+   : io_service_ (io_service),
+     health_check_timer_ (io_service_),
+     connection_pool_ (connection_pool),
      quorum_ (quorum),
      handshake_ (*this)
 {
@@ -40,8 +43,29 @@ protocol::quorum ()
 void
 protocol::bootstrap ()
 {
-   handshake_.start ();
+   /*!
+     Bootstrapping is as simple as starting a new health check, the system
+     should automatically recover.
+    */
+   health_check ();
 }
+
+void
+protocol::health_check ()
+{
+   /*!
+     Perform handshake to see who's dead and who's alive.
+    */
+   handshake_.start ();
+
+   /*!
+     And perform a new health check in 3 seconds
+    */
+   health_check_timer_.expires_from_now (boost::posix_time::milliseconds (3000));
+   health_check_timer_.async_wait (
+      boost::bind (&protocol::health_check, this));
+}
+
 
 
 void

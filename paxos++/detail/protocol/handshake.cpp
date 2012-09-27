@@ -67,7 +67,8 @@ handshake::step2 (
 
    if (error)
    {
-      PAXOS_WARN ("An error occured while establishing a connection: " << error.message ());
+      PAXOS_WARN ("An error occured while establishing a connection, marking host as dead: " << error.message ());
+      protocol_.quorum ().lookup (endpoint).set_state (remote_server::state_dead);
       return;
    }
 

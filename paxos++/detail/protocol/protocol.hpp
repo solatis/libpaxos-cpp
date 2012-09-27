@@ -8,6 +8,7 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
 #include "handshake.hpp"
 
@@ -46,6 +47,7 @@ public:
      \param quorum              Quorum of servers we're communicating with.
     */
    protocol (
+      boost::asio::io_service &         io_service,
       paxos::detail::connection_pool &  connection_pool,
       paxos::quorum &                   quorum);
 
@@ -67,6 +69,13 @@ public:
     */
    void
    bootstrap ();
+
+
+   /*!
+     \brief Periodically called to validate the quorum's health
+    */
+   void
+   health_check ();
 
    /*!
      \brief Called by local_server when a new connection arrives.
@@ -119,6 +128,9 @@ private:
       boost::shared_ptr <read_command_callback_type>    callback);
 
 private:
+
+   boost::asio::io_service &            io_service_;
+   boost::asio::deadline_timer          health_check_timer_;
 
    paxos::detail::connection_pool &     connection_pool_;
    paxos::quorum &                      quorum_;

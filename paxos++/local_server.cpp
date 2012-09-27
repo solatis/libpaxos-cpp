@@ -20,7 +20,8 @@ local_server::local_server (
                 boost::asio::ip::tcp::endpoint (address, port)),
      quorum_ (quorum),
      connection_pool_ (io_service),
-     protocol_ (connection_pool_,
+     protocol_ (io_service,
+                connection_pool_,
                 quorum_)
 {
    //! Initialize our unique identification number.
