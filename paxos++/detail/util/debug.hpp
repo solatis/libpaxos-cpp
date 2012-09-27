@@ -13,6 +13,8 @@
 
 #define PAXOS_DEBUG(msg) \
    std::cerr << "DEBUG [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
+#define PAXOS_INFO(msg) \
+   std::cerr << "INFO  [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
 #define PAXOS_WARN(msg) \
    std::cerr << "WARN  [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
 #define PAXOS_ERROR(msg) \
@@ -23,6 +25,7 @@
 #else //! #ifdef DEBUG
 
 #define PAXOS_DEBUG(msg)
+#define PAXOS_INFO(msg) 
 #define PAXOS_WARN(msg) 
 #define PAXOS_ERROR(msg)
 #define PAXOS_FATAL(msg)

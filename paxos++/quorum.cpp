@@ -15,7 +15,10 @@ quorum::we_are (
    self_.id_       = id;
    self_.state_    = state;
 
-   PAXOS_ASSERT (servers_.find (self_.endpoint_) != servers_.end ());
+   servers_.erase (self_.endpoint_);
+   
+   //! This ensures we aren't part of the quorum ourselves
+   PAXOS_ASSERT (servers_.find (self_.endpoint_) == servers_.end ());
 }
 
 struct quorum::self const &
@@ -31,6 +34,96 @@ quorum::add (
 {
    detail::remote_server server;
    servers_[boost::asio::ip::tcp::endpoint (address, port)] = server;
+
+   //! We can never add ourselves to the quorum
+   PAXOS_ASSERT (servers_.find (self_.endpoint_) == servers_.end ());
+}
+
+
+bool
+quorum::needs_new_leader () const
+{
+   uint16_t leader_count = 0;
+
+   if (self_.state_ == detail::remote_server::state_leader)
+   {
+      ++leader_count;
+   }
+
+   for (map_type::value_type const & i : servers_)
+   {
+      switch (i.second.state ())
+      {
+            case detail::remote_server::state_unknown:
+               /*!
+                 Unable to determine whether we need a new leader, since we have not
+                 contacted this host even once. This typically occurs right after the
+                 start of a new server, when we haven't attempted to perform a handshake
+                 with this host yet.
+               */
+               PAXOS_DEBUG ("remote server " << i.first << " has state unknown, "
+                            "unable to determine whether we need a new leader")
+               return false;
+
+            case detail::remote_server::state_leader:
+               ++leader_count;
+               break;
+
+            default:
+               break;
+      }
+   }
+
+   return leader_count != 1;
+}
+
+
+boost::asio::ip::tcp::endpoint
+quorum::determine_leader () const
+{
+   //! Sort all the hosts by their id
+   std::map <boost::uuids::uuid, boost::asio::ip::tcp::endpoint> host_ids;
+   host_ids[self_.id_] = self_.endpoint_;
+
+   for (map_type::value_type const & i : servers_)
+   {
+      if (i.second.state () == detail::remote_server::state_dead)       
+      {
+         //! Skipping dead nodes from participating in leader election
+         continue;
+      }
+      host_ids[i.second.id ()] = i.first;
+   }
+
+   //! Always select the host with the highest id
+   return host_ids.rbegin ()->second;
+}
+
+void
+quorum::set_leader (
+   boost::asio::ip::tcp::endpoint const &       endpoint)
+{
+   PAXOS_ASSERT (endpoint == determine_leader ());
+
+   PAXOS_INFO ("setting new leader to " << endpoint);
+
+   self_.state_ =
+      (self_.endpoint_ == endpoint 
+       ? detail::remote_server::state_leader
+       : detail::remote_server::state_follower);
+
+   for (map_type::value_type & i : servers_)
+   {
+      if (i.second.state () == detail::remote_server::state_dead)
+      {
+         continue;
+      }
+
+      i.second.set_state (
+         (i.first == endpoint
+          ? detail::remote_server::state_leader
+          : detail::remote_server::state_follower));
+   }
 }
 
 

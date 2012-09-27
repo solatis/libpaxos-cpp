@@ -11,6 +11,7 @@
 #include <boost/asio/deadline_timer.hpp>
 
 #include "handshake.hpp"
+#include "elect_leader.hpp"
 
 namespace boost { namespace asio {
 class io_service;
@@ -136,6 +137,7 @@ private:
    paxos::quorum &                      quorum_;
 
    handshake                            handshake_;
+   elect_leader                         elect_leader_;
 };
 
 }; }; };

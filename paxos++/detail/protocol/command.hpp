@@ -28,8 +28,21 @@ public:
    enum type
    {
       type_invalid,
+
+      //! Sent by a host to initiate a handshake
       type_handshake_start,
-      type_handshake_response
+      
+      //! Sent as a response to a handshake request
+      type_handshake_response,
+
+      //! Sent when a node in the quorum claims leadership
+      type_leader_claim,
+
+      //! Sent when a node acknowledges a new leader
+      type_leader_claim_ack,
+
+      //! Sent when a node rejects a new leader
+      type_leader_claim_reject
    };
 
 public:

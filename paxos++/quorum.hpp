@@ -70,7 +70,6 @@ public:
    adjust_our_state (
       enum detail::remote_server::state state);
 
-
    /*!
      \brief Access to the endpoint we represent
     */
@@ -85,7 +84,30 @@ public:
       boost::asio::ip::address const &  address,
       uint16_t                          port);
 
+   /*!
+     \brief Determines whether the quorum currently needs a new leader
+     \returns Returns true if a new leader is required
 
+     This essentially returns true if we have contacted all the hosts at least
+     once, and the amount of hosts in our quorum that think they are the leader
+     is not exactly 1. 
+    */
+   bool
+   needs_new_leader () const;
+
+   /*!
+     \brief Based on the id's of all the hosts in the quorum we known, determines leader
+    */
+   boost::asio::ip::tcp::endpoint
+   determine_leader () const;
+
+   /*!
+     \brief Sets the new leader of this quorum
+    */
+   void
+   set_leader (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+   
 
    detail::remote_server &
    lookup (

@@ -23,9 +23,6 @@ remote_server::to_string (
 
          case state_follower:
             return "state_follower";
-
-         case state_client:
-            return "state_client";      
    };
 
    PAXOS_UNREACHABLE ();
@@ -48,6 +45,20 @@ enum remote_server::state
 remote_server::state () const
 {
    return state_;
+}
+
+
+void
+remote_server::set_id (
+   boost::uuids::uuid const &   id)
+{
+   id_ = id;
+}
+
+boost::uuids::uuid const &
+remote_server::id () const
+{
+   return id_;
 }
 
 

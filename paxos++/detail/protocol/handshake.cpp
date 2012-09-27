@@ -39,13 +39,7 @@ handshake::step1 ()
 {
    for (auto const & i : protocol_.quorum ().servers ())
    {
-      boost::asio::ip::tcp::endpoint const & endpoint = i.first;
-
-      if (endpoint == protocol_.quorum ().self ().endpoint_)
-      {
-         PAXOS_DEBUG ("skipping self: " << endpoint);
-         continue;
-      }
+      boost::asio::ip::tcp::endpoint const & endpoint = i.first;      
 
       tcp_connection & new_connection = protocol_.connection_pool ().create ();
       
@@ -64,11 +58,11 @@ handshake::step2 (
    tcp_connection &                             connection,
    boost::system::error_code const &            error)
 {
-
    if (error)
    {
       PAXOS_WARN ("An error occured while establishing a connection, marking host as dead: " << error.message ());
       protocol_.quorum ().lookup (endpoint).set_state (remote_server::state_dead);
+      protocol_.connection_pool ().kill (connection);
       return;
    }
 
@@ -78,19 +72,16 @@ handshake::step2 (
    PAXOS_DEBUG ("Connection established!");
 
    /*!
-     Send this command to the other side, which will enter in handshake::step3 as
-     defined in protocol.cpp's handle_command () function.
+     Send this command to the other side, which will enter in handshake::receive_handshake_start
+     as defined in protocol.cpp's handle_command () function.
     */
    protocol_.write_command (command,
                             connection);
 
-   //! Timeout of 3 seconds
-   connection.start_timeout (boost::posix_time::milliseconds (3000));
-
    /*!
-     And now we expect a response from the other side that we indeed are allowed to
-     elect a new leader.
+     And now we expect a response soon from the other side in response to our handshake request.
     */
+   connection.start_timeout (boost::posix_time::milliseconds (3000));
    protocol_.read_command (connection,
                            boost::bind (&handshake::step4,
                                         this,
@@ -138,6 +129,7 @@ handshake::step4 (
      Now, update the host id and the state the host thinks it's in.
    */
    protocol_.quorum ().lookup (endpoint).set_state (command.host_state ());
+   protocol_.quorum ().lookup (endpoint).set_id (command.host_id ());
 }
 
 }; }; };

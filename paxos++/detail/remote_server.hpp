@@ -5,6 +5,7 @@
 #ifndef LIBPAXOS_CPP_DETAIL_REMOTE_SERVER_HPP
 #define LIBPAXOS_CPP_DETAIL_REMOTE_SERVER_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <boost/optional.hpp>
 
 #include "tcp_connection.hpp"
@@ -24,8 +25,7 @@ public:
       state_dead,
       state_non_participant,
       state_leader,
-      state_follower,
-      state_client
+      state_follower
    };
 
    static std::string 
@@ -54,6 +54,20 @@ public:
 
 
    /*!
+     \brief Adjusts the id of the server
+    */
+   void
+   set_id (
+      boost::uuids::uuid const &        id);
+
+   /*!
+     \brief Access to the unique id of this server
+    */
+   boost::uuids::uuid const &
+   id () const;
+
+
+   /*!
      \brief Sets the tcp connection we're currently connected to.
     */
    void
@@ -77,6 +91,7 @@ private:
 private:
 
    enum state                                   state_;
+   boost::uuids::uuid                           id_;
    boost::optional <tcp_connection::pointer>    connection_;
 };
 

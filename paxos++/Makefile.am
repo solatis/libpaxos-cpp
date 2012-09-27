@@ -9,6 +9,7 @@ include_HEADERS = \
 	detail/tcp_connection.inl \
 	detail/protocol/protocol.hpp \
 	detail/protocol/handshake.hpp \
+	detail/protocol/elect_leader.hpp \
 	detail/protocol/command.hpp \
 	detail/protocol/command.inl \
 	detail/util/conversion.hpp \
@@ -25,6 +26,7 @@ libpaxos_la_SOURCES = \
 	detail/tcp_connection.cpp \
 	detail/protocol/protocol.cpp \
 	detail/protocol/handshake.cpp \
+	detail/protocol/elect_leader.cpp \
 	detail/protocol/command.cpp 
 
 

@@ -24,7 +24,8 @@ protocol::protocol (
      health_check_timer_ (io_service_),
      connection_pool_ (connection_pool),
      quorum_ (quorum),
-     handshake_ (*this)
+     handshake_ (*this),
+     elect_leader_ (*this)
 {
 }
 
@@ -58,6 +59,13 @@ protocol::health_check ()
     */
    handshake_.start ();
 
+
+   if (quorum_.needs_new_leader () == true)
+   {
+      elect_leader_.start ();
+   }
+
+
    /*!
      And perform a new health check in 3 seconds
     */
@@ -89,6 +97,11 @@ protocol::handle_command (
    {
          case command::type_handshake_start:
             handshake_.receive_handshake_start (connection, 
+                                                command);
+            break;
+
+         case command::type_leader_claim:
+            elect_leader_.receive_leader_claim (connection, 
                                                 command);
             break;
 

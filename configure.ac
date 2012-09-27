@@ -18,12 +18,12 @@ AC_ARG_ENABLE([debug],
 AC_ARG_WITH([includes],
         [AS_HELP_STRING([--with-includes], [look for additional header files in DIRS])],
         [],
-        [with_includes=no])
+        [])
 
 AC_ARG_WITH([libraries],
         [AS_HELP_STRING([--with-libraries], [look for additional libraries in DIRS])],
         [],
-        [with_libraries=no])
+        [])
                        
 
 for dir in $with_libraries
