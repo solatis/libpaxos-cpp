@@ -77,7 +77,7 @@ protocol::handle_command (
 }
 
 
-/*! static */ void
+void
 protocol::write_command (
    command const &              command,
    detail::tcp_connection &     destination)
@@ -93,7 +93,7 @@ protocol::write_command (
 }
 
 
-/*! static */ void
+void
 protocol::read_command (
    tcp_connection &                             connection,
    protocol::read_command_callback_type const & callback)
@@ -104,6 +104,8 @@ protocol::read_command (
       connection.socket (), 
       boost::asio::buffer (buffer.get (), 4), 
       boost::bind (&protocol::read_command_parse_size,
+                   this,
+
                    /*!
                      \warning this assumes connection still is valid when parse_command
                               is called. This can be dangerous! Make sure it does not
@@ -131,9 +133,7 @@ protocol::read_command (
                    boost::shared_ptr <read_command_callback_type> (new read_command_callback_type (callback))));
 }
 
-
-
-/*! static */ void
+void
 protocol::read_command_parse_size (
    tcp_connection &                                     connection,
    boost::system::error_code const &                    error,
@@ -141,6 +141,12 @@ protocol::read_command_parse_size (
    boost::shared_array <char>                           bytes_buffer,
    boost::shared_ptr <read_command_callback_type>       callback)
 {
+   if (error)
+   {
+      connection_pool_.kill (connection);
+      return;
+   }
+
    PAXOS_ASSERT (bytes_transferred == 4);
 
    std::string bytes_raw (bytes_buffer.get (), 4);
@@ -152,7 +158,9 @@ protocol::read_command_parse_size (
    boost::asio::async_read (
       connection.socket (), 
       boost::asio::buffer (command_buffer.get (), bytes), 
-      boost::bind (&read_command_parse_command,
+      boost::bind (&protocol::read_command_parse_command,
+                   this,
+                   
                    boost::ref (connection),
                    _1,
                    _2,
@@ -160,7 +168,7 @@ protocol::read_command_parse_size (
                    callback));
 }
 
-/*! static */ void
+void
 protocol::read_command_parse_command (
    tcp_connection &                                     connection,
    boost::system::error_code const &                    error,
@@ -168,6 +176,17 @@ protocol::read_command_parse_command (
    boost::shared_array <char>                           buffer,
    boost::shared_ptr <read_command_callback_type>       callback)
 {
+   if (error)
+   {
+      connection_pool_.kill (connection);
+      return;
+   }
+
+   /*!
+     At this point, we have a command, so we can cancel any timeouts running on the connection.
+    */
+   connection.cancel_timeout ();
+
    std::string byte_array (buffer.get (),
                            bytes_transferred);
 

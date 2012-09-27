@@ -87,22 +87,23 @@ public:
    /*!
      \brief Serializes a protocolbuffers command to a string and sends it over the wire
     */
-   static void
+   void
    write_command (
       command const &   command,
       tcp_connection &  output);
 
    /*!
      \brief Reads binary data from wire and parses command out of it
+     \note  If any timeouts are set on <connection>, these timers are automatically cancelled
     */
-   static void
+   void
    read_command (
       tcp_connection &                          connection,
       read_command_callback_type const &        callback);
 
 private:
 
-   static void
+   void
    read_command_parse_size (
       tcp_connection &                                  connection,
       boost::system::error_code const &                 error,
@@ -110,8 +111,7 @@ private:
       boost::shared_array <char>                        buffer,
       boost::shared_ptr <read_command_callback_type>    callback);
 
-
-   static void
+   void
    read_command_parse_command (
       tcp_connection &                                  connection,
       boost::system::error_code const &                 error,

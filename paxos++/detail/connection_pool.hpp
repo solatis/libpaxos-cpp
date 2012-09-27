@@ -31,6 +31,13 @@ public:
    tcp_connection &
    create ();
 
+   /*!
+     \brief Destructs connection pointer and removes from pool
+    */
+   void 
+   kill (
+      tcp_connection const &    connection);
+
 private:
 
    boost::asio::io_service &                    io_service_;

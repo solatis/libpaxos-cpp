@@ -5,17 +5,9 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_ELECT_LEADER_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_ELECT_LEADER_HPP
 
-namespace paxos { 
-class quorum;
-}; 
-
-namespace paxos { namespace detail { 
-class connection_pool;
-}; };
-
 namespace paxos { namespace detail { namespace protocol {
-class protocol;
 class command;
+class protocol;
 }; }; };
 
 namespace paxos { namespace detail { namespace protocol {
@@ -63,8 +55,7 @@ private:
 
 private:
 
-   quorum &                     quorum_;
-   detail::connection_pool &    connection_pool_;
+   protocol &                   protocol_;
 
 };
 

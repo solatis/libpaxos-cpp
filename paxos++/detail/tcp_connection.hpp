@@ -6,7 +6,9 @@
 #define LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP
 
 #include <vector>
-#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/deadline_timer.hpp>
+
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -45,6 +47,25 @@ public:
    write (
       std::string const &       message);   
 
+   /*!
+     \brief Starts timer that calls socket_.close () when done
+
+     This is useful to issue right before an async_read is done on a connection when
+     a response is expected. Due to it calling socket_.close () after the timeout has
+     occurred, the async_read () will return with a boost::asio::error::operation_aborted
+     error.
+     
+     The caller must ensure that cancel_timeout () is called after a response has actually
+     been received.
+    */
+   void
+   start_timeout (
+      boost::asio::deadline_timer::duration_type const &        expiry_time);
+
+   void
+   cancel_timeout ();
+
+
 private:
 
    tcp_connection (
@@ -58,9 +79,13 @@ private:
       boost::system::error_code const & error,
       size_t                            bytes_transferred);
 
+   void
+   handle_timeout ();
+
 private:
 
    boost::asio::ip::tcp::socket socket_;
+   boost::asio::deadline_timer  timeout_;
 
    std::string                  write_buffer_;
 };

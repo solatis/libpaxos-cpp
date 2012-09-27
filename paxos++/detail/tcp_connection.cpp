@@ -2,6 +2,8 @@
 
 #include <assert.h>
 #include <boost/bind.hpp>
+#include <boost/asio/write.hpp>
+#include <boost/asio/placeholders.hpp>
 
 #include "util/debug.hpp"
 #include "tcp_connection.hpp"
@@ -11,7 +13,8 @@ namespace paxos { namespace detail {
 
 tcp_connection::tcp_connection (
    boost::asio::io_service & io_service)
-   : socket_ (io_service)
+   : socket_ (io_service),
+     timeout_ (io_service)
 {
 }
 
@@ -34,6 +37,36 @@ tcp_connection::socket ()
 {
    return socket_;
 }
+
+void
+tcp_connection::start_timeout (
+   boost::asio::deadline_timer::duration_type const &   expiry_time)
+{
+   timeout_.expires_from_now (expiry_time);
+   timeout_.async_wait (
+      boost::bind (&tcp_connection::handle_timeout, this));
+
+}
+
+void
+tcp_connection::cancel_timeout ()
+{
+   timeout_.cancel ();
+}
+
+void
+tcp_connection::handle_timeout ()
+{
+   /*!
+     Timeout occured, so cancel the socket. This will force the completion of any async_read
+     commands with an boost::asio::error::operation_aborted as the error.
+
+     Note: this is not the same as socket_.close ()! But in effect, in most cases, will lead
+     to the destruction of this connection.
+    */
+   socket_.cancel ();
+}
+
 
 void
 tcp_connection::write (

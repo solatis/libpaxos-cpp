@@ -1,3 +1,7 @@
+#include <algorithm>
+
+#include "util/debug.hpp"
+
 #include "connection_pool.hpp"
 
 namespace paxos { namespace detail {
@@ -15,6 +19,24 @@ connection_pool::create ()
    return **(connections_.insert (
                connections_.end (),
                tcp_connection::create (io_service_)));
+}
+
+void
+connection_pool::kill (
+   tcp_connection const &       connection)
+{
+   PAXOS_DEBUG ("killing connection");
+
+   tcp_connection const * p_connection = &connection;
+   
+   connections_.erase (std::remove_if (connections_.begin (),
+                                       connections_.end (),
+                                       [p_connection] (tcp_connection::pointer c)
+                                       {
+                                          return p_connection == c.get ();
+                                       }),
+                       connections_.end ());
+
 }
 
 }; };

@@ -17,8 +17,7 @@ namespace paxos { namespace detail { namespace protocol {
 
 elect_leader::elect_leader (
    detail::protocol::protocol & protocol)
-   : quorum_ (protocol.quorum ()),
-     connection_pool_ (protocol.connection_pool ())
+   : protocol_ (protocol)
 {
 }
 
@@ -32,17 +31,17 @@ void
 elect_leader::step1 ()
 {
    std::vector <boost::asio::ip::tcp::endpoint> endpoints;
-   quorum_.get_endpoints (std::back_inserter (endpoints));
+   protocol_.quorum ().get_endpoints (std::back_inserter (endpoints));
    
    for (boost::asio::ip::tcp::endpoint const & endpoint : endpoints)
    {
-      if (endpoint == quorum_.self ().endpoint_)
+      if (endpoint == protocol_.quorum ().self ().endpoint_)
       {
          PAXOS_DEBUG ("skipping self: " << endpoint);
          continue;
       }
 
-      tcp_connection & new_connection = connection_pool_.create ();
+      tcp_connection & new_connection = protocol_.connection_pool ().create ();
       
       new_connection.socket ().async_connect (endpoint,
                                               boost::bind (&elect_leader::step2,
@@ -66,14 +65,17 @@ elect_leader::step2 (
 
    command command;
    command.set_type (command::start_election);
-   command.set_host_id (quorum_.self ().id_);
+   command.set_host_id (protocol_.quorum ().self ().id_);
 
    PAXOS_DEBUG ("Connection established!");
 
-   protocol::write_command (command,
+   protocol_.write_command (command,
                             connection);
 
-   protocol::read_command (connection,
+   //! Timeout of 3 seconds
+   connection.start_timeout (boost::posix_time::milliseconds (3000));
+
+   protocol_.read_command (connection,
                            boost::bind (&elect_leader::step3,
                                         this,
                                         boost::ref (connection),
