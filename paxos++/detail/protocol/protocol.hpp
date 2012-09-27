@@ -5,15 +5,10 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 
-#include <boost/array.hpp>
-#include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 
-#include "../util/debug.hpp"
-#include "../util/conversion.hpp"
-#include "pb/adapter.hpp"
-#include "pb/command.pb.h"
 #include "session.hpp"
 #include "elect_leader.hpp"
 
@@ -37,6 +32,9 @@ namespace paxos { namespace detail { namespace protocol {
  */
 class protocol
 {
+private:
+   typedef boost::function <void (pb::command const &)> read_command_callback_type;
+   
 public:
 
    /*!
@@ -95,32 +93,29 @@ public:
    /*!
      \brief Reads binary data from wire and parses command out of it
     */
-   template <typename Callback>
    static void
    read_command (
-      tcp_connection &                  input,
-      Callback const &                  output);
+      tcp_connection &                          connection,
+      read_command_callback_type const &        callback);
 
 private:
 
-   template <typename Callback>
    static void
-   parse_size (
-      tcp_connection &                  connection,
-      boost::system::error_code const & error,
-      size_t                            bytes_transferred,
-      boost::shared_array <char>        buffer,
-      boost::shared_ptr <Callback>      callback);
+   read_command_parse_size (
+      tcp_connection &                                  connection,
+      boost::system::error_code const &                 error,
+      size_t                                            bytes_transferred,
+      boost::shared_array <char>                        buffer,
+      boost::shared_ptr <read_command_callback_type>    callback);
 
 
-   template <typename Callback>
    static void
-   parse_command (
-      tcp_connection &                  connection,
-      boost::system::error_code const & error,
-      size_t                            bytes_transferred,
-      boost::shared_array <char>        buffer,
-      boost::shared_ptr <Callback>      callback);
+   read_command_parse_command (
+      tcp_connection &                                  connection,
+      boost::system::error_code const &                 error,
+      size_t                                            bytes_transferred,
+      boost::shared_array <char>                        buffer,
+      boost::shared_ptr <read_command_callback_type>    callback);
 
 private:
 
@@ -131,8 +126,6 @@ private:
 };
 
 }; }; };
-
-#include "protocol.inl"
 
 #endif //! LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 
