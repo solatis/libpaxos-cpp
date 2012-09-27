@@ -21,8 +21,7 @@ protocol::protocol (
    paxos::quorum &                      quorum)
    : connection_pool_ (connection_pool),
      quorum_ (quorum),
-
-     elect_leader_ (*this)
+     handshake_ (*this)
 {
 }
 
@@ -41,9 +40,7 @@ protocol::quorum ()
 void
 protocol::bootstrap ()
 {
-   PAXOS_ASSERT (elect_leader_.size () == 0);
-   
-   elect_leader_.create ().start ();
+   handshake_.start ();
 }
 
 
@@ -66,8 +63,9 @@ protocol::handle_command (
 
    switch (command.type ())
    {
-         case command::start_election:
-            PAXOS_DEBUG ("got start_election command!");
+         case command::type_handshake_start:
+            handshake_.receive_handshake_start (connection, 
+                                                command);
             break;
 
          default:

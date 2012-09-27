@@ -9,8 +9,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 
-#include "session.hpp"
-#include "elect_leader.hpp"
+#include "handshake.hpp"
 
 namespace boost { namespace asio {
 class io_service;
@@ -124,7 +123,7 @@ private:
    paxos::detail::connection_pool &     connection_pool_;
    paxos::quorum &                      quorum_;
 
-   session <elect_leader>               elect_leader_;
+   handshake                            handshake_;
 };
 
 }; }; };

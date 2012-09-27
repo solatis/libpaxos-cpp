@@ -1,12 +1,16 @@
 namespace paxos {
 
-template <class OutputIterator> inline OutputIterator
-quorum::get_endpoints (
-   OutputIterator       result) const
+inline quorum::map_type &
+quorum::servers ()
 {
-   return std::transform (servers_.begin (), servers_.end (),
-                          result,
-                          boost::bind (&map_type::value_type::first, _1));
+   return servers_;
+}
+
+
+inline quorum::map_type const &
+quorum::servers () const
+{
+   return servers_;
 }
 
 };

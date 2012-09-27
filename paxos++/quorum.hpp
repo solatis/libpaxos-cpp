@@ -8,10 +8,10 @@
 #include <set>
 #include <string>
 
-#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/asio/ip/address.hpp>
 
 #include "detail/remote_server.hpp"
 
@@ -37,12 +37,15 @@ namespace paxos {
  */
 class quorum
 {
+   typedef std::map <boost::asio::ip::tcp::endpoint, detail::remote_server> map_type;
+
 public:
 
    struct self
    {
       boost::asio::ip::tcp::endpoint    endpoint_;
       boost::uuids::uuid                id_;
+      enum detail::remote_server::state state_;
    };
 
    /*!
@@ -50,13 +53,22 @@ public:
      \param address     Our local IP address
      \param port        Port we're listening at
      \param id          Our unique identification number within the quorum
+     \param state       Our state we will assume by default
      \pre The server is part of the quorum
     */
    void
    we_are (
       boost::asio::ip::address const &  address,
       uint16_t                          port,
-      boost::uuids::uuid const &        id);
+      boost::uuids::uuid const &        id,
+      enum detail::remote_server::state state = detail::remote_server::state_non_participant);
+
+   /*!
+     Adjusts our current state
+    */
+   void
+   adjust_our_state (
+      enum detail::remote_server::state state);
 
 
    /*!
@@ -73,15 +85,23 @@ public:
       boost::asio::ip::address const &  address,
       uint16_t                          port);
 
-   
-   template <class OutputIterator> OutputIterator
-   get_endpoints (
-      OutputIterator    result) const;
+
+
+   detail::remote_server &
+   lookup (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+
+   detail::remote_server const &
+   lookup (
+      boost::asio::ip::tcp::endpoint const &    endpoint) const;
+
+   map_type &
+   servers ();
+
+   map_type const &
+   servers () const;
 
 private:
-   
-   typedef std::map <boost::asio::ip::tcp::endpoint, 
-                     detail::remote_server> map_type;
 
    struct self  self_;
 

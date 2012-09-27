@@ -6,8 +6,7 @@ include_HEADERS = \
 	detail/remote_server.hpp \
 	detail/tcp_connection.hpp \
 	detail/protocol/protocol.hpp \
-	detail/protocol/session.hpp \
-	detail/protocol/elect_leader.hpp \
+	detail/protocol/handshake.hpp \
 	detail/protocol/command.hpp
 
 lib_LTLIBRARIES=libpaxos.la
@@ -19,7 +18,7 @@ libpaxos_la_SOURCES = \
 	detail/remote_server.cpp \
 	detail/tcp_connection.cpp \
 	detail/protocol/protocol.cpp \
-	detail/protocol/elect_leader.cpp \
+	detail/protocol/handshake.cpp \
 	detail/protocol/command.cpp 
 
 

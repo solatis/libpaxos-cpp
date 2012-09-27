@@ -40,4 +40,12 @@
    } while (false);
 
 
+/*!
+  Hides the 'missing return value on function returning non-void' warnings; note that
+  this aborts when it is actually reached.
+ */
+#define PAXOS_UNREACHABLE()     __builtin_unreachable()
+
+
+
 #endif  //! LIBPAXOS_CPP_PAXOS_DETAIL_DEBUG_HPP

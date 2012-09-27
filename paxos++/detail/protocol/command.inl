@@ -2,7 +2,7 @@ namespace paxos { namespace detail { namespace protocol {
 
 
 inline command::command ()
-   : type_ (invalid)
+   : type_ (type_invalid)
 {
 }
 
@@ -33,14 +33,34 @@ command::host_id () const
    return host_id_;
 }
 
+
+inline void
+command::set_host_state (
+   enum remote_server::state state)
+{
+   host_state_ = state;
+}
+
+inline enum remote_server::state
+command::host_state () const
+{
+   return host_state_;
+}
+
+
+
 template <class Archive>
 inline void
 command::serialize (
    Archive &                 ar,
-   unsigned int const        version)
+   unsigned int const        version) 
 {
    ar & type_;
+
    ar & host_id_;
+   ar & host_address_;
+   ar & host_port_;
+   ar & host_state_;
 }
 
 

@@ -7,7 +7,12 @@
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_serialize.hpp>
+#include <boost/asio/ip/address.hpp>
+#include <boost/asio/ip/tcp.hpp>
+
 #include <boost/serialization/access.hpp>
+
+#include "../remote_server.hpp"
 
 namespace paxos { namespace detail { namespace protocol {
 
@@ -22,9 +27,9 @@ public:
 
    enum type
    {
-      invalid,
-      start_election,
-      won_election
+      type_invalid,
+      type_handshake_start,
+      type_handshake_response
    };
 
 public:
@@ -33,7 +38,6 @@ public:
      \brief Default constructor
     */
    command ();
-
 
    static command
    from_string (
@@ -57,6 +61,19 @@ public:
    boost::uuids::uuid const &
    host_id () const;
 
+   void
+   set_host_endpoint (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+
+   boost::asio::ip::tcp::endpoint
+   host_endpoint () const;
+
+   void
+   set_host_state (
+      enum remote_server::state state);
+
+   enum remote_server::state
+   host_state () const;
 
 private:
 
@@ -64,12 +81,15 @@ private:
    void serialize (
       Archive &                 ar,
       unsigned int const        version);
-
    
 private:
 
-   enum type            type_;
-   boost::uuids::uuid   host_id_;
+   enum type                    type_;
+
+   boost::uuids::uuid           host_id_;
+   std::string                  host_address_;
+   uint16_t                     host_port_;
+   enum remote_server::state    host_state_;
 
 };
 

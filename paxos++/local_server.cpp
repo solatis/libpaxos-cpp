@@ -1,4 +1,3 @@
-#include <sstream>
 #include <iostream>
 
 #include <boost/ref.hpp>

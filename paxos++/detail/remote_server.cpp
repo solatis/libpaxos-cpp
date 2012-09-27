@@ -1,6 +1,33 @@
+#include "util/debug.hpp"
 #include "remote_server.hpp"
 
 namespace paxos { namespace detail {
+
+/*! static */ std::string 
+remote_server::to_string (
+   enum state state)
+{
+   switch (state)
+   {
+         case state_dead:
+            return "state_dead";
+
+         case state_non_participant:
+            return "state_non_participant";
+
+         case state_leader:
+            return "state_leader";
+
+         case state_follower:
+            return "state_follower";
+
+         case state_client:
+            return "state_client";      
+   };
+
+   PAXOS_UNREACHABLE ();
+}
+
 
 remote_server::remote_server ()
    : state_ (state_dead)

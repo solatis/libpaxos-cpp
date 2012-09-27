@@ -21,10 +21,15 @@ public:
    enum state
    {
       state_dead,
+      state_non_participant,
       state_leader,
       state_follower,
       state_client
    };
+
+   static std::string 
+   to_string (
+      enum state);
 
    /*!
      \brief Default constructor
