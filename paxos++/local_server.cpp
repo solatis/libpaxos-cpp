@@ -28,11 +28,8 @@ local_server::local_server (
    boost::uuids::basic_random_generator <boost::mt19937> gen;
    uuid_ = gen ();
 
-   std::stringstream id;
-   id << uuid_;
-
    //! Make sure the quorum can tell others who we are.
-   quorum_.we_are (address, port, id.str ());
+   quorum_.we_are (address, port, uuid_);
 
    //! Ensure that we start accepting new connections
    accept ();

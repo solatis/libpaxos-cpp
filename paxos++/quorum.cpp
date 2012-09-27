@@ -8,7 +8,7 @@ void
 quorum::we_are (
    boost::asio::ip::address const &     address,
    uint16_t                             port,
-   std::string const &                  id)
+   boost::uuids::uuid const &           id)
 {
    self_.endpoint_ = boost::asio::ip::tcp::endpoint (address, port);
    self_.id_       = id;

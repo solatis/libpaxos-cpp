@@ -10,8 +10,7 @@
 #include "../../quorum.hpp"
 #include "../connection_pool.hpp"
 
-#include "pb/adapter.hpp"
-#include "pb/command.pb.h"
+#include "command.hpp"
 
 #include "protocol.hpp"
 
@@ -62,20 +61,28 @@ protocol::new_connection (
 void
 protocol::handle_command (
    tcp_connection &     connection,
-   pb::command const &  command)
+   command const &      command)
 {
-   PAXOS_DEBUG ("got new command!");
-   
-   
+
+   switch (command.type ())
+   {
+         case command::start_election:
+            PAXOS_DEBUG ("got start_election command!");
+            break;
+
+         default:
+            PAXOS_ERROR ("invalid command!");
+            break;
+   }
 }
 
 
 /*! static */ void
 protocol::write_command (
-   pb::command const &          command,
+   command const &              command,
    detail::tcp_connection &     destination)
 {
-   std::string binary_string = pb::adapter::to_string (command);
+   std::string binary_string = command::to_string (command);
    uint32_t size             = binary_string.size ();
 
    std::string buffer        = util::conversion::to_byte_array (size) + binary_string;
@@ -88,8 +95,8 @@ protocol::write_command (
 
 /*! static */ void
 protocol::read_command (
-   tcp_connection &                                     connection,
-   boost::function <void (pb::command const &)> const & callback)
+   tcp_connection &                             connection,
+   protocol::read_command_callback_type const & callback)
 {
    boost::shared_array <char> buffer (new char[4]);
 
@@ -164,7 +171,7 @@ protocol::read_command_parse_command (
    std::string byte_array (buffer.get (),
                            bytes_transferred);
 
-   (*callback) (pb::adapter::from_string (byte_array));
+   (*callback) (command::from_string (byte_array));
 }
 
 

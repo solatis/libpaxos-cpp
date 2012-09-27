@@ -15,11 +15,8 @@ class connection_pool;
 
 namespace paxos { namespace detail { namespace protocol {
 class protocol;
-}; }; };
-
-namespace paxos { namespace detail { namespace protocol { namespace pb {
 class command;
-}; }; }; };
+}; }; };
 
 namespace paxos { namespace detail { namespace protocol {
 
@@ -61,8 +58,8 @@ private:
 
    void
    step3 (
-      tcp_connection &                  connection,
-      pb::command const &               command);
+      tcp_connection &  connection,
+      command const &   command);
 
 private:
 

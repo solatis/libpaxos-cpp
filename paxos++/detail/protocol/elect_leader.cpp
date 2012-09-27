@@ -8,7 +8,8 @@
 #include "../util/debug.hpp"
 #include "../../quorum.hpp"
 #include "../connection_pool.hpp"
-#include "pb/command.pb.h"
+
+#include "command.hpp"
 #include "protocol.hpp"
 #include "elect_leader.hpp"
 
@@ -63,8 +64,8 @@ elect_leader::step2 (
       return;
    }
 
-   pb::command command;
-   command.set_type (pb::START_ELECTION);
+   command command;
+   command.set_type (command::start_election);
    command.set_host_id (quorum_.self ().id_);
 
    PAXOS_DEBUG ("Connection established!");
@@ -83,7 +84,7 @@ elect_leader::step2 (
 void
 elect_leader::step3 (
    tcp_connection &     connection,
-   pb::command const &  command)
+   command const &      command)
 {
    PAXOS_DEBUG ("received command!");
 }

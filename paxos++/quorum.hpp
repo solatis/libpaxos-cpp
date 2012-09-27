@@ -11,6 +11,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "detail/remote_server.hpp"
 
@@ -41,7 +42,7 @@ public:
    struct self
    {
       boost::asio::ip::tcp::endpoint    endpoint_;
-      std::string                       id_;
+      boost::uuids::uuid                id_;
    };
 
    /*!
@@ -55,7 +56,7 @@ public:
    we_are (
       boost::asio::ip::address const &  address,
       uint16_t                          port,
-      std::string const &               id);
+      boost::uuids::uuid const &        id);
 
 
    /*!

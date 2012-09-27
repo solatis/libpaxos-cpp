@@ -26,6 +26,10 @@ class tcp_connection;
 }; };
 
 namespace paxos { namespace detail { namespace protocol {
+class command;
+}; }; };
+
+namespace paxos { namespace detail { namespace protocol {
 
 /*!
   \brief Entry point for communication within quorum
@@ -33,7 +37,7 @@ namespace paxos { namespace detail { namespace protocol {
 class protocol
 {
 private:
-   typedef boost::function <void (pb::command const &)> read_command_callback_type;
+   typedef boost::function <void (command const &)> read_command_callback_type;
    
 public:
 
@@ -59,8 +63,6 @@ public:
    paxos::quorum &
    quorum ();
 
-
-
    /*!
      \brief Starts leader election
     */
@@ -79,16 +81,16 @@ public:
     */
    void
    handle_command (
-      tcp_connection &          connection,
-      pb::command const &       command);
+      tcp_connection &  connection,
+      command const &   command);
 
    /*!
      \brief Serializes a protocolbuffers command to a string and sends it over the wire
     */
    static void
    write_command (
-      pb::command const &       command,
-      tcp_connection &          output);
+      command const &   command,
+      tcp_connection &  output);
 
    /*!
      \brief Reads binary data from wire and parses command out of it
