@@ -20,6 +20,7 @@ public:
 
    enum state
    {
+      state_unknown,
       state_dead,
       state_non_participant,
       state_leader,

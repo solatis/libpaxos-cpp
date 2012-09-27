@@ -9,6 +9,9 @@ remote_server::to_string (
 {
    switch (state)
    {
+         case state_unknown:
+            return "state_unknown";
+
          case state_dead:
             return "state_dead";
 
@@ -30,7 +33,7 @@ remote_server::to_string (
 
 
 remote_server::remote_server ()
-   : state_ (state_dead)
+   : state_ (state_unknown)
 {
 }
 
