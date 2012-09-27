@@ -5,6 +5,8 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_HANDSHAKE_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_HANDSHAKE_HPP
 
+#include "../tcp_connection.hpp"
+
 namespace paxos { namespace detail { namespace protocol {
 class command;
 class protocol;
@@ -35,8 +37,8 @@ public:
 
    void
    receive_handshake_start (
-      tcp_connection &  connection,
-      command const &   command);
+      tcp_connection::pointer   connection,
+      command const &           command);
 
 private:
    /*!
@@ -54,7 +56,7 @@ private:
    void
    step2 (
       boost::asio::ip::tcp::endpoint const &    endpoint,
-      tcp_connection &                          connection,
+      tcp_connection::pointer                   connection,
       boost::system::error_code const &         error);
 
    /*!
@@ -62,8 +64,8 @@ private:
     */
    void
    step3 (
-      tcp_connection &  connection,
-      command const &   command);
+      tcp_connection::pointer   connection,
+      command const &           command);
 
    /*!
      \brief Called when a node has responded to a handshake request
@@ -71,7 +73,7 @@ private:
    void
    step4 (
       boost::asio::ip::tcp::endpoint const &    endpoint,
-      tcp_connection &                          connection,
+      tcp_connection::pointer                   connection,
       command const &                           command);
 
 private:

@@ -7,6 +7,8 @@
 
 #include <boost/asio/ip/basic_endpoint.hpp>
 
+#include "../tcp_connection.hpp"
+
 namespace paxos { namespace detail { namespace protocol {
 class protocol;
 }; }; };
@@ -52,8 +54,8 @@ public:
     */
    void
    receive_leader_claim (
-      tcp_connection &  connection,
-      command const &   command);
+      tcp_connection::pointer   connection,
+      command const &           command);
 
 private:
    /*!
@@ -68,7 +70,7 @@ private:
    void
    step2 (
       boost::asio::ip::tcp::endpoint const &    endpoint,
-      tcp_connection &                          connection,
+      tcp_connection::pointer                   connection,
       boost::system::error_code const &         error,
       boost::shared_ptr <struct state>          state);
 
@@ -77,8 +79,8 @@ private:
     */
    void
    step3 (
-      tcp_connection &  connection,
-      command const &   command);
+      tcp_connection::pointer   connection,
+      command const &           command);
 
    /*!
      \brief Called when a node has responded to a handshake request
@@ -86,7 +88,7 @@ private:
    void
    step4 (
       boost::asio::ip::tcp::endpoint const &    endpoint,
-      tcp_connection &                          connection,
+      tcp_connection::pointer                   connection,
       command const &                           command,
       boost::shared_ptr <struct state>          state);
 

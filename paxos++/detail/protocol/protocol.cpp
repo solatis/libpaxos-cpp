@@ -4,11 +4,11 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/detail/endian.hpp>
+#include <boost/asio/read.hpp>
 
 #include "../util/debug.hpp"
 #include "../util/conversion.hpp"
 #include "../../quorum.hpp"
-#include "../connection_pool.hpp"
 
 #include "command.hpp"
 
@@ -18,22 +18,21 @@ namespace paxos { namespace detail { namespace protocol {
 
 protocol::protocol (
    boost::asio::io_service &            io_service,
-   paxos::detail::connection_pool &     connection_pool,
    paxos::quorum &                      quorum)
    : io_service_ (io_service),
      health_check_timer_ (io_service_),
-     connection_pool_ (connection_pool),
      quorum_ (quorum),
      handshake_ (*this),
      elect_leader_ (*this)
 {
 }
 
-paxos::detail::connection_pool &
-protocol::connection_pool ()
+boost::asio::io_service &
+protocol::io_service ()
 {
-   return connection_pool_;
+   return io_service_;
 }
+
 
 paxos::quorum &
 protocol::quorum ()
@@ -78,19 +77,19 @@ protocol::health_check ()
 
 void
 protocol::new_connection (
-   tcp_connection &     connection)
+   tcp_connection::pointer      connection)
 {
    read_command (connection,
                  boost::bind (&protocol::handle_command,
                               this,
-                              boost::ref (connection),
+                              connection,
                               _1));
 }
 
 void
 protocol::handle_command (
-   tcp_connection &     connection,
-   command const &      command)
+   tcp_connection::pointer      connection,
+   command const &              command)
 {
 
    switch (command.type ())
@@ -114,8 +113,8 @@ protocol::handle_command (
 
 void
 protocol::write_command (
-   command const &              command,
-   detail::tcp_connection &     destination)
+   command const &                      command,
+   detail::tcp_connection::pointer      destination)
 {
    std::string binary_string = command::to_string (command);
    uint32_t size             = binary_string.size ();
@@ -124,19 +123,19 @@ protocol::write_command (
 
    PAXOS_DEBUG ("sending command of " << buffer.size () << " bytes to other remote connection");
 
-   destination.write (buffer);
+   destination->write (buffer);
 }
 
 
 void
 protocol::read_command (
-   tcp_connection &                             connection,
+   tcp_connection::pointer                      connection,
    protocol::read_command_callback_type const & callback)
 {
    boost::shared_array <char> buffer (new char[4]);
 
    boost::asio::async_read (
-      connection.socket (), 
+      connection->socket (), 
       boost::asio::buffer (buffer.get (), 4), 
       boost::bind (&protocol::read_command_parse_size,
                    this,
@@ -146,7 +145,7 @@ protocol::read_command (
                               is called. This can be dangerous! Make sure it does not
                               race with cleaning up the connection_pool!
                    */
-                   boost::ref (connection),
+                   connection,
 
                    _1,
                    _2,
@@ -170,7 +169,7 @@ protocol::read_command (
 
 void
 protocol::read_command_parse_size (
-   tcp_connection &                                     connection,
+   tcp_connection::pointer                              connection,
    boost::system::error_code const &                    error,
    size_t                                               bytes_transferred,
    boost::shared_array <char>                           bytes_buffer,
@@ -178,7 +177,6 @@ protocol::read_command_parse_size (
 {
    if (error)
    {
-      connection_pool_.kill (connection);
       return;
    }
 
@@ -191,12 +189,12 @@ protocol::read_command_parse_size (
 
    //! Now send a request for the amount of bytes we just parsed
    boost::asio::async_read (
-      connection.socket (), 
+      connection->socket (), 
       boost::asio::buffer (command_buffer.get (), bytes), 
       boost::bind (&protocol::read_command_parse_command,
                    this,
                    
-                   boost::ref (connection),
+                   connection,
                    _1,
                    _2,
                    command_buffer,
@@ -205,22 +203,21 @@ protocol::read_command_parse_size (
 
 void
 protocol::read_command_parse_command (
-   tcp_connection &                                     connection,
+   tcp_connection::pointer                              connection,
    boost::system::error_code const &                    error,
    size_t                                               bytes_transferred,
    boost::shared_array <char>                           buffer,
    boost::shared_ptr <read_command_callback_type>       callback)
 {
-   if (error)
-   {
-      connection_pool_.kill (connection);
-      return;
-   }
-
    /*!
      At this point, we have a command, so we can cancel any timeouts running on the connection.
     */
-   connection.cancel_timeout ();
+   connection->cancel_timeout ();
+
+   if (error)
+   {
+      return;
+   }
 
    std::string byte_array (buffer.get (),
                            bytes_transferred);

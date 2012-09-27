@@ -1,5 +1,6 @@
+#include <boost/asio/placeholders.hpp>
+
 #include "../../quorum.hpp"
-#include "../connection_pool.hpp"
 
 #include "command.hpp"
 #include "protocol.hpp"
@@ -21,7 +22,7 @@ elect_leader::start ()
 
 void
 elect_leader::receive_leader_claim (
-   tcp_connection &     connection,
+   tcp_connection::pointer     connection,
    command const &      command)
 {
    step3 (connection,
@@ -46,7 +47,7 @@ elect_leader::step1 ()
             /*!
               We aren't expecting a response from any dead nodes, and they will
               not participate in this leader election anyway.
-             */
+            */
             PAXOS_DEBUG ("skipping dead node " << i.first);
             continue;
          }
@@ -55,15 +56,15 @@ elect_leader::step1 ()
          PAXOS_ASSERT (state->responses.find (endpoint) == state->responses.end ());
          state->responses[endpoint] = response_none;
 
-         tcp_connection & new_connection = protocol_.connection_pool ().create ();
+         tcp_connection::pointer connection = tcp_connection::create (protocol_.io_service ());
          
-         new_connection.socket ().async_connect (endpoint,
-                                                 boost::bind (&elect_leader::step2,
-                                                              this,
-                                                              boost::ref (endpoint),
-                                                              boost::ref (new_connection),
-                                                              boost::asio::placeholders::error,
-                                                              state));
+         connection->socket ().async_connect (endpoint,
+                                              boost::bind (&elect_leader::step2,
+                                                           this,
+                                                           boost::ref (endpoint),
+                                                           connection,
+                                                           boost::asio::placeholders::error,
+                                                           state));
       }
    }
 }
@@ -72,14 +73,13 @@ elect_leader::step1 ()
 void
 elect_leader::step2 (
    boost::asio::ip::tcp::endpoint const &       endpoint,
-   tcp_connection &                             connection,
+   tcp_connection::pointer                      connection,
    boost::system::error_code const &            error,
    boost::shared_ptr <struct state>             state)
 {
    if (error)
    {
       PAXOS_WARN ("An error occured while establishing a connection");
-      protocol_.connection_pool ().kill (connection);
       return;
    }
 
@@ -101,20 +101,20 @@ elect_leader::step2 (
    /*!
      And now we expect a response from the other side in response to our handshake request.
     */
-   connection.start_timeout (boost::posix_time::milliseconds (3000));
+   connection->start_timeout (boost::posix_time::milliseconds (3000));
    protocol_.read_command (connection,
                            boost::bind (&elect_leader::step4,
                                         this,
                                         boost::ref (endpoint),
-                                        boost::ref (connection),
+                                        connection,
                                         _1,
                                         state));
 }
 
 void
 elect_leader::step3 (
-   tcp_connection &  connection,
-   command const &   command)
+   tcp_connection::pointer      connection,
+   command const &              command)
 {
    detail::protocol::command ret;
 
@@ -143,7 +143,7 @@ elect_leader::step3 (
 void
 elect_leader::step4 (
    boost::asio::ip::tcp::endpoint const &       endpoint,
-   tcp_connection &                             connection,
+   tcp_connection::pointer                      connection,
    command const &                              command,
    boost::shared_ptr <struct state>             state)
 {

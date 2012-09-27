@@ -11,7 +11,6 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "quorum.hpp"
-#include "detail/connection_pool.hpp"
 #include "detail/tcp_connection.hpp"
 #include "detail/protocol/protocol.hpp"
 
@@ -62,7 +61,7 @@ private:
 
    void
    handle_accept (
-      detail::tcp_connection &          new_connection,
+      detail::tcp_connection::pointer   new_connection,
       boost::system::error_code const & error);
 
 
@@ -75,7 +74,6 @@ private:
    boost::asio::ip::tcp::acceptor       acceptor_;
 
    quorum                               quorum_;
-   detail::connection_pool              connection_pool_;
    detail::protocol::protocol           protocol_;
 };
 

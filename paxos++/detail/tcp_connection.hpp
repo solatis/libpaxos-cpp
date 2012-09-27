@@ -33,6 +33,8 @@ public:
 
    typedef boost::shared_ptr <tcp_connection>   pointer;
 
+   ~tcp_connection ();
+
    static pointer 
    create (
       boost::asio::io_service &        io_service);
@@ -80,7 +82,8 @@ private:
       size_t                            bytes_transferred);
 
    void
-   handle_timeout ();
+   handle_timeout (
+      boost::system::error_code const & error);
 
 private:
 
