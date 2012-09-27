@@ -1,13 +1,19 @@
 include_HEADERS = \
 	paxos.hpp \
 	quorum.hpp \
+	quorum.inl \
 	local_server.hpp \
 	detail/connection_pool.hpp \
 	detail/remote_server.hpp \
 	detail/tcp_connection.hpp \
+	detail/tcp_connection.inl \
 	detail/protocol/protocol.hpp \
 	detail/protocol/handshake.hpp \
-	detail/protocol/command.hpp
+	detail/protocol/command.hpp \
+	detail/protocol/command.inl \
+	detail/util/conversion.hpp \
+	detail/util/conversion.inl \
+	detail/util/debug.hpp
 
 lib_LTLIBRARIES=libpaxos.la
 libpaxos_la_SOURCES = \

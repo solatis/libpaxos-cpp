@@ -15,14 +15,35 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_ARG_ENABLE([debug],
         AS_HELP_STRING([--enable-debug], [Enable debugging output on stderr]))
 
+AC_ARG_WITH([includes],
+        [AS_HELP_STRING([--with-includes], [look for additional header files in DIRS])],
+        [],
+        [with_includes=no])
+
+AC_ARG_WITH([libraries],
+        [AS_HELP_STRING([--with-libraries], [look for additional libraries in DIRS])],
+        [],
+        [with_libraries=no])
+                       
+
+for dir in $with_libraries
+do
+        LIBDIRS="$LIBDIRS -L$dir"
+done
+
+for dir in $with_includes
+do
+        INCLUDEDIRS="$INCLUDEDIRS -I$dir"
+done
+
 DEBUG=""
 AS_IF([test "x$enable_debug" == "xyes"], [
         DEBUG="-Wall -Werror -g -ggdb -DDEBUG"
 ])
 
-if test -z $CXXFLAGS; then
-    CXXFLAGS="-std=c++11 $DEBUG"
-fi
+CXXFLAGS="$CXXFLAGS -std=c++11 $INCLUDEDIRS $DEBUG"
+LDFLAGS="$LDFLAGS $LIBDIRS"
+
 AC_PROG_CXX
 
 # Checks for libraries.
