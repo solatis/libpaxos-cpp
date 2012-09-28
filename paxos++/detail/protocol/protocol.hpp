@@ -13,6 +13,7 @@
 #include "../tcp_connection.hpp"
 #include "handshake.hpp"
 #include "elect_leader.hpp"
+#include "announce_leadership.hpp"
 
 namespace boost { namespace asio {
 class io_service;
@@ -132,6 +133,7 @@ private:
 
    handshake                            handshake_;
    elect_leader                         elect_leader_;
+   announce_leadership                  announce_leadership_;
 };
 
 }; }; };

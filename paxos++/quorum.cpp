@@ -21,6 +21,14 @@ quorum::we_are (
    PAXOS_ASSERT (servers_.find (self_.endpoint_) == servers_.end ());
 }
 
+void
+quorum::adjust_our_state (
+   enum detail::remote_server::state state)
+{
+   self_.state_ = state;
+}
+
+
 struct quorum::self const &
 quorum::self () const
 {
@@ -37,6 +45,19 @@ quorum::add (
 
    //! We can never add ourselves to the quorum
    PAXOS_ASSERT (servers_.find (self_.endpoint_) == servers_.end ());
+}
+
+
+void
+quorum::reset_state ()
+{
+   for (map_type::value_type & i : servers_)
+   {
+      if (i.second.state () != detail::remote_server::state_dead)
+      {
+         i.second.set_state (detail::remote_server::state_non_participant);
+      }
+   }
 }
 
 
@@ -126,6 +147,14 @@ quorum::set_leader (
    }
 }
 
+
+bool
+quorum::we_are_the_leader () const
+{
+   return 
+      needs_new_leader () == false
+      && self_.state_ == detail::remote_server::state_leader;
+}
 
 
 detail::remote_server &

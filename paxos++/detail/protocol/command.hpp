@@ -42,7 +42,10 @@ public:
       type_leader_claim_ack,
 
       //! Sent when a node rejects a new leader
-      type_leader_claim_reject
+      type_leader_claim_reject,
+
+      //! Sent when a leader connects to a node to announce they are the leader
+      type_leader_announce
    };
 
 public:

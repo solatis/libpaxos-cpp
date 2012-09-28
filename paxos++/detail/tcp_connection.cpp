@@ -21,7 +21,6 @@ tcp_connection::tcp_connection (
 
 tcp_connection::~tcp_connection ()
 {
-   PAXOS_DEBUG ("destructor of connection " << this);
    cancel_timeout ();
 }
 
@@ -36,7 +35,6 @@ tcp_connection::create (
 void
 tcp_connection::close ()
 {
-   PAXOS_DEBUG ("closing socket");
    socket_.close ();
 }
 
@@ -50,8 +48,6 @@ void
 tcp_connection::start_timeout (
    boost::asio::deadline_timer::duration_type const &   expiry_time)
 {
-   PAXOS_DEBUG ("start timeout of connection " << this);
-
    timeout_.expires_from_now (expiry_time);
    timeout_.async_wait (
       boost::bind (&tcp_connection::handle_timeout, 
@@ -63,7 +59,6 @@ tcp_connection::start_timeout (
 void
 tcp_connection::cancel_timeout ()
 {
-   PAXOS_DEBUG ("cancel timeout of connection " << this);
    timeout_.cancel ();
 }
 
@@ -77,7 +72,6 @@ tcp_connection::handle_timeout (
       return;
    }
 
-   PAXOS_DEBUG ("handle_timeout of connection " << this);
    /*!
      Timeout occured, so cancel the socket. This will force the completion of any async_read
      commands with an boost::asio::error::operation_aborted as the error.

@@ -84,6 +84,13 @@ public:
       boost::asio::ip::address const &  address,
       uint16_t                          port);
 
+
+   /*!
+     \brief Ensures all nodes in the quorum that are not dead are set to state_non_participant
+    */
+   void
+   reset_state ();
+
    /*!
      \brief Determines whether the quorum currently needs a new leader
      \returns Returns true if a new leader is required
@@ -107,6 +114,12 @@ public:
    void
    set_leader (
       boost::asio::ip::tcp::endpoint const &    endpoint);
+
+   /*!
+     \brief Determines whether self () is the current leader of the quorum
+    */
+   bool
+   we_are_the_leader () const;
    
 
    detail::remote_server &

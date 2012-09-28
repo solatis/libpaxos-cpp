@@ -22,8 +22,8 @@ elect_leader::start ()
 
 void
 elect_leader::receive_leader_claim (
-   tcp_connection::pointer     connection,
-   command const &      command)
+   tcp_connection::pointer      connection,
+   command const &              command)
 {
    step3 (connection,
           command);

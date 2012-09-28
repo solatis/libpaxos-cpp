@@ -23,7 +23,8 @@ protocol::protocol (
      health_check_timer_ (io_service_),
      quorum_ (quorum),
      handshake_ (*this),
-     elect_leader_ (*this)
+     elect_leader_ (*this),
+     announce_leadership_ (*this)
 {
 }
 
@@ -61,7 +62,14 @@ protocol::health_check ()
 
    if (quorum_.needs_new_leader () == true)
    {
+      quorum_.reset_state ();
       elect_leader_.start ();
+   }
+
+   if (quorum_.we_are_the_leader () == true)
+   {
+      PAXOS_DEBUG ("we are the leader, ensure we have connections to all nodes in quorum!");
+      announce_leadership_.start ();
    }
 
 
@@ -102,6 +110,11 @@ protocol::handle_command (
          case command::type_leader_claim:
             elect_leader_.receive_leader_claim (connection, 
                                                 command);
+            break;
+
+         case command::type_leader_announce:
+            announce_leadership_.receive_leader (connection, 
+                                                 command);
             break;
 
          default:
