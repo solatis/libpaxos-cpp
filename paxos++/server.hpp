@@ -2,21 +2,25 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
  */
 
-#ifndef LIBPAXOS_CPP_LOCAL_SERVER_HPP
-#define LIBPAXOS_CPP_LOCAL_SERVER_HPP
+#ifndef LIBPAXOS_CPP_SERVER_HPP
+#define LIBPAXOS_CPP_SERVER_HPP
 
 #include <stdint.h>
 
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 
-#include "quorum.hpp"
+#include "detail/quorum.hpp"
 #include "detail/tcp_connection.hpp"
 #include "detail/protocol/protocol.hpp"
 
 namespace boost { namespace asio { namespace ip {
 class address;
 }; }; };
+
+namespace paxos {
+class quorum;
+};
 
 namespace paxos {
 
@@ -29,7 +33,7 @@ namespace paxos {
 
   However, it does not process any messages until handle_events () is called. 
  */
-class local_server
+class server
 {
 public:
 
@@ -42,7 +46,7 @@ public:
 
      Automatically calls quorum.we_are () to ensure the quorum knows the reference to the server.
    */
-   local_server (
+   server (
       boost::asio::io_service &         io_service,
       boost::asio::ip::address const &  address,
       uint16_t                          port,
@@ -73,10 +77,10 @@ private:
    boost::uuids::uuid                   uuid_;
    boost::asio::ip::tcp::acceptor       acceptor_;
 
-   quorum                               quorum_;
+   detail::quorum                       quorum_;
    detail::protocol::protocol           protocol_;
 };
 
 }
 
-#endif  //! LIBPAXOS_CPP_LOCAL_SERVER_HPP
+#endif  //! LIBPAXOS_CPP_SERVER_HPP

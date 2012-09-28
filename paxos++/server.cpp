@@ -7,18 +7,19 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "local_server.hpp"
+#include "quorum.hpp"
+#include "server.hpp"
 
 namespace paxos {
 
-local_server::local_server (
+server::server (
    boost::asio::io_service &            io_service,
    boost::asio::ip::address const &     address,
    uint16_t                             port,
    quorum const &                       quorum)
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (address, port)),
-     quorum_ (quorum),
+     quorum_ (quorum.quorum_),
      protocol_ (io_service,
                 quorum_)
 {
@@ -38,27 +39,27 @@ local_server::local_server (
 
 
 void
-local_server::accept ()
+server::accept ()
 {
    detail::tcp_connection::pointer connection = 
       detail::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (connection->socket (),
-                           boost::bind (&local_server::handle_accept,
+                           boost::bind (&server::handle_accept,
                                         this,
                                         connection,
                                         boost::asio::placeholders::error));
 }
 
 void
-local_server::close ()
+server::close ()
 {
    acceptor_.close ();
 }
 
 
 void
-local_server::handle_accept (
+server::handle_accept (
    detail::tcp_connection::pointer      new_connection,
    boost::system::error_code const &    error)
 {

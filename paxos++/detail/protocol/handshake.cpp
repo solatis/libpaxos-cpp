@@ -4,8 +4,9 @@
 
 #include <boost/uuid/uuid_io.hpp>
 
-#include "../util/debug.hpp"
+#include "../../configuration.hpp"
 #include "../../quorum.hpp"
+#include "../util/debug.hpp"
 
 #include "command.hpp"
 #include "protocol.hpp"
@@ -81,7 +82,7 @@ handshake::step2 (
    /*!
      And now we expect a response soon from the other side in response to our handshake request.
     */
-   connection->start_timeout (boost::posix_time::milliseconds (3000));
+   connection->start_timeout (boost::posix_time::milliseconds (configuration::timeout));
    protocol_.read_command (connection,
                            boost::bind (&handshake::step4,
                                         this,

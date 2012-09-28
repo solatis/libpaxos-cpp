@@ -1,5 +1,6 @@
 #include <boost/asio/placeholders.hpp>
 
+#include "../../configuration.hpp"
 #include "../../quorum.hpp"
 
 #include "command.hpp"
@@ -101,7 +102,7 @@ elect_leader::step2 (
    /*!
      And now we expect a response from the other side in response to our handshake request.
     */
-   connection->start_timeout (boost::posix_time::milliseconds (3000));
+   connection->start_timeout (boost::posix_time::milliseconds (configuration::timeout));
    protocol_.read_command (connection,
                            boost::bind (&elect_leader::step4,
                                         this,

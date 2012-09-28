@@ -19,9 +19,9 @@ namespace boost { namespace asio {
 class io_service;
 }; };
 
-namespace paxos { 
+namespace paxos { namespace detail {
 class quorum;
-};
+}; };
 
 namespace paxos { namespace detail { namespace protocol {
 class command;
@@ -46,7 +46,7 @@ public:
     */
    protocol (
       boost::asio::io_service &         io_service,
-      paxos::quorum &                   quorum);
+      detail::quorum &                  quorum);
 
 
    /*!
@@ -58,7 +58,7 @@ public:
    /*!
      \brief Access to the underlying quorum
     */
-   paxos::quorum &
+   detail::quorum &
    quorum ();
 
    /*!
@@ -72,7 +72,7 @@ public:
      \brief Periodically called to validate the quorum's health
     */
    void
-   health_check ();
+   heartbeat ();
 
    /*!
      \brief Called by local_server when a new connection arrives.
@@ -127,9 +127,9 @@ private:
 private:
 
    boost::asio::io_service &            io_service_;
-   boost::asio::deadline_timer          health_check_timer_;
+   boost::asio::deadline_timer          heartbeat_timer_;
 
-   paxos::quorum &                      quorum_;
+   detail::quorum &                     quorum_;
 
    handshake                            handshake_;
    elect_leader                         elect_leader_;

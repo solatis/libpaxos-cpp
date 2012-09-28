@@ -1,4 +1,4 @@
-namespace paxos {
+namespace paxos { namespace detail {
 
 inline quorum::map_type &
 quorum::servers ()
@@ -13,4 +13,4 @@ quorum::servers () const
    return servers_;
 }
 
-};
+}; };

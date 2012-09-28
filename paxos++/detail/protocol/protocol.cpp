@@ -1,3 +1,4 @@
+
 #include <vector>
 
 #include <boost/ref.hpp>
@@ -6,9 +7,10 @@
 #include <boost/detail/endian.hpp>
 #include <boost/asio/read.hpp>
 
+#include "../../configuration.hpp"
 #include "../util/debug.hpp"
 #include "../util/conversion.hpp"
-#include "../../quorum.hpp"
+#include "../quorum.hpp"
 
 #include "command.hpp"
 
@@ -18,9 +20,9 @@ namespace paxos { namespace detail { namespace protocol {
 
 protocol::protocol (
    boost::asio::io_service &            io_service,
-   paxos::quorum &                      quorum)
+   detail::quorum &                     quorum)
    : io_service_ (io_service),
-     health_check_timer_ (io_service_),
+     heartbeat_timer_ (io_service_),
      quorum_ (quorum),
      handshake_ (*this),
      elect_leader_ (*this),
@@ -35,7 +37,7 @@ protocol::io_service ()
 }
 
 
-paxos::quorum &
+detail::quorum &
 protocol::quorum ()
 {
    return quorum_;
@@ -48,11 +50,11 @@ protocol::bootstrap ()
      Bootstrapping is as simple as starting a new health check, the system
      should automatically recover.
     */
-   health_check ();
+   heartbeat ();
 }
 
 void
-protocol::health_check ()
+protocol::heartbeat ()
 {
    /*!
      Perform handshake to see who's dead and who's alive.
@@ -74,11 +76,12 @@ protocol::health_check ()
 
 
    /*!
-     And perform a new health check in 3 seconds
+     And perform a new heartbeat in N seconds
     */
-   health_check_timer_.expires_from_now (boost::posix_time::milliseconds (3000));
-   health_check_timer_.async_wait (
-      boost::bind (&protocol::health_check, this));
+   heartbeat_timer_.expires_from_now (
+      boost::posix_time::milliseconds (paxos::configuration::heartbeat_interval));
+   heartbeat_timer_.async_wait (
+      boost::bind (&protocol::heartbeat, this));
 }
 
 

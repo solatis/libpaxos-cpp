@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([libpaxos-cpp], [0.1.0], http://solatis.github.com/libpaxos-cpp)
-AC_CONFIG_SRCDIR([paxos++/paxos.hpp])
+AC_CONFIG_SRCDIR([paxos++/server.hpp])
 AC_CONFIG_HEADER([config.h])
 
 LT_INIT([shared static])
@@ -44,6 +44,7 @@ AS_IF([test "x$enable_debug" == "xyes"], [
 CXXFLAGS="$CXXFLAGS -std=c++11 $INCLUDEDIRS $DEBUG"
 LDFLAGS="$LDFLAGS $LIBDIRS"
 
+AC_PROG_CC
 AC_PROG_CXX
 
 # Checks for libraries.
@@ -53,5 +54,5 @@ AC_PROG_CXX
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
-AC_CONFIG_FILES([Makefile paxos++/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile paxos++/Makefile paxos++/detail/Makefile paxos++/detail/protocol/Makefile test/Makefile])
 AC_OUTPUT
