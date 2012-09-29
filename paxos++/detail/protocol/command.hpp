@@ -45,7 +45,10 @@ public:
       type_leader_claim_reject,
 
       //! Sent when a leader connects to a node to announce they are the leader
-      type_leader_announce
+      type_leader_announce,
+
+      //! Send by a client to the leader when it wants to initiate a new request
+      type_request_initiate
    };
 
 public:
@@ -91,6 +94,13 @@ public:
    enum remote_server::state
    host_state () const;
 
+   void
+   set_workload (
+      std::string const &       byte_array);
+
+   std::string const &
+   workload () const;
+
 private:
 
    template <class Archive>
@@ -107,6 +117,8 @@ private:
    uint16_t                     host_port_;
    enum remote_server::state    host_state_;
 
+
+   std::string                  workload_;
 };
 
 }; }; };

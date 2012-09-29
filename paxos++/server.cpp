@@ -37,6 +37,12 @@ server::server (
    protocol_.bootstrap ();
 }
 
+void
+server::close ()
+{
+   acceptor_.close ();
+}
+
 
 void
 server::accept ()
@@ -49,12 +55,6 @@ server::accept ()
                                         this,
                                         connection,
                                         boost::asio::placeholders::error));
-}
-
-void
-server::close ()
-{
-   acceptor_.close ();
 }
 
 

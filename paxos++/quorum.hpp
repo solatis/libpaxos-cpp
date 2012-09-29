@@ -8,6 +8,7 @@
 #include "detail/quorum.hpp"
 
 namespace paxos {
+class client;
 class server;
 };
 
@@ -34,6 +35,14 @@ namespace paxos {
 class quorum
 {
 private:
+   /*!
+     \brief Needed for access to quorum_
+    */
+   friend class paxos::client;
+
+   /*!
+     \brief Needed for access to quorum_
+    */
    friend class paxos::server;
 
 public:

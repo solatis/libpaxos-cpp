@@ -41,7 +41,7 @@ public:
 
    /*!
      \brief Constructor
-     \param connection_pool     Used to create new connections
+     \param io_service          Link to the OS'es I/O services
      \param quorum              Quorum of servers we're communicating with.
     */
    protocol (
@@ -75,11 +75,21 @@ public:
    heartbeat ();
 
    /*!
-     \brief Called by local_server when a new connection arrives.
+     \brief Called by server when a new connection arrives.
     */
    void
    new_connection (
       tcp_connection::pointer   connection);
+
+
+   /*!
+     \brief Called by client when a new request should be sent.
+    */
+   void
+   initiate_request (
+      tcp_connection::pointer   connection,
+      std::string const &       byte_array);
+
 
    /*!
      \brief Callback function for incoming command by conneciton
@@ -98,8 +108,15 @@ public:
       tcp_connection::pointer   output);
 
    /*!
+     \brief Indirection to read_command with handle_command as callback
+    */
+   void
+   read_command (
+      tcp_connection::pointer                   connection);
+
+   /*!
      \brief Reads binary data from wire and parses command out of it
-     \note  If any timeouts are set on <connection>, these timers are automatically cancelled
+     \note  If any timeouts are set on connection, these timers are automatically cancelled
     */
    void
    read_command (

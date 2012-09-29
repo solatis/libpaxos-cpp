@@ -23,6 +23,9 @@ remote_server::to_string (
 
          case state_follower:
             return "state_follower";
+
+         case state_client:
+            return "state_client";
    };
 
    PAXOS_UNREACHABLE ();
@@ -75,18 +78,18 @@ remote_server::has_connection ()
    return connection_.is_initialized () == true;
 }
 
-tcp_connection &
+tcp_connection::pointer
 remote_server::connection ()
 {
-   //! Dereference boost optional and pointer
-   return **connection_;
+   //! Dereference boost optional 
+   return *connection_;
 }
 
-tcp_connection const &
+tcp_connection::pointer
 remote_server::connection () const
 {
-   //! Dereference boost optional and pointer
-   return **connection_;
+   //! Dereference boost optional 
+   return *connection_;
 }
 
 

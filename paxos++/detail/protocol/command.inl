@@ -49,6 +49,21 @@ command::host_state () const
 
 
 
+inline void
+command::set_workload (
+   std::string const &       byte_array)
+{
+   workload_ = byte_array;
+}
+
+inline std::string const &
+command::workload () const
+{
+   return workload_;
+}
+
+
+
 template <class Archive>
 inline void
 command::serialize (
@@ -61,6 +76,8 @@ command::serialize (
    ar & host_address_;
    ar & host_port_;
    ar & host_state_;
+
+   ar & workload_;
 }
 
 

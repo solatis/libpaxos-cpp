@@ -60,6 +60,48 @@ quorum::reset_state ()
    }
 }
 
+bool
+quorum::has_leader () const
+{
+   uint16_t leader_count = 0;
+
+   if (self_.state_ == detail::remote_server::state_leader)
+   {
+      ++leader_count;
+   }
+
+   for (map_type::value_type const & i : servers_)
+   {
+      if (i.second.state () == detail::remote_server::state_leader)
+      {
+         ++leader_count;
+      }
+   }
+
+   return leader_count == 1;
+};
+
+boost::asio::ip::tcp::endpoint
+quorum::current_leader () const
+{
+   PAXOS_ASSERT (has_leader () == true);
+
+   if (self_.state_ == detail::remote_server::state_leader)
+   {
+      return self_.endpoint_;
+   }
+
+   for (map_type::value_type const & i : servers_)
+   {
+      if (i.second.state () == detail::remote_server::state_leader)
+      {
+         return i.first;
+      }
+   }
+
+   PAXOS_UNREACHABLE ();
+}
+
 
 bool
 quorum::needs_new_leader () const

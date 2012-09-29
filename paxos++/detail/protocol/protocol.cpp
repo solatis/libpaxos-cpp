@@ -8,6 +8,7 @@
 #include <boost/asio/read.hpp>
 
 #include "../../configuration.hpp"
+#include "../../exception.hpp"
 #include "../util/debug.hpp"
 #include "../util/conversion.hpp"
 #include "../quorum.hpp"
@@ -90,12 +91,26 @@ void
 protocol::new_connection (
    tcp_connection::pointer      connection)
 {
-   read_command (connection,
-                 boost::bind (&protocol::handle_command,
-                              this,
-                              connection,
-                              _1));
+   /*!
+     Note that this keeps a copy of connection, so it does not die.
+    */
+   read_command (connection);
 }
+
+
+void
+protocol::initiate_request (
+   tcp_connection::pointer   connection,
+   std::string const &       byte_array)
+{
+   command command;
+   command.set_type (command::type_request_initiate);
+   command.set_workload (byte_array);
+   write_command (command,
+                  connection);
+}
+
+
 
 void
 protocol::handle_command (
@@ -121,9 +136,14 @@ protocol::handle_command (
             break;
 
          default:
-            PAXOS_ERROR ("invalid command!");
+            PAXOS_THROW (paxos::protocol_error_exception ());
             break;
    }
+
+   /*!
+     And after we handled a command, read a new command.
+    */
+   read_command (connection);
 }
 
 
@@ -137,11 +157,23 @@ protocol::write_command (
 
    std::string buffer        = util::conversion::to_byte_array (size) + binary_string;
 
-   PAXOS_DEBUG ("sending command of " << buffer.size () << " bytes to other remote connection");
-
    destination->write (buffer);
 }
 
+void
+protocol::read_command (
+   tcp_connection::pointer      connection)
+{
+   /*!
+     Note that this keeps a copy of connection, so it does not die.
+    */
+
+   read_command (connection,
+                 boost::bind (&protocol::handle_command,
+                              this,
+                              connection,
+                              _1));
+}
 
 void
 protocol::read_command (
@@ -193,6 +225,7 @@ protocol::read_command_parse_size (
 {
    if (error)
    {
+      PAXOS_WARN ("An error has occured while reading a command: " << error.message ());
       return;
    }
 
@@ -232,6 +265,7 @@ protocol::read_command_parse_command (
 
    if (error)
    {
+      PAXOS_WARN ("An error has occured while reading a command: " << error.message ());
       return;
    }
 

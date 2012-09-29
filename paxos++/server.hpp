@@ -26,12 +26,29 @@ namespace paxos {
 
 /*!
   \brief Represents the local paxos server.
+  \related quorum
 
-  This is the main entry point which communications within the paxos quorum take place.
-  The open () function will open the server socket and makes it ready to accept connections
-  from the quorum. 
+  This is the main entry point which communications within the paxos quorum take place. It
+  hooks itself onto the io_service, and will start accepting connections as soon as 
+  io_service.handle_events () is called by an outside thread.
 
-  However, it does not process any messages until handle_events () is called. 
+  \b Example \b usage:
+  \code{.cpp}
+ 
+  paxos::quorum quorum;
+  quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337);
+  quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338);
+
+  paxos::server server1 (io_service, 
+                         boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337,
+                         quorum);
+  paxos::server server2 (io_service, 
+                         boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1339,
+                         quorum);
+
+  io_service.run ();
+  \endcode
+  
  */
 class server
 {

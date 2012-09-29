@@ -4,23 +4,34 @@
 
 #include <iostream>
 
+#include <boost/thread/mutex.hpp>
+
+#include <boost/throw_exception.hpp>
+#include <boost/exception/info_tuple.hpp>
+#include <boost/exception/error_info.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
 #ifndef LIBPAXOS_CPP_PAXOS_DETAIL_DEBUG_HPP
 #define LIBPAXOS_CPP_PAXOS_DETAIL_DEBUG_HPP
 
+static boost::mutex paxos_log_mutex;
+
 #ifdef DEBUG
 
-#define PAXOS_DEBUG(msg) \
-   std::cerr << "DEBUG [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
-#define PAXOS_INFO(msg) \
-   std::cerr << "INFO  [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
-#define PAXOS_WARN(msg) \
-   std::cerr << "WARN  [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
-#define PAXOS_ERROR(msg) \
-   std::cerr << "ERROR [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
-#define PAXOS_FATAL(msg) \
-   std::cerr << "FATAL [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl;
+#define PAXOS_LOG(level, msg) \
+   { \
+     boost::mutex::scoped_lock lock (paxos_log_mutex);\
+     std::cerr << level << " [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl; \
+     std::cerr.flush ();                                                \
+   }
+     
+
+
+#define PAXOS_DEBUG(msg) PAXOS_LOG ("DEBUG", msg)
+#define PAXOS_INFO(msg)  PAXOS_LOG ("INFO", msg)
+#define PAXOS_WARN(msg)  PAXOS_LOG ("WARN", msg)
+#define PAXOS_ERROR(msg) PAXOS_LOG ("ERROR", msg)
+#define PAXOS_FATAL(msg) PAXOS_LOG ("FATAL", msg)
 
 #else //! #ifdef DEBUG
 
@@ -31,6 +42,18 @@
 #define PAXOS_FATAL(msg)
 
 #endif //! #ifdef DEBUG
+
+namespace paxos {
+typedef boost::error_info <struct tag_solatis_debug, std::string> debug_exception_info;
+};
+
+#define PAXOS_CHECK_THROW(check,exception)\
+   if (check) {                                                   \
+      BOOST_THROW_EXCEPTION (exception << paxos::debug_exception_info (#check)); \
+   };
+
+#define PAXOS_THROW(exception)\
+   BOOST_THROW_EXCEPTION (exception);
 
 
 #define PAXOS_ASSERT(check)\

@@ -25,7 +25,8 @@ public:
       state_dead,
       state_non_participant,
       state_leader,
-      state_follower
+      state_follower,
+      state_client
    };
 
    static std::string 
@@ -75,15 +76,15 @@ public:
       tcp_connection::pointer   connection);
 
    /*!
-     \brief Returns true if connection_ is set.
+     \brief Returns true if connection_ is set and the connection is in a clean state.
     */
    bool
    has_connection ();
 
-   tcp_connection &
+   tcp_connection::pointer
    connection ();   
 
-   tcp_connection const &
+   tcp_connection::pointer
    connection () const;
 
 private:
