@@ -53,7 +53,7 @@ public:
      \brief Starts timer that calls socket_.cancel () when done
 
      This is useful to issue right before an async_read is done on a connection when
-     a response is expected. Due to it calling socket_.close () after the timeout has
+     a response is expected. Due to it calling socket_.cancel () after the timeout has
      occurred, the async_read () will return with a boost::asio::error::operation_aborted
      error.
      
