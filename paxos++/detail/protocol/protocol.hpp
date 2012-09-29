@@ -92,27 +92,12 @@ public:
 
 
    /*!
-     \brief Callback function for incoming command by conneciton
-    */
-   void
-   handle_command (
-      tcp_connection::pointer   connection,
-      command const &           command);
-
-   /*!
      \brief Serializes a protocolbuffers command to a string and sends it over the wire
     */
    void
    write_command (
       command const &           command,
       tcp_connection::pointer   output);
-
-   /*!
-     \brief Indirection to read_command with handle_command as callback
-    */
-   void
-   read_command (
-      tcp_connection::pointer                   connection);
 
    /*!
      \brief Reads binary data from wire and parses command out of it
@@ -124,6 +109,15 @@ public:
       read_command_callback_type const &        callback);
 
 private:
+
+
+   /*!
+     \brief Callback function for incoming command by conneciton
+    */
+   void
+   handle_command (
+      tcp_connection::pointer   connection,
+      command const &           command);
 
    void
    read_command_parse_size (

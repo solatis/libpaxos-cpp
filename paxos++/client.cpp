@@ -3,7 +3,7 @@
 #include "detail/util/debug.hpp"
 
 #include "configuration.hpp"
-#include "exception.hpp"
+#include "exception/exception.hpp"
 #include "quorum.hpp"
 #include "client.hpp"
 
@@ -30,7 +30,7 @@ client::async_send (
    std::string const &  byte_array,
    callback_type        callback,
    uint16_t             retries)
-   throw (paxos::not_ready_exception)
+   throw (exception::not_ready)
 {
    /*!
      We are a client, we can NEVER EVER be a leader.
@@ -44,7 +44,7 @@ client::async_send (
          /*!
            If the quorum doesn't have a leader, we're not ready yet.
           */
-         PAXOS_CHECK_THROW (quorum_.has_leader () == false, paxos::not_ready_exception ());
+         PAXOS_CHECK_THROW (quorum_.has_leader () == false, exception::not_ready ());
 
          detail::remote_server & leader = quorum_.lookup (quorum_.current_leader ());
 
@@ -52,7 +52,7 @@ client::async_send (
            And if there is no connection established with the leader, we're not ready yet
            either. This should usually be resolved within the next heartbeat.
           */
-         PAXOS_CHECK_THROW (leader.has_connection () == false, paxos::not_ready_exception ());
+         PAXOS_CHECK_THROW (leader.has_connection () == false, exception::not_ready ());
 
          /*!
            And at this point, we have a connection to the leader which is alive and kicking!
@@ -62,7 +62,7 @@ client::async_send (
                                      byte_array);
          return;
       }
-      catch (paxos::not_ready_exception const & e)
+      catch (exception::not_ready const & e)
       {
          PAXOS_WARN ("quorum is not yet ready, retries left = " << retries);
 
@@ -78,7 +78,7 @@ client::async_send (
    } while (--retries > 0);
 
 
-   PAXOS_THROW (paxos::not_ready_exception ());
+   PAXOS_THROW (exception::not_ready ());
 }
 
 

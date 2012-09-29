@@ -100,6 +100,8 @@ announce_leadership::step3 (
    tcp_connection::pointer      connection,
    command const &              command)
 {
+   PAXOS_ASSERT (protocol_.quorum ().current_leader () == command.host_endpoint ());
+
    /*!
      We do not have to say anything back, just store the connection
     */

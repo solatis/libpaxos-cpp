@@ -7,7 +7,7 @@
 
 #include <boost/function.hpp>
 
-#include "exception.hpp"
+#include "exception/exception.hpp"
 #include "detail/quorum.hpp"
 #include "detail/protocol/protocol.hpp"
 
@@ -72,13 +72,13 @@ public:
      \param callback    For each server in the quorum, called with response 
                         to the command that has been received
      \param retries     Amount of times to retry in case the quorum is not yet ready
-     \throws Can throw a 'not_ready_exception' when the quorum is in an inconsistent state
+     \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
     */
    void
    async_send (
       std::string const &       byte_array,
       callback_type             callback,
-      uint16_t                  retries = 1) throw (paxos::not_ready_exception);
+      uint16_t                  retries = 1) throw (exception::not_ready);
 
    /*!
      \brief Sends data to entire quorum and blocks until command is completed
@@ -89,7 +89,7 @@ public:
    void
    send (
       std::string const &       byte_array,
-      uint16_t                  retries = 1) throw (paxos::not_ready_exception);
+      uint16_t                  retries = 1) throw (exception::not_ready);
 
 
 private:

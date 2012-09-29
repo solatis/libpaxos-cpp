@@ -2,13 +2,13 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
  */
 
-#ifndef LIBPAXOS_CPP_EXCEPTION_HPP
-#define LIBPAXOS_CPP_EXCEPTION_HPP
+#ifndef LIBPAXOS_CPP_EXCEPTION_EXCEPTION_HPP
+#define LIBPAXOS_CPP_EXCEPTION_EXCEPTION_HPP
 
 #include <exception>
 #include <boost/exception/exception.hpp>
 
-namespace paxos {
+namespace paxos { namespace exception {
 
 /*!
   \brief Base class for all our exceptions
@@ -19,12 +19,13 @@ class exception : virtual public std::exception,
 /*!
   \brief Thrown when the quorum is in an inconsistent state
  */
-class not_ready_exception : virtual public paxos::exception {};
+class not_ready : virtual public exception {};
 
 /*!
   \brief Thrown when an unexpected command arrives
  */
-class protocol_error_exception : virtual public paxos::exception {};
-}
+class protocol_error : virtual public exception {};
 
-#endif  //! LIBPAXOS_CPP_EXCEPTION_HPP
+} };
+
+#endif  //! LIBPAXOS_CPP_EXCEPTION_EXCEPTION_HPP

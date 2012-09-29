@@ -7,8 +7,8 @@
 #include <boost/detail/endian.hpp>
 #include <boost/asio/read.hpp>
 
+#include "../../exception/exception.hpp"
 #include "../../configuration.hpp"
-#include "../../exception.hpp"
 #include "../util/debug.hpp"
 #include "../util/conversion.hpp"
 #include "../quorum.hpp"
@@ -94,7 +94,11 @@ protocol::new_connection (
    /*!
      Note that this keeps a copy of connection, so it does not die.
     */
-   read_command (connection);
+   read_command (connection,
+                 boost::bind (&protocol::handle_command,
+                              this,
+                              connection,
+                              _1));
 }
 
 
@@ -117,6 +121,11 @@ protocol::handle_command (
    tcp_connection::pointer      connection,
    command const &              command)
 {
+   read_command_callback_type callback = 
+      boost::bind (&protocol::handle_command,
+                   this,
+                   connection,
+                   _1);
 
    switch (command.type ())
    {
@@ -136,14 +145,11 @@ protocol::handle_command (
             break;
 
          default:
-            PAXOS_THROW (paxos::protocol_error_exception ());
+            PAXOS_THROW (exception::protocol_error ());
             break;
    }
 
-   /*!
-     And after we handled a command, read a new command.
-    */
-   read_command (connection);
+   read_command (connection, callback);
 }
 
 
@@ -158,21 +164,6 @@ protocol::write_command (
    std::string buffer        = util::conversion::to_byte_array (size) + binary_string;
 
    destination->write (buffer);
-}
-
-void
-protocol::read_command (
-   tcp_connection::pointer      connection)
-{
-   /*!
-     Note that this keeps a copy of connection, so it does not die.
-    */
-
-   read_command (connection,
-                 boost::bind (&protocol::handle_command,
-                              this,
-                              connection,
-                              _1));
 }
 
 void

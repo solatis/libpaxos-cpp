@@ -1,9 +1,9 @@
 SUBDIRS = detail
 
 include_HEADERS = \
+	exception/exception.hpp \
 	client.hpp \
 	configuration.hpp \
-	exception.hpp \
 	quorum.hpp \
 	server.hpp 
 
