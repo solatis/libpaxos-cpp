@@ -33,8 +33,7 @@ basic_paxos::start (
 
    /*!
      Now, tell all nodes in the quorum to prepare this request.
-    */
-   
+    */   
    boost::shared_ptr <struct state> state (new struct state ());
 
    for (auto const & i : protocol_.quorum ().servers ())
@@ -140,9 +139,6 @@ basic_paxos::receive_promise (
             break;
 
          case command::type_request_fail:
-            /*! 
-              \todo Handle failure
-            */
             state->accepted[server_endpoint] = response_reject;
             break;
 
@@ -151,14 +147,37 @@ basic_paxos::receive_promise (
    };
 
 
-   bool everyone_promised = true;
+   bool everyone_responded = true;
+   bool everyone_promised  = true;
    for (auto const & i : state->accepted)
    {
-      everyone_promised = everyone_promised && i.second == response_ack;
+      everyone_responded = everyone_responded && (i.second == response_ack || i.second == response_reject);
+      everyone_promised  = everyone_promised && i.second == response_ack;
    }
 
-   if (everyone_promised == true)
+   if (everyone_responded == true && everyone_promised == false)
    {
+      /*!
+        This means that every host has given a response, yet not everyone has actually
+        accepted our proposal id. 
+
+        We will send an error command to the client informing about the failed command.
+       */
+      detail::protocol::command tmp_command;
+      tmp_command.set_type (command::type_request_error);
+      tmp_command.set_error_code (paxos::error_incorrect_proposal);
+      protocol_.write_command (tmp_command,
+                               client_connection);
+   }
+   else if (everyone_promised == true)
+   {
+      /*!
+        This means that all nodes in the quorum have responded, and they all agree with
+        the proposal id, yay!
+
+        Now that all these nodes have promised to accept any request with the specified
+        proposal id, let's send them an accept command.
+       */
       PAXOS_INFO ("all nodes promised to accept!");
 
       for (auto const & i : state->accepted)
@@ -173,6 +192,11 @@ basic_paxos::receive_promise (
       /*! 
         Since we are the leader, we are not part of the registered quorum, and we
         need to process our workload manually.
+
+        \todo This is actually a bit of a kludge. The better workaround would be to
+              really have a separate leader, and perhaps have the leader maintain
+              a connection with its own follower. Less performance but more elegant
+              design.
       */
       detail::protocol::command tmp_command;
       tmp_command.set_type (command::type_request_accepted);
@@ -249,18 +273,53 @@ basic_paxos::receive_accepted (
    PAXOS_ASSERT (state->responses.find (server_endpoint) == state->responses.end ());
    state->responses[server_endpoint] = command.workload ();
 
+   std::string response;
+
    if (state->responses.size () == state->accepted.size ())
    {
       PAXOS_INFO ("All responses have been received, yay!");
 
-      /*!
-        Send a copy of the last command to the client, since the workload should be the
-        same for all responses.
+      bool all_same_response = true;
+      for (auto const & i : state->responses)
+      {
+         /*!
+           One of the requirements of our protocol is that if one node N1 replies
+           to proposal P with response R, node N2 must have the exact same response
+           for the same proposal.
 
-        \todo Validate that the response is actually the same
-       */
-      protocol_.write_command (command,
-                               client_connection);
+           The code below validates this requirement.
+          */
+         if (response.empty () == true)
+         {
+            response = i.second;
+         }
+         else if (response != i.second)
+         {
+            all_same_response = false;
+         }
+      }
+
+      if (all_same_response == true)
+      {
+         /*!
+           Send a copy of the last command to the client, since the workload should be the
+           same for all responses.
+         */
+         protocol_.write_command (command,
+                                  client_connection);
+      } 
+      else
+      {
+         /*!
+           We're going to inform the client about an inconsistent response here. Perhaps
+           he can recover from there.
+          */
+         detail::protocol::command tmp_command;
+         tmp_command.set_type (command::type_request_error);
+         tmp_command.set_error_code (paxos::error_inconsistent_response);
+         protocol_.write_command (tmp_command,
+                                  client_connection);
+      }
    }
 
 }

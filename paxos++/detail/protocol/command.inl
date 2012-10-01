@@ -22,6 +22,20 @@ command::type () const
 }
 
 inline void
+command::set_error_code (
+   enum paxos::error_code       error_code)
+{
+   error_code_ = error_code;
+}
+
+inline enum paxos::error_code
+command::error_code () const
+{
+   return error_code_;
+}
+
+
+inline void
 command::set_host_id (
    boost::uuids::uuid const &        id)
 {
@@ -85,6 +99,7 @@ command::serialize (
    unsigned int const        version) 
 {
    ar & type_;
+   ar & error_code_;
 
    ar & host_id_;
    ar & host_address_;

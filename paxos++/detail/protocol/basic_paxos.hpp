@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio/ip/basic_endpoint.hpp>
 
+#include "../../error.hpp"
 #include "../tcp_connection.hpp"
 
 namespace paxos { namespace detail { namespace protocol {
@@ -40,7 +42,8 @@ private:
 
 public:
 
-   typedef boost::function <void (std::string const &)> client_callback_type;
+   typedef boost::function <void (boost::optional <enum paxos::error_code>,
+                                  std::string const &)>                         client_callback_type;
 
 public:
    /*!

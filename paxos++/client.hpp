@@ -11,6 +11,8 @@
 #include "detail/quorum.hpp"
 #include "detail/protocol/protocol.hpp"
 
+#include "error.hpp"
+
 namespace boost { namespace asio {
 class io_service;
 }; };
@@ -89,7 +91,8 @@ public:
    std::string
    send (
       std::string const &       byte_array,
-      uint16_t                  retries = 1) throw (exception::not_ready);
+      uint16_t                  retries = 1) throw (exception::not_ready,
+                                                    exception::request_error);
 
 
 private:

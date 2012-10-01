@@ -138,7 +138,7 @@ private:
 
    struct self  self_;
 
-   map_type                             servers_;
+   map_type     servers_;
 
 };
 

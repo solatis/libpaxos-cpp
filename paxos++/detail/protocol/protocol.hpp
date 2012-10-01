@@ -12,6 +12,7 @@
 #include <boost/shared_array.hpp>
 #include <boost/asio/deadline_timer.hpp>
 
+#include "../../error.hpp"
 #include "../tcp_connection.hpp"
 #include "handshake.hpp"
 #include "elect_leader.hpp"

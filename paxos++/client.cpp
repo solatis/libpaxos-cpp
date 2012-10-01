@@ -91,7 +91,8 @@ std::string
 client::send (
    std::string const &  byte_array,
    uint16_t             retries)
-   throw (exception::not_ready)
+   throw (exception::not_ready,
+          exception::request_error)
 {
    boost::mutex lock;
    boost::unique_lock <boost::mutex> guard (lock);
@@ -102,8 +103,13 @@ client::send (
 
    callback_type callback = 
       [& response_received,
-       & output_response] (std::string const & input_response)
+       & output_response] (boost::optional <enum error_code> error_code,
+                           std::string const & input_response)
    {
+      PAXOS_CHECK_THROW (
+         error_code.is_initialized () == true, exception::request_error ());
+                   
+
       output_response = input_response;
       //! We should wait until we have received responses for all nodes in quorum
       response_received.notify_one ();

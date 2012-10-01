@@ -122,10 +122,24 @@ protocol::initiate_request (
       new basic_paxos::client_callback_type (callback));
 
    read_command (connection,
-                 [callback_ptr] (detail::protocol::command const & c)
+                 [callback_ptr] (
+                    detail::protocol::command const &   c)
                  {
-                    PAXOS_DEBUG ("received command, now calling callback!");
-                    (*callback_ptr) (c.workload ());
+                    switch (c.type ())
+                    {
+                          case command::type_request_accepted:
+                             PAXOS_DEBUG ("received command, now calling callback!");
+                             (*callback_ptr) (boost::none, c.workload ());
+                             break;
+
+                          case command::type_request_error:
+                             PAXOS_WARN ("request error occured");
+                             (*callback_ptr) (c.error_code (), c.workload ());
+                             break;
+
+                          default:
+                             PAXOS_UNREACHABLE ();
+                    };
                  });
 }
 
@@ -248,7 +262,6 @@ protocol::read_command_parse_size (
 {
    if (error)
    {
-      PAXOS_WARN ("An error has occured while reading a command: " << error.message () << ", connection = " << connection.get ());
       return;
    }
 
@@ -288,7 +301,6 @@ protocol::read_command_parse_command (
 
    if (error)
    {
-      PAXOS_WARN ("An error has occured while reading a command: " << error.message () << ", connection = " << connection.get ());
       return;
    }
 

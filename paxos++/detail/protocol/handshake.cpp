@@ -38,6 +38,22 @@ handshake::receive_handshake_start (
 void
 handshake::step1 ()
 {
+   if (protocol_.quorum ().servers ().empty () == true)
+   {
+      /*!
+        This is a bit of an ugly shortcut, but the algorithm below assumes that
+        our quorum consists of at least one server, which is not the case when
+        we're the leader.
+        
+        \todo Once again, the role distinction between "leader" and "follower" must
+              be made more clear. At the moment, a leader is both a leader and a follower,
+              but this is not made clear in the quorum. What we need to do is make the 
+              leader connect to itself and make *that* node the "follower inside the leader".
+              If that makes sense, somehow.
+       */
+      protocol_.quorum ().adjust_our_state (remote_server::state_leader);
+   }
+
    for (auto const & i : protocol_.quorum ().servers ())
    {
       boost::asio::ip::tcp::endpoint const & endpoint = i.first;      

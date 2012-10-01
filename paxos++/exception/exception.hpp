@@ -26,6 +26,11 @@ class not_ready : virtual public exception {};
  */
 class protocol_error : virtual public exception {};
 
+/*!
+  \brief Thrown when a request could not be completed
+ */
+class request_error : virtual public exception {};
+
 } };
 
 #endif  //! LIBPAXOS_CPP_EXCEPTION_EXCEPTION_HPP

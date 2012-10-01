@@ -12,6 +12,7 @@
 
 #include <boost/serialization/access.hpp>
 
+#include "../../error.hpp"
 #include "../remote_server.hpp"
 
 namespace paxos { namespace detail { namespace protocol {
@@ -64,6 +65,9 @@ public:
 
       //! Sent by followers to leader after they have accepted and processed a request
       type_request_accepted,
+
+      //! Sent back to client when an error has occured. This will mean that error_code is also set
+      type_request_error
    };
 
 public:
@@ -87,6 +91,13 @@ public:
 
    enum type
    type () const;
+
+   void
+   set_error_code (
+      enum paxos::error_code            error_code);
+
+   enum paxos::error_code
+   error_code () const;
 
    void
    set_host_id (
@@ -133,6 +144,7 @@ private:
 private:
 
    enum type                    type_;
+   enum paxos::error_code       error_code_;
 
    boost::uuids::uuid           host_id_;
    std::string                  host_address_;

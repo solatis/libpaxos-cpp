@@ -54,5 +54,5 @@ AC_PROG_CXX
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
-AC_CONFIG_FILES([Makefile paxos++/Makefile paxos++/detail/Makefile paxos++/detail/protocol/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile paxos++/Makefile paxos++/detail/Makefile paxos++/detail/protocol/Makefile test/Makefile test/test1/Makefile])
 AC_OUTPUT
