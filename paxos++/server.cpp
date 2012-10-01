@@ -16,12 +16,14 @@ server::server (
    boost::asio::io_service &            io_service,
    boost::asio::ip::address const &     address,
    uint16_t                             port,
-   quorum const &                       quorum)
+   quorum const &                       quorum,
+   callback_type const &                callback)
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (address, port)),
      quorum_ (quorum.quorum_),
      protocol_ (io_service,
-                quorum_)
+                quorum_,
+                callback)
 {
    //! Initialize our unique identification number.
    boost::uuids::basic_random_generator <boost::mt19937> gen;

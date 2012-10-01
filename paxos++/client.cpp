@@ -15,7 +15,11 @@ client::client (
    quorum const &                       quorum)
    : quorum_ (quorum.quorum_),
      protocol_ (io_service,
-                quorum_)
+                quorum_,
+                [](std::string const &) -> std::string 
+                {
+                   PAXOS_UNREACHABLE ();
+                })
 {
    //! Bootstrap our protocol and quorum by discovering who the leader is
    protocol_.bootstrap ();

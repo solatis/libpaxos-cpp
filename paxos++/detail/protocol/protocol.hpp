@@ -5,6 +5,8 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_PROTOCOL_HPP
 
+#include <string>
+
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
@@ -35,19 +37,24 @@ namespace paxos { namespace detail { namespace protocol {
  */
 class protocol
 {
+public:
+   typedef boost::function <std::string (std::string const &)>  workload_processor_callback_type;
+
 private:
-   typedef boost::function <void (command const &)> read_command_callback_type;
+   typedef boost::function <void (command const &)>             read_command_callback_type;
    
 public:
 
    /*!
      \brief Constructor
-     \param io_service          Link to the OS'es I/O services
-     \param quorum              Quorum of servers we're communicating with.
+     \param io_service  Link to the OS'es I/O services
+     \param quorum      Quorum of servers we're communicating with.
+     \param callback    Callback to process workload
     */
    protocol (
-      boost::asio::io_service &         io_service,
-      detail::quorum &                  quorum);
+      boost::asio::io_service &                 io_service,
+      detail::quorum &                          quorum,
+      workload_processor_callback_type const &  callback);
 
 
    /*!
@@ -110,6 +117,13 @@ public:
       tcp_connection::pointer                   connection,
       read_command_callback_type const &        callback);
 
+   /*!
+     \brief Processes workload via registered callback
+    */
+   std::string
+   process_workload (
+      std::string const &       workload);
+
 private:
 
 
@@ -143,6 +157,7 @@ private:
    boost::asio::deadline_timer          heartbeat_timer_;
 
    detail::quorum &                     quorum_;
+   workload_processor_callback_type     workload_processor_callback_;
 
    handshake                            handshake_;
    elect_leader                         elect_leader_;

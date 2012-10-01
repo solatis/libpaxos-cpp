@@ -20,11 +20,13 @@
 namespace paxos { namespace detail { namespace protocol {
 
 protocol::protocol (
-   boost::asio::io_service &            io_service,
-   detail::quorum &                     quorum)
+   boost::asio::io_service &                    io_service,
+   detail::quorum &                             quorum,
+   workload_processor_callback_type const &     callback)
    : io_service_ (io_service),
      heartbeat_timer_ (io_service_),
      quorum_ (quorum),
+     workload_processor_callback_ (callback),
      handshake_ (*this),
      elect_leader_ (*this),
      announce_leadership_ (*this),
@@ -128,6 +130,15 @@ protocol::initiate_request (
 }
 
 
+std::string
+protocol::process_workload (
+   std::string const &  workload)
+{
+   return workload_processor_callback_ (workload);
+}
+
+
+
 
 void
 protocol::handle_command (
@@ -205,11 +216,6 @@ protocol::read_command (
       boost::bind (&protocol::read_command_parse_size,
                    this,
 
-                   /*!
-                     \warning this assumes connection still is valid when parse_command
-                              is called. This can be dangerous! Make sure it does not
-                              race with cleaning up the connection_pool!
-                   */
                    connection,
 
                    _1,

@@ -53,13 +53,17 @@ namespace paxos {
 class server
 {
 public:
+   typedef detail::protocol::protocol::workload_processor_callback_type callback_type;
 
+
+public:
    /*!
      \brief Opens socket to listen on port
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
      \param address     Interface/ip to listen for new connections
      \param port        Port to listen for new connections
      \param quorum      The quorum of servers we are a part of.
+     \param callback    Callback used to process workload
 
      Automatically calls quorum.we_are () to ensure the quorum knows the reference to the server.
    */
@@ -67,7 +71,8 @@ public:
       boost::asio::io_service &         io_service,
       boost::asio::ip::address const &  address,
       uint16_t                          port,
-      quorum const &                    quorum);
+      quorum const &                    quorum,
+      callback_type const &             callback);
    
    /*!
      \brief Stops listening for new connections
