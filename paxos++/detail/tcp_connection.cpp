@@ -21,6 +21,7 @@ tcp_connection::tcp_connection (
 
 tcp_connection::~tcp_connection ()
 {
+   PAXOS_DEBUG ("connection dies: " << this);
    cancel_timeout ();
 }
 

@@ -14,6 +14,7 @@
 #include "handshake.hpp"
 #include "elect_leader.hpp"
 #include "announce_leadership.hpp"
+#include "basic_paxos.hpp"
 
 namespace boost { namespace asio {
 class io_service;
@@ -87,8 +88,9 @@ public:
     */
    void
    initiate_request (
-      tcp_connection::pointer   connection,
-      std::string const &       byte_array);
+      tcp_connection::pointer           leader_connection,
+      std::string const &               byte_array,
+      basic_paxos::client_callback_type callback);
 
 
    /*!
@@ -145,6 +147,7 @@ private:
    handshake                            handshake_;
    elect_leader                         elect_leader_;
    announce_leadership                  announce_leadership_;
+   basic_paxos                          basic_paxos_;
 };
 
 }; }; };

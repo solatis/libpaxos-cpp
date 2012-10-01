@@ -133,11 +133,13 @@ handshake::step4 (
    protocol_.quorum ().lookup (endpoint).set_id (command.host_id ());
 
    /*!
-     And update our connection with the freshest connection ever. Note that
-     this will make the previous connection close after all operations on it
-     have completed.
+     And update our connection with the connection, if we do not already have
+     one. 
     */
-   protocol_.quorum ().lookup (endpoint).set_connection (connection); 
+   if (protocol_.quorum ().lookup (endpoint).has_connection () == false)
+   {
+      protocol_.quorum ().lookup (endpoint).set_connection (connection); 
+   }
 }
 
 }; }; };

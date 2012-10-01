@@ -47,8 +47,23 @@ public:
       //! Sent when a leader connects to a node to announce they are the leader
       type_leader_announce,
 
-      //! Send by a client to the leader when it wants to initiate a new request
-      type_request_initiate
+      //! Sent by a client to the leader when it wants to initiate a new request
+      type_request_initiate,
+
+      //! Sent by a leader to all the followers when they must all prepare a request
+      type_request_prepare,
+
+      //! Sent by all followers as a response to the prepare command
+      type_request_promise,
+
+      //! Sent by followers to leader if an inconsistency in the proposal ids has been detected
+      type_request_fail,
+
+      //! Sent by leader to all followers after they have sent a promise
+      type_request_accept,
+
+      //! Sent by followers to leader after they have accepted and processed a request
+      type_request_accepted,
    };
 
 public:
@@ -95,6 +110,13 @@ public:
    host_state () const;
 
    void
+   set_proposal_id (
+      uint64_t                  proposal_id);
+
+   uint64_t
+   proposal_id () const;
+
+   void
    set_workload (
       std::string const &       byte_array);
 
@@ -117,7 +139,7 @@ private:
    uint16_t                     host_port_;
    enum remote_server::state    host_state_;
 
-
+   uint64_t                     proposal_id_;
    std::string                  workload_;
 };
 

@@ -10,6 +10,7 @@
 #include "../tcp_connection.hpp"
 
 namespace paxos { namespace detail { namespace protocol {
+class command;
 class protocol;
 }; }; };
 

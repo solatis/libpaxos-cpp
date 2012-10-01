@@ -33,14 +33,7 @@ int main ()
                           quorum);
 
 
-   client1.async_send (
-      "foo",
-      [] (boost::asio::ip::tcp::endpoint const &      host,
-          std::string const &                         response)
-      {
-         std::cout << "received response = " << response << " from host = " << host << std::endl;
-      },
-      10);
+   PAXOS_ASSERT (client1.send ("foo", 10) == "bar");
 
    io_service.stop ();
 }

@@ -2,7 +2,8 @@ namespace paxos { namespace detail { namespace protocol {
 
 
 inline command::command ()
-   : type_ (type_invalid)
+   : type_ (type_invalid),
+     proposal_id_ (0)
 {
 }
 
@@ -50,6 +51,19 @@ command::host_state () const
 
 
 inline void
+command::set_proposal_id (
+   uint64_t     proposal_id)
+{
+   proposal_id_ = proposal_id;
+}
+
+inline uint64_t
+command::proposal_id () const
+{
+   return proposal_id_;
+}
+
+inline void
 command::set_workload (
    std::string const &       byte_array)
 {
@@ -77,6 +91,7 @@ command::serialize (
    ar & host_port_;
    ar & host_state_;
 
+   ar & proposal_id_;
    ar & workload_;
 }
 

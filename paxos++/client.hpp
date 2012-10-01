@@ -53,8 +53,7 @@ public:
    /*!
      \brief Callback type for send ()
     */
-   typedef boost::function <void (boost::asio::ip::tcp::endpoint const &,
-                                  std::string const &)> callback_type;
+   typedef detail::protocol::basic_paxos::client_callback_type  callback_type;
 
    /*!
      \brief Opens client and starts quorum discovery process
@@ -84,9 +83,10 @@ public:
      \brief Sends data to entire quorum and blocks until command is completed
      \param byte_array  Data to sent. Binary-safe.
      \param retries     Amount of times to retry in case the quorum is not yet ready
+     \returns Returns response string returned by all servers
      \throws Can throw a 'not_ready_exception' when the quorum is in an inconsistent state
     */
-   void
+   std::string
    send (
       std::string const &       byte_array,
       uint16_t                  retries = 1) throw (exception::not_ready);

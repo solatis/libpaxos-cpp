@@ -27,7 +27,8 @@ protocol::protocol (
      quorum_ (quorum),
      handshake_ (*this),
      elect_leader_ (*this),
-     announce_leadership_ (*this)
+     announce_leadership_ (*this),
+     basic_paxos_ (*this)
 {
 }
 
@@ -104,14 +105,26 @@ protocol::new_connection (
 
 void
 protocol::initiate_request (
-   tcp_connection::pointer   connection,
-   std::string const &       byte_array)
+   tcp_connection::pointer              connection,
+   std::string const &                  byte_array,
+   basic_paxos::client_callback_type    callback)
 {
    command command;
    command.set_type (command::type_request_initiate);
    command.set_workload (byte_array);
    write_command (command,
                   connection);
+
+
+   boost::shared_ptr <basic_paxos::client_callback_type> callback_ptr (
+      new basic_paxos::client_callback_type (callback));
+
+   read_command (connection,
+                 [callback_ptr] (detail::protocol::command const & c)
+                 {
+                    PAXOS_DEBUG ("received command, now calling callback!");
+                    (*callback_ptr) (c.workload ());
+                 });
 }
 
 
@@ -121,12 +134,6 @@ protocol::handle_command (
    tcp_connection::pointer      connection,
    command const &              command)
 {
-   read_command_callback_type callback = 
-      boost::bind (&protocol::handle_command,
-                   this,
-                   connection,
-                   _1);
-
    switch (command.type ())
    {
          case command::type_handshake_start:
@@ -144,12 +151,31 @@ protocol::handle_command (
                                                  command);
             break;
 
+         case command::type_request_initiate:
+            basic_paxos_.start (connection,
+                                command);
+            break;
+
+         case command::type_request_prepare:
+            basic_paxos_.receive_prepare (connection,
+                                          command);
+            break;
+
+         case command::type_request_accept:
+            basic_paxos_.receive_accept (connection,
+                                         command);
+            break;
+
          default:
             PAXOS_THROW (exception::protocol_error ());
             break;
    }
 
-   read_command (connection, callback);
+   read_command (connection, 
+                 boost::bind (&protocol::handle_command,
+                              this,
+                              connection,
+                              _1));
 }
 
 
@@ -216,7 +242,7 @@ protocol::read_command_parse_size (
 {
    if (error)
    {
-      PAXOS_WARN ("An error has occured while reading a command: " << error.message ());
+      PAXOS_WARN ("An error has occured while reading a command: " << error.message () << ", connection = " << connection.get ());
       return;
    }
 
@@ -256,7 +282,7 @@ protocol::read_command_parse_command (
 
    if (error)
    {
-      PAXOS_WARN ("An error has occured while reading a command: " << error.message ());
+      PAXOS_WARN ("An error has occured while reading a command: " << error.message () << ", connection = " << connection.get ());
       return;
    }
 

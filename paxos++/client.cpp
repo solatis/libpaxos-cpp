@@ -1,3 +1,4 @@
+#include <boost/thread/condition.hpp>
 #include <boost/asio/deadline_timer.hpp>
 
 #include "detail/util/debug.hpp"
@@ -59,7 +60,8 @@ client::async_send (
            Let's issue the request.
           */
          protocol_.initiate_request (leader.connection (),
-                                     byte_array);
+                                     byte_array,
+                                     callback);
          return;
       }
       catch (exception::not_ready const & e)
@@ -79,6 +81,36 @@ client::async_send (
 
 
    PAXOS_THROW (exception::not_ready ());
+}
+
+std::string
+client::send (
+   std::string const &  byte_array,
+   uint16_t             retries)
+   throw (exception::not_ready)
+{
+   boost::mutex lock;
+   boost::unique_lock <boost::mutex> guard (lock);
+
+   boost::condition response_received;   
+
+   std::string output_response;
+
+   callback_type callback = 
+      [& response_received,
+       & output_response] (std::string const & input_response)
+   {
+      output_response = input_response;
+      //! We should wait until we have received responses for all nodes in quorum
+      response_received.notify_one ();
+   };
+
+   async_send (byte_array, callback, retries);
+
+
+   response_received.wait (guard);
+
+   return output_response;
 }
 
 

@@ -3,6 +3,7 @@ include_HEADERS = \
 	handshake.hpp \
 	elect_leader.hpp \
 	announce_leadership.hpp \
+	basic_paxos.hpp \
 	command.hpp \
 	command.inl 
 
@@ -12,4 +13,5 @@ libpaxos_detail_protocol_la_SOURCES = \
 	handshake.cpp \
 	elect_leader.cpp \
 	announce_leadership.cpp \
+	basic_paxos.cpp \
 	command.cpp 
