@@ -19,6 +19,8 @@ int main ()
 
    paxos::quorum quorum;
    quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337);
+   quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338);
+   quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1339);
 
    uint16_t callback_count = 0;
 
@@ -33,12 +35,20 @@ int main ()
                           boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337,
                           quorum,
                           callback);
+   paxos::server server2 (io_service,
+                          boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338,
+                          quorum,
+                          callback);
+   paxos::server server3 (io_service,
+                          boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1339,
+                          quorum,
+                          callback);
 
    paxos::client client1 (io_service,
                           quorum);
 
    PAXOS_ASSERT (client1.send ("foo", 10) == "bar");
-   PAXOS_ASSERT (callback_count == 1);
+   PAXOS_ASSERT (callback_count == 3);
 
    io_service.stop ();
 }
