@@ -45,7 +45,7 @@ initiate_request::step1 (
                             switch (c.type ())
                             {
                                   case command::type_request_accepted:
-                                     PAXOS_DEBUG ("received command, now calling callback!");
+                                     PAXOS_DEBUG ("received command with workload = " << c.workload () << ", now calling callback!");
                                      callback (boost::none, c.workload ());
                                      break;
 

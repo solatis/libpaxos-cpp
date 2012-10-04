@@ -103,7 +103,7 @@ server::handle_accept (
    if (error)
    {
       PAXOS_ERROR ("Unable to accept connection: " << error.message ());
-      PAXOS_THROW (paxos::exception::request_error ());
+      return;
    }
    
    server::read_and_dispatch_command (new_connection,

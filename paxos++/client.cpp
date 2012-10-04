@@ -109,8 +109,7 @@ client::send (
                            std::string const & input_response)
    {
       PAXOS_CHECK_THROW (
-         error_code.is_initialized () == true, exception::request_error ());
-                   
+         error_code.is_initialized () == true, exception::request_error ());                   
 
       output_response = input_response;
       //! We should wait until we have received responses for all nodes in quorum
