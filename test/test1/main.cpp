@@ -16,10 +16,12 @@ int main ()
    boost::thread io_thread (boost::bind (&boost::asio::io_service::run,
                                          &io_service));
 
+   paxos::configuration::heartbeat_interval = 500;
+
    paxos::server server1 (io_service,
                           boost::asio::ip::tcp::endpoint (
                              boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337),
-                                          [](std::string const &) -> std::string
+                          [](std::string const &) -> std::string
                           {
                              return "bar";
                           });
