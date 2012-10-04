@@ -5,7 +5,7 @@
 
 #include "command.hpp"
 
-namespace paxos { namespace detail { namespace protocol {
+namespace paxos { namespace detail { 
 
 
 /*! static */ std::string
@@ -51,4 +51,4 @@ command::host_endpoint () const
 
 
 
-}; }; };
+}; };

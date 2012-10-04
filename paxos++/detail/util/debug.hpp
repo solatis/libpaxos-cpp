@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include <boost/thread/mutex.hpp>
+
 #include <boost/throw_exception.hpp>
 #include <boost/exception/info_tuple.hpp>
 #include <boost/exception/error_info.hpp>
@@ -15,9 +17,9 @@
 #ifdef DEBUG
 
 #define PAXOS_LOG(level, msg) \
-   std::cerr << level << " [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl; \
-   std::cerr.flush ();
-     
+   do {                                                    \
+      std::clog << level << " [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl; \
+   } while (false);   
 
 
 #define PAXOS_DEBUG(msg) PAXOS_LOG ("DEBUG", msg)

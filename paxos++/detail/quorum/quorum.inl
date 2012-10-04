@@ -1,0 +1,3 @@
+namespace paxos { namespace detail {
+
+}; };

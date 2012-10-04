@@ -1,4 +1,4 @@
-namespace paxos { namespace detail { namespace protocol {
+namespace paxos { namespace detail { 
 
 
 inline command::command ()
@@ -51,12 +51,12 @@ command::host_id () const
 
 inline void
 command::set_host_state (
-   enum remote_server::state state)
+   enum quorum::server::state state)
 {
    host_state_ = state;
 }
 
-inline enum remote_server::state
+inline enum quorum::server::state
 command::host_state () const
 {
    return host_state_;
@@ -111,4 +111,4 @@ command::serialize (
 }
 
 
-}; }; };
+}; };

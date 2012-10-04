@@ -7,20 +7,15 @@
 
 #include <stdint.h>
 
-#include <boost/asio.hpp>
-#include <boost/uuid/uuid.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
-#include "detail/quorum.hpp"
+#include "detail/paxos_state.hpp"
+#include "detail/quorum/quorum.hpp"
 #include "detail/tcp_connection.hpp"
-#include "detail/protocol/protocol.hpp"
 
 namespace boost { namespace asio { namespace ip {
 class address;
 }; }; };
-
-namespace paxos {
-class quorum;
-};
 
 namespace paxos {
 
@@ -53,29 +48,42 @@ namespace paxos {
 class server
 {
 public:
-   typedef detail::protocol::protocol::workload_processor_callback_type callback_type;
+//   typedef detail::protocol::protocol::workload_processor_callback_type callback_type;
 
 
 public:
    /*!
      \brief Opens socket to listen on port
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
-     \param address     Interface/ip to listen for new connections
-     \param port        Port to listen for new connections
-     \param quorum      The quorum of servers we are a part of.
+     \param endpoint    Endpoint where we're listening to new connections
      \param callback    Callback used to process workload
 
      Automatically calls quorum.we_are () to ensure the quorum knows the reference to the server.
    */
    server (
-      boost::asio::io_service &         io_service,
-      boost::asio::ip::address const &  address,
-      uint16_t                          port,
-      quorum const &                    quorum,
-      callback_type const &             callback);
+      boost::asio::io_service &                         io_service,
+      boost::asio::ip::tcp::endpoint const &            endpoint,
+      detail::paxos_state::processor_type const &       callback);
    
    /*!
-     \brief Stops listening for new connections
+     \brief Adds a new node to the quorum with a default 'unknown' state
+     \param endpoint    Endpoint where the node listens at
+
+     Note that adding this server itself to the quorum is optional: within the constructor,
+     the server automatically adds itself to the quorum.
+    */
+   void
+   add (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+
+   /*!
+     \brief Bootstraps the quorum and starts connecting to other nodes
+    */
+   void
+   start ();
+
+   /*!
+     \brief Stops listening for new connections and closes all existing connections
     */
    void
    close ();
@@ -90,17 +98,21 @@ private:
       detail::tcp_connection::pointer   new_connection,
       boost::system::error_code const & error);
 
+   static void
+   read_and_dispatch_command (
+      detail::tcp_connection::pointer   new_connection,
+      detail::quorum::quorum &          quorum,
+      detail::paxos_state &             state);
 
 private:
 
    /*!
      \brief Uniquely identifies us within the quorum.
     */
-   boost::uuids::uuid                   uuid_;
    boost::asio::ip::tcp::acceptor       acceptor_;
 
-   detail::quorum                       quorum_;
-   detail::protocol::protocol           protocol_;
+   detail::quorum::quorum               quorum_;
+   detail::paxos_state                  state_;
 };
 
 }

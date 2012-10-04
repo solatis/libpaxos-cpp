@@ -2,47 +2,57 @@
 
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <boost/asio/placeholders.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "quorum.hpp"
+#include "exception/exception.hpp"
+
+#include "detail/util/debug.hpp"
+#include "detail/dispatcher.hpp"
+#include "detail/parser.hpp"
 #include "server.hpp"
 
 namespace paxos {
 
 server::server (
-   boost::asio::io_service &            io_service,
-   boost::asio::ip::address const &     address,
-   uint16_t                             port,
-   quorum const &                       quorum,
-   callback_type const &                callback)
+   boost::asio::io_service &                    io_service,
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   detail::paxos_state::processor_type const &  processor)
    : acceptor_ (io_service,
-                boost::asio::ip::tcp::endpoint (address, port)),
-     quorum_ (quorum.quorum_),
-     protocol_ (io_service,
-                quorum_,
-                callback)
+                endpoint),
+     quorum_ (io_service,
+              endpoint),
+     state_ (processor)
 {
-   //! Initialize our unique identification number.
-   boost::uuids::basic_random_generator <boost::mt19937> gen;
-   uuid_ = gen ();
-
-   //! Make sure the quorum can tell others who we are.
-   quorum_.we_are (address, port, uuid_);
-
-   //! Ensure that we start accepting new connections
+   /*! 
+     Ensure that we start accepting new connections. We do this before
+     start (), so that we can first construct multiple servers at the same time,
+     and then when they are started, all servers are already accepting connections.
+   */
    accept ();
-
-   //! And bootstrap our protocol by finding out who the current leader is.
-   protocol_.bootstrap ();
 }
+
+
+void
+server::start ()
+{
+   quorum_.bootstrap ();
+}
+
 
 void
 server::close ()
 {
    acceptor_.close ();
+}
+
+
+void
+server::add (
+   boost::asio::ip::tcp::endpoint const &       endpoint)
+{
+   quorum_.add (endpoint);
 }
 
 
@@ -65,11 +75,56 @@ server::handle_accept (
    detail::tcp_connection::pointer      new_connection,
    boost::system::error_code const &    error)
 {
-   if (!error)
+   if (error)
    {
-      protocol_.new_connection (new_connection);
-      accept ();
+      PAXOS_ERROR ("Unable to accept connection: " << error.message ());
+      PAXOS_THROW (paxos::exception::request_error ());
    }
+   
+   server::read_and_dispatch_command (new_connection,
+                                      quorum_,
+                                      state_);
+   
+   /*!
+     Enter "recursion" by accepting a new connection
+   */
+   accept ();
 }
+
+/*! static */ void
+server::read_and_dispatch_command (
+   detail::tcp_connection::pointer      connection,
+   detail::quorum::quorum &             quorum,
+   detail::paxos_state &                state)
+{
+   /*!
+     The code below essentially creates an infinite "recusion" loop, without
+     the recursion (since the async_reads in the parser unwind the stack).
+
+     \warning This also means that no other async_read can occur on this
+              connection, and that this loop "owns" this connection. 
+
+     \todo We could enforce this by making a separate "writable" and "readable"
+           interface for the connection; if we could somehow give the dispatcher
+           only a reference to the "writable" connection and not the "readable"
+           connection, this could be enforced by design.
+    */
+   detail::parser::read_command (connection,
+                                 [connection,
+                                  & quorum,
+                                  & state] (detail::command const & command)
+                                 {
+                                    detail::dispatcher::dispatch_command (connection,
+                                                                          command,
+                                                                          quorum,
+                                                                          state);
+
+                                    //! Enters recursion
+                                    server::read_and_dispatch_command (connection,
+                                                                       quorum,
+                                                                       state);
+                                 });
+
+};
 
 };

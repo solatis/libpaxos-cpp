@@ -8,18 +8,14 @@
 #include <boost/function.hpp>
 
 #include "exception/exception.hpp"
-#include "detail/quorum.hpp"
-#include "detail/protocol/protocol.hpp"
+#include "detail/quorum/quorum.hpp"
+#include "detail/client/protocol/initiate_request.hpp"
 
 #include "error.hpp"
 
 namespace boost { namespace asio {
 class io_service;
 }; };
-
-namespace paxos {
-class quorum;
-};
 
 namespace paxos {
 
@@ -53,19 +49,30 @@ class client
 public:
 
    /*!
-     \brief Callback type for send ()
+     \brief Callback type for async_send ()
     */
-   typedef detail::protocol::basic_paxos::client_callback_type  callback_type;
+   typedef detail::client::protocol::initiate_request::callback_type    callback_type;
 
    /*!
-     \brief Opens client and starts quorum discovery process
+     \brief Opens client
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
-     \param quorum      The quorum of clients we are a part of.
    */
    client (
-      boost::asio::io_service &         io_service,
-      quorum const &                    quorum);
+      boost::asio::io_service &         io_service);
 
+   /*!
+     \brief Adds server to quorum registered within the client
+     \param endpoint    Endpoint where the node listens at
+    */
+   void
+   add (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+
+   /*!
+     \brief Bootstraps the quorum and starts connecting to other nodes
+    */
+   void
+   start ();
 
    /*!
      \brief Sends data to entire quorum and call callback with result
@@ -97,8 +104,9 @@ public:
 
 private:
 
-   detail::quorum                       quorum_;
-   detail::protocol::protocol           protocol_;
+   boost::asio::io_service &    io_service_;
+   detail::quorum::quorum       quorum_;
+
 };
 
 }

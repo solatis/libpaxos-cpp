@@ -5,6 +5,7 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PROTOCOL_COMMAND_HPP
 #define LIBPAXOS_CPP_DETAIL_PROTOCOL_COMMAND_HPP
 
+#include <boost/function.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_serialize.hpp>
 #include <boost/asio/ip/address.hpp>
@@ -12,10 +13,11 @@
 
 #include <boost/serialization/access.hpp>
 
-#include "../../error.hpp"
-#include "../remote_server.hpp"
+#include "quorum/server.hpp"
 
-namespace paxos { namespace detail { namespace protocol {
+#include "../error.hpp"
+
+namespace paxos { namespace detail { 
 
 /*!
   \brief Describes command that is exchanged between servers
@@ -45,8 +47,6 @@ public:
       //! Sent when a node rejects a new leader
       type_leader_claim_reject,
 
-      //! Sent when a leader connects to a node to announce they are the leader
-      type_leader_announce,
 
       //! Sent by a client to the leader when it wants to initiate a new request
       type_request_initiate,
@@ -66,9 +66,15 @@ public:
       //! Sent by followers to leader after they have accepted and processed a request
       type_request_accepted,
 
+
+
+
+
+
       //! Sent back to client when an error has occured. This will mean that error_code is also set
       type_request_error
    };
+
 
 public:
 
@@ -115,9 +121,9 @@ public:
 
    void
    set_host_state (
-      enum remote_server::state state);
+      enum quorum::server::state state);
 
-   enum remote_server::state
+   enum quorum::server::state
    host_state () const;
 
    void
@@ -149,13 +155,13 @@ private:
    boost::uuids::uuid           host_id_;
    std::string                  host_address_;
    uint16_t                     host_port_;
-   enum remote_server::state    host_state_;
+   enum quorum::server::state   host_state_;
 
    uint64_t                     proposal_id_;
    std::string                  workload_;
 };
 
-}; }; };
+}; };
 
 #include "command.inl"
 
