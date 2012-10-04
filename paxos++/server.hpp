@@ -6,9 +6,11 @@
 #define LIBPAXOS_CPP_SERVER_HPP
 
 #include <stdint.h>
+#include <string>
 
 #include <boost/asio/ip/tcp.hpp>
 
+#include "detail/io_thread.hpp"
 #include "detail/paxos_state.hpp"
 #include "detail/quorum/quorum.hpp"
 #include "detail/tcp_connection.hpp"
@@ -48,10 +50,23 @@ namespace paxos {
 class server
 {
 public:
-//   typedef detail::protocol::protocol::workload_processor_callback_type callback_type;
-
 
 public:
+
+   /*!
+     \brief Opens socket to listen on port
+     \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
+     \param endpoint    Endpoint where we're listening to new connections
+     \param callback    Callback used to process workload
+
+     This constructor launches its own background thread with i/o context. Automatically calls 
+     quorum.we_are () to ensure the quorum knows the reference to the server.
+   */
+   server (
+      std::string const &                               server,
+      uint16_t                                          port,
+      detail::paxos_state::processor_type const &       callback);
+
    /*!
      \brief Opens socket to listen on port
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
@@ -62,19 +77,27 @@ public:
    */
    server (
       boost::asio::io_service &                         io_service,
-      boost::asio::ip::tcp::endpoint const &            endpoint,
+      std::string const &                               server,
+      uint16_t                                          port,
       detail::paxos_state::processor_type const &       callback);
-   
-   /*!
-     \brief Adds a new node to the quorum with a default 'unknown' state
-     \param endpoint    Endpoint where the node listens at
 
-     Note that adding this server itself to the quorum is optional: within the constructor,
-     the server automatically adds itself to the quorum.
+   /*!
+     \brief Destructor
+     
+     Gracefully closes the background io thread, if any.
+    */
+   ~server ();
+   
+
+   /*!
+     \brief Adds server to quorum registered the server is part of
+     \param server      Hostname of server to connect to
+     \param port        Port of server to connect to
     */
    void
    add (
-      boost::asio::ip::tcp::endpoint const &    endpoint);
+      std::string const &                       server,
+      uint16_t                                  port);
 
    /*!
      \brief Bootstraps the quorum and starts connecting to other nodes
@@ -105,12 +128,10 @@ private:
       detail::paxos_state &             state);
 
 private:
-
-   /*!
-     \brief Uniquely identifies us within the quorum.
-    */
+   
+   
+   detail::io_thread                    io_thread_;
    boost::asio::ip::tcp::acceptor       acceptor_;
-
    detail::quorum::quorum               quorum_;
    detail::paxos_state                  state_;
 };

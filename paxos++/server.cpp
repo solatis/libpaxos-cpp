@@ -15,14 +15,31 @@
 
 namespace paxos {
 
+
+server::server (
+   std::string const &                          host,
+   uint16_t                                     port,
+   detail::paxos_state::processor_type const &  processor)
+   : server (io_thread_.io_service (),
+             host,
+             port,
+             processor)
+{
+   io_thread_.launch ();
+}
+
+
 server::server (
    boost::asio::io_service &                    io_service,
-   boost::asio::ip::tcp::endpoint const &       endpoint,
+   std::string const &                          host,
+   uint16_t                                     port,
    detail::paxos_state::processor_type const &  processor)
    : acceptor_ (io_service,
-                endpoint),
+                boost::asio::ip::tcp::endpoint (
+                   boost::asio::ip::address::from_string (host), port)),
      quorum_ (io_service,
-              endpoint),
+                boost::asio::ip::tcp::endpoint (
+                   boost::asio::ip::address::from_string (host), port)),
      state_ (processor)
 {
    /*! 
@@ -33,6 +50,10 @@ server::server (
    accept ();
 }
 
+server::~server ()
+{
+   close ();
+}
 
 void
 server::start ()
@@ -45,14 +66,18 @@ void
 server::close ()
 {
    acceptor_.close ();
+   io_thread_.stop ();
 }
 
 
 void
 server::add (
-   boost::asio::ip::tcp::endpoint const &       endpoint)
+   std::string const &  host,
+   uint16_t             port)
 {
-   quorum_.add (endpoint);
+   quorum_.add (
+      boost::asio::ip::tcp::endpoint (
+         boost::asio::ip::address::from_string (host), port));
 }
 
 

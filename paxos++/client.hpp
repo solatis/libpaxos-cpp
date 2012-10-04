@@ -8,6 +8,8 @@
 #include <boost/function.hpp>
 
 #include "exception/exception.hpp"
+
+#include "detail/io_thread.hpp"
 #include "detail/quorum/quorum.hpp"
 #include "detail/client/protocol/initiate_request.hpp"
 
@@ -55,18 +57,34 @@ public:
 
    /*!
      \brief Opens client
+
+     This constructor launches its own background thread with i/o context
+    */
+   client ();
+
+   /*!
+     \brief Opens client
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
    */
    client (
       boost::asio::io_service &         io_service);
 
    /*!
+     \brief Destructor
+     
+     Gracefully closes the background io thread, if any.
+    */
+   ~client ();
+
+   /*!
      \brief Adds server to quorum registered within the client
-     \param endpoint    Endpoint where the node listens at
+     \param server      Hostname of server to connect to
+     \param port        Port of server to connect to
     */
    void
    add (
-      boost::asio::ip::tcp::endpoint const &    endpoint);
+      std::string const &                       server,
+      uint16_t                                  port);
 
    /*!
      \brief Bootstraps the quorum and starts connecting to other nodes
@@ -104,6 +122,7 @@ public:
 
 private:
 
+   detail::io_thread            io_thread_;
    boost::asio::io_service &    io_service_;
    detail::quorum::quorum       quorum_;
 

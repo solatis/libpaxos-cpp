@@ -12,11 +12,22 @@
 
 namespace paxos {
 
+client::client ()
+   : client (io_thread_.io_service ())
+{
+   io_thread_.launch ();
+}
+
 client::client (
    boost::asio::io_service &            io_service)
    : io_service_ (io_service),
      quorum_ (io_service)
 {
+}
+
+client::~client ()
+{
+   io_thread_.stop ();
 }
 
 void
@@ -27,9 +38,12 @@ client::start ()
 
 void
 client::add (
-   boost::asio::ip::tcp::endpoint const &       endpoint)
+   std::string const &  server,
+   uint16_t             port)
 {
-   quorum_.add (endpoint);
+   quorum_.add (
+      boost::asio::ip::tcp::endpoint (
+         boost::asio::ip::address::from_string (server), port));
 }
 
 

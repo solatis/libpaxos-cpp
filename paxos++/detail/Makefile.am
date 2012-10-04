@@ -13,6 +13,7 @@ include_HEADERS = \
 	command.hpp \
 	command.inl \
 	dispatcher.hpp \
+	io_thread.hpp \
 	parser.hpp \
 	tcp_connection.hpp \
 	tcp_connection.inl 
@@ -29,5 +30,6 @@ libpaxos_detail_la_SOURCES = \
 	strategies/basic_paxos/protocol/request.cpp \
 	command.cpp \
 	dispatcher.cpp \
+	io_thread.cpp \
 	parser.cpp \
 	tcp_connection.cpp 
