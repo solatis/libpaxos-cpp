@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node6" href="$classpaxos_1_1detail_1_1protocol_1_1session.html" title="paxos::detail::protocol::session\&lt; elect_leader \&gt;" alt="" coords="967,36,1292,65"/>
-<area shape="rect" id="node2" href="$classpaxos_1_1quorum.html" title="Quorum of servers in the pool." alt="" coords="281,8,399,37"/>
-<area shape="rect" id="node4" href="$structpaxos_1_1quorum_1_1self.html" title="paxos::quorum::self" alt="" coords="7,8,153,37"/>
-<area shape="rect" id="node9" href="$classpaxos_1_1detail_1_1connection__pool.html" title="Maintains a pool of tcp_connection objects." alt="" coords="233,61,447,91"/>
-</map>

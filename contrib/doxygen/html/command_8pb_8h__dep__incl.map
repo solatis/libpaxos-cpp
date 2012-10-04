@@ -1,7 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$elect__leader_8cpp.html" title="paxos++/detail/protocol/elect_leader.cpp" alt="" coords="5,83,291,112"/>
-<area shape="rect" id="node5" href="$adapter_8hpp.html" title="paxos++/detail/protocol/pb/adapter.hpp" alt="" coords="315,83,592,112"/>
-<area shape="rect" id="node11" href="$command_8pb_8cc.html" title="paxos++/detail/protocol/pb/command.pb.cc" alt="" coords="616,83,920,112"/>
-<area shape="rect" id="node7" href="$adapter_8cpp.html" title="paxos++/detail/protocol/pb/adapter.cpp" alt="" coords="168,160,445,189"/>
-<area shape="rect" id="node9" href="$protocol_8cpp.html" title="paxos++/detail/protocol/protocol.cpp" alt="" coords="469,160,728,189"/>
-</map>

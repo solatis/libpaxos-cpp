@@ -1,9 +1,0 @@
-<map id="paxos++/detail/protocol/elect_leader.hpp" name="paxos++/detail/protocol/elect_leader.hpp">
-<area shape="rect" id="node3" href="$protocol_8hpp.html" title="paxos++/detail/protocol\l/protocol.hpp" alt="" coords="315,99,491,143"/>
-<area shape="rect" id="node7" href="$elect__leader_8cpp.html" title="paxos++/detail/protocol\l/elect_leader.cpp" alt="" coords="5,193,181,237"/>
-<area shape="rect" id="node5" href="$announce__leadership_8cpp.html" title="paxos++/detail/protocol\l/announce_leadership.cpp" alt="" coords="205,193,395,237"/>
-<area shape="rect" id="node9" href="$handshake_8cpp.html" title="paxos++/detail/protocol\l/handshake.cpp" alt="" coords="419,193,595,237"/>
-<area shape="rect" id="node11" href="$protocol_8cpp.html" title="paxos++/detail/protocol\l/protocol.cpp" alt="" coords="619,193,795,237"/>
-<area shape="rect" id="node13" href="$server_8hpp.html" title="paxos++/server.hpp" alt="" coords="819,201,971,229"/>
-<area shape="rect" id="node15" href="$server_8cpp.html" title="paxos++/server.cpp" alt="" coords="819,286,971,314"/>
-</map>

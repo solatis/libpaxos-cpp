@@ -1,7 +1,0 @@
-<map id="paxos++/detail/connection_pool.hpp" name="paxos++/detail/connection_pool.hpp">
-<area shape="rect" id="node3" href="$connection__pool_8cpp.html" title="paxos++/detail/connection\l_pool.cpp" alt="" coords="5,99,200,143"/>
-<area shape="rect" id="node5" href="$elect__leader_8cpp.html" title="paxos++/detail/protocol\l/elect_leader.cpp" alt="" coords="224,99,400,143"/>
-<area shape="rect" id="node7" href="$protocol_8cpp.html" title="paxos++/detail/protocol\l/protocol.cpp" alt="" coords="424,99,600,143"/>
-<area shape="rect" id="node9" href="$local__server_8hpp.html" title="paxos++/local_server.hpp" alt="" coords="624,107,813,135"/>
-<area shape="rect" id="node11" href="$local__server_8cpp.html" title="paxos++/local_server.cpp" alt="" coords="625,193,812,221"/>
-</map>
