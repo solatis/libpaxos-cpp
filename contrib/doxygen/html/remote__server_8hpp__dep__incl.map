@@ -1,0 +1,15 @@
+<map id="paxos++/detail/remote_server.hpp" name="paxos++/detail/remote_server.hpp">
+<area shape="rect" id="node3" href="$detail_2quorum_8hpp.html" title="paxos++/detail/quorum.hpp" alt="" coords="637,107,840,135"/>
+<area shape="rect" id="node24" href="$command_8hpp.html" title="paxos++/detail/protocol\l/command.hpp" alt="" coords="455,193,631,237"/>
+<area shape="rect" id="node32" href="$remote__server_8cpp.html" title="paxos++/detail/remote\l_server.cpp" alt="" coords="864,99,1035,143"/>
+<area shape="rect" id="node5" href="$quorum_8hpp.html" title="paxos++/quorum.hpp" alt="" coords="657,201,820,229"/>
+<area shape="rect" id="node17" href="$protocol_8cpp.html" title="paxos++/detail/protocol\l/protocol.cpp" alt="" coords="5,286,181,330"/>
+<area shape="rect" id="node19" href="$detail_2quorum_8cpp.html" title="paxos++/detail/quorum.cpp" alt="" coords="844,201,1047,229"/>
+<area shape="rect" id="node21" href="$server_8hpp.html" title="paxos++/server.hpp" alt="" coords="1160,201,1312,229"/>
+<area shape="rect" id="node7" href="$announce__leadership_8cpp.html" title="paxos++/detail/protocol\l/announce_leadership.cpp" alt="" coords="805,286,995,330"/>
+<area shape="rect" id="node9" href="$elect__leader_8cpp.html" title="paxos++/detail/protocol\l/elect_leader.cpp" alt="" coords="405,286,581,330"/>
+<area shape="rect" id="node11" href="$handshake_8cpp.html" title="paxos++/detail/protocol\l/handshake.cpp" alt="" coords="605,286,781,330"/>
+<area shape="rect" id="node13" href="$quorum_8cpp.html" title="paxos++/quorum.cpp" alt="" coords="1019,294,1181,322"/>
+<area shape="rect" id="node15" href="$server_8cpp.html" title="paxos++/server.cpp" alt="" coords="1205,294,1357,322"/>
+<area shape="rect" id="node27" href="$command_8cpp.html" title="paxos++/detail/protocol\l/command.cpp" alt="" coords="205,286,381,330"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$classpaxos_1_1detail_1_1protocol_1_1protocol.html" title="Entry point for communication within quorum." alt="" coords="172,197,393,227"/>
+<area shape="rect" id="node8" href="$classpaxos_1_1detail_1_1protocol_1_1session.html" title="paxos::detail::protocol::session\&lt; elect_leader \&gt;" alt="" coords="5,293,331,323"/>
+<area shape="rect" id="node4" href="$classpaxos_1_1quorum.html" title="Quorum of servers in the pool." alt="" coords="320,101,437,131"/>
+<area shape="rect" id="node6" href="$structpaxos_1_1quorum_1_1self.html" title="paxos::quorum::self" alt="" coords="305,5,452,35"/>
+<area shape="rect" id="node11" href="$classpaxos_1_1detail_1_1connection__pool.html" title="Maintains a pool of tcp_connection objects." alt="" coords="485,101,699,131"/>
+</map>

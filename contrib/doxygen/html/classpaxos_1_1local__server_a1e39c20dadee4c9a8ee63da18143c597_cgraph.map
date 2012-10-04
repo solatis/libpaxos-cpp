@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classpaxos_1_1detail_1_1protocol.html#a6dae23a404ff8554622e8a7ca676bd50" title="Starts finding out who our current leader is, if any." alt="" coords="284,5,516,35"/>
+<area shape="rect" id="node5" href="$classpaxos_1_1quorum.html#a8427ea005e49df2d5123c2bf40dbeee6" title="Denotes which server we are." alt="" coords="315,59,485,88"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="paxos++/quorum.hpp" name="paxos++/quorum.hpp">
+<area shape="rect" id="node3" href="$announce__leadership_8cpp.html" title="paxos++/detail/protocol\l/announce_leadership.cpp" alt="" coords="5,83,195,127"/>
+<area shape="rect" id="node5" href="$elect__leader_8cpp.html" title="paxos++/detail/protocol\l/elect_leader.cpp" alt="" coords="219,83,395,127"/>
+<area shape="rect" id="node7" href="$handshake_8cpp.html" title="paxos++/detail/protocol\l/handshake.cpp" alt="" coords="419,83,595,127"/>
+<area shape="rect" id="node9" href="$quorum_8cpp.html" title="paxos++/quorum.cpp" alt="" coords="619,91,781,119"/>
+<area shape="rect" id="node11" href="$server_8cpp.html" title="paxos++/server.cpp" alt="" coords="805,91,957,119"/>
+</map>

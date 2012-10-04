@@ -1,0 +1,7 @@
+<map id="paxos++/detail/protocol/protocol.hpp" name="paxos++/detail/protocol/protocol.hpp">
+<area shape="rect" id="node11" href="$tcp__connection_8hpp.html" title="../tcp_connection.hpp" alt="" coords="505,185,663,213"/>
+<area shape="rect" id="node29" href="$handshake_8hpp.html" title="handshake.hpp" alt="" coords="420,99,540,127"/>
+<area shape="rect" id="node32" href="$elect__leader_8hpp.html" title="elect_leader.hpp" alt="" coords="564,99,689,127"/>
+<area shape="rect" id="node37" href="$announce__leadership_8hpp.html" title="announce_leadership.hpp" alt="" coords="713,99,900,127"/>
+<area shape="rect" id="node23" href="$debug_8hpp.html" title="util/debug.hpp" alt="" coords="685,278,797,306"/>
+</map>

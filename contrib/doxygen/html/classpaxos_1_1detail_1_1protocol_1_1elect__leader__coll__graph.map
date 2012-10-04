@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node2" href="$classpaxos_1_1quorum.html" title="Quorum of servers in the pool." alt="" coords="20,101,137,131"/>
+<area shape="rect" id="node4" href="$structpaxos_1_1quorum_1_1self.html" title="paxos::quorum::self" alt="" coords="5,5,152,35"/>
+<area shape="rect" id="node6" href="$classpaxos_1_1detail_1_1connection__pool.html" title="Maintains a pool of tcp_connection objects." alt="" coords="161,101,375,131"/>
+</map>

@@ -1,0 +1,16 @@
+<map id="paxos++/detail/protocol/protocol.cpp" name="paxos++/detail/protocol/protocol.cpp">
+<area shape="rect" id="node15" href="$configuration_8hpp.html" title="../../configuration.hpp" alt="" coords="5,99,163,127"/>
+<area shape="rect" id="node19" href="$debug_8hpp.html" title="../util/debug.hpp" alt="" coords="904,371,1029,399"/>
+<area shape="rect" id="node25" href="$conversion_8hpp.html" title="../util/conversion.hpp" alt="" coords="899,99,1053,127"/>
+<area shape="rect" id="node32" href="$detail_2quorum_8hpp.html" title="../quorum.hpp" alt="" coords="1263,99,1375,127"/>
+<area shape="rect" id="node63" href="$command_8hpp.html" title="command.hpp" alt="" coords="1924,99,2039,127"/>
+<area shape="rect" id="node75" href="$protocol_8hpp.html" title="protocol.hpp" alt="" coords="2883,99,2984,127"/>
+<area shape="rect" id="node30" href="$conversion_8inl.html" title="conversion.inl" alt="" coords="820,185,929,213"/>
+<area shape="rect" id="node44" href="$remote__server_8hpp.html" title="remote_server.hpp" alt="" coords="1521,185,1663,213"/>
+<area shape="rect" id="node61" href="$quorum_8inl.html" title="quorum.inl" alt="" coords="1356,185,1447,213"/>
+<area shape="rect" id="node48" href="$tcp__connection_8hpp.html" title="tcp_connection.hpp" alt="" coords="2553,278,2700,306"/>
+<area shape="rect" id="node73" href="$command_8inl.html" title="command.inl" alt="" coords="2340,185,2444,213"/>
+<area shape="rect" id="node84" href="$handshake_8hpp.html" title="handshake.hpp" alt="" coords="2519,185,2639,213"/>
+<area shape="rect" id="node87" href="$elect__leader_8hpp.html" title="elect_leader.hpp" alt="" coords="2713,185,2839,213"/>
+<area shape="rect" id="node92" href="$announce__leadership_8hpp.html" title="announce_leadership.hpp" alt="" coords="3223,185,3409,213"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="paxos::exception" name="paxos::exception">
+<area shape="rect" id="node3" href="$classpaxos_1_1not__ready__exception.html" title="Thrown when the quorum is in an inconsistent state." alt="" coords="5,91,205,119"/>
+<area shape="rect" id="node5" href="$classpaxos_1_1protocol__error__exception.html" title="Thrown when an unexpected command arrives." alt="" coords="229,83,387,127"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="paxos++/local_server.cpp" name="paxos++/local_server.cpp">
+<area shape="rect" id="node19" href="$local__server_8hpp.html" title="local_server.hpp" alt="" coords="885,83,1011,111"/>
+<area shape="rect" id="node27" href="$quorum_8hpp.html" title="quorum.hpp" alt="" coords="1012,161,1111,189"/>
+<area shape="rect" id="node41" href="$tcp__connection_8hpp.html" title="tcp_connection.hpp" alt="" coords="1305,315,1452,343"/>
+<area shape="rect" id="node58" href="$connection__pool_8hpp.html" title="detail/connection_pool.hpp" alt="" coords="1716,238,1908,266"/>
+<area shape="rect" id="node64" href="$protocol_8hpp.html" title="detail/protocol/protocol.hpp" alt="" coords="531,238,728,266"/>
+<area shape="rect" id="node38" href="$remote__server_8hpp.html" title="detail/remote_server.hpp" alt="" coords="1140,238,1321,266"/>
+<area shape="rect" id="node56" href="$quorum_8inl.html" title="quorum.inl" alt="" coords="975,238,1065,266"/>
+<area shape="rect" id="node51" href="$debug_8hpp.html" title="util/debug.hpp" alt="" coords="1184,401,1296,429"/>
+<area shape="rect" id="node71" href="$session_8hpp.html" title="session.hpp" alt="" coords="167,315,265,343"/>
+<area shape="rect" id="node80" href="$elect__leader_8hpp.html" title="elect_leader.hpp" alt="" coords="340,315,465,343"/>
+<area shape="rect" id="node78" href="$session_8inl.html" title="session.inl" alt="" coords="325,401,413,429"/>
+</map>

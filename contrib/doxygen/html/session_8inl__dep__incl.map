@@ -1,0 +1,8 @@
+<map id="paxos++/detail/protocol/session.inl" name="paxos++/detail/protocol/session.inl">
+<area shape="rect" id="node3" href="$session_8hpp.html" title="paxos++/detail/protocol\l/session.hpp" alt="" coords="205,99,381,143"/>
+<area shape="rect" id="node5" href="$protocol_8hpp.html" title="paxos++/detail/protocol\l/protocol.hpp" alt="" coords="205,193,381,237"/>
+<area shape="rect" id="node7" href="$elect__leader_8cpp.html" title="paxos++/detail/protocol\l/elect_leader.cpp" alt="" coords="5,286,181,330"/>
+<area shape="rect" id="node9" href="$protocol_8cpp.html" title="paxos++/detail/protocol\l/protocol.cpp" alt="" coords="205,286,381,330"/>
+<area shape="rect" id="node11" href="$local__server_8hpp.html" title="paxos++/local_server.hpp" alt="" coords="405,294,595,322"/>
+<area shape="rect" id="node13" href="$local__server_8cpp.html" title="paxos++/local_server.cpp" alt="" coords="407,379,593,407"/>
+</map>
