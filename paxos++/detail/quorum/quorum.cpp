@@ -6,6 +6,7 @@
 #include "protocol/handshake.hpp"
 #include "protocol/announce_leadership.hpp"
 
+#include "../util/debug.hpp"
 #include "../../configuration.hpp"
 #include "quorum.hpp"
 

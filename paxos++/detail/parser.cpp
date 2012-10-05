@@ -17,6 +17,8 @@ parser::write_command (
 
    std::string buffer        = util::conversion::to_byte_array (size) + binary_string;
 
+   PAXOS_DEBUG ("writing command with size = " << size);
+
    connection->write (buffer);
 }
 
@@ -53,6 +55,7 @@ parser::read_command_parse_size (
 {
    if (error)
    {
+      PAXOS_WARN ("An error occured while reading command size: " << error.message ());
       return;
    }
 
@@ -93,6 +96,7 @@ parser::read_command_parse_command (
 
    if (error)
    {
+      PAXOS_WARN ("An error occured while reading command: " << error.message ());
       return;
    }
 

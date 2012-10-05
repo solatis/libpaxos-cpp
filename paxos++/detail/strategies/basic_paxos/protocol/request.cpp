@@ -2,6 +2,7 @@
 #include "../../../paxos_state.hpp"
 #include "../../../command.hpp"
 #include "../../../parser.hpp"
+#include "../../../util/debug.hpp"
 
 #include "request.hpp"
 
@@ -72,9 +73,13 @@ request::step2 (
    command.set_proposal_id (proposal_id);
    command.set_host_endpoint (leader_endpoint);
 
+
+   PAXOS_DEBUG ("step2 writing command");
+
    parser::write_command (follower_connection,
                           command);
-   
+
+   PAXOS_DEBUG ("step2 reading command");   
 
    /*!
      We expect either an 'ack' or a 'reject' response to this command.
@@ -117,6 +122,8 @@ request::step3 (
       response.set_type (command::type_request_fail);
    }
 
+
+   PAXOS_DEBUG ("step3 writing command");   
 
    parser::write_command (leader_connection,
                           response);
@@ -172,6 +179,8 @@ request::step4 (
 
         We will send an error command to the client informing about the failed command.
        */
+      PAXOS_DEBUG ("step4 writing error command");   
+
       detail::command response;
       response.set_type (command::type_request_error);
       response.set_error_code (paxos::error_incorrect_proposal);
@@ -221,9 +230,13 @@ request::step5 (
    command.set_proposal_id (proposal_id);
    command.set_host_endpoint (leader_endpoint);
    command.set_workload (byte_array);
+
+   PAXOS_DEBUG ("step5 writing command");   
    
    parser::write_command (follower_connection,
                           command);
+
+   PAXOS_DEBUG ("step5 reading command");   
 
    /*!
      We expect a response to this command.
@@ -260,6 +273,8 @@ request::step6 (
    response.set_type (command::type_request_accepted);
    response.set_workload (
       state.processor () (command.workload ()));
+
+   PAXOS_DEBUG ("step6 writing command");   
 
    parser::write_command (leader_connection,
                           response);
@@ -318,6 +333,8 @@ request::step7 (
            Send a copy of the last command to the client, since the workload should be the
            same for all responses.
          */
+         PAXOS_DEBUG ("step7 writing command");   
+
          parser::write_command (client_connection,
                                 command);
       }
@@ -327,6 +344,8 @@ request::step7 (
            We're going to inform the client about an inconsistent response here. Perhaps
            he can recover from there.
          */
+         PAXOS_DEBUG ("step7 writing error command");   
+
          detail::command response;
          response.set_type (command::type_request_error);
          response.set_error_code (paxos::error_inconsistent_response);

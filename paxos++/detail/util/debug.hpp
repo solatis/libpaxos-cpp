@@ -16,17 +16,24 @@
 
 #ifdef DEBUG
 
-#define PAXOS_LOG(level, msg) \
-   do {                                                    \
-      std::clog << level << " [" << __FILE__ << ":" << __LINE__ << "] " << msg << std::endl; \
-   } while (false);   
+/*!
+  Include the proper logging facility.
+ */
+#if defined (HAVE_CONFIG_H)
 
+#include "config.h"
 
-#define PAXOS_DEBUG(msg) PAXOS_LOG ("DEBUG", msg)
-#define PAXOS_INFO(msg)  PAXOS_LOG ("INFO", msg)
-#define PAXOS_WARN(msg)  PAXOS_LOG ("WARN", msg)
-#define PAXOS_ERROR(msg) PAXOS_LOG ("ERROR", msg)
-#define PAXOS_FATAL(msg) PAXOS_LOG ("FATAL", msg)
+#if defined (HAVE_LOG4CXX)
+#include "debug_log_log4cxx.hpp"
+#else /*! HAVE_LOG4CXX */
+#include "debug_log_default.hpp"
+#endif /*! HAVE_LOG4CXX */
+#else /*! HAVE_CONFIG_H */
+#include "debug_log_default.hpp"
+#endif /*! HAVE_CONFIG_H */
+/*!
+  End logging facility
+ */
 
 #else //!
 
@@ -66,7 +73,5 @@ typedef boost::error_info <struct tag_solatis_debug, std::string> debug_exceptio
   this aborts when it is actually reached.
  */
 #define PAXOS_UNREACHABLE()     __builtin_unreachable()
-
-
 
 #endif  //! LIBPAXOS_CPP_PAXOS_DETAIL_DEBUG_HPP

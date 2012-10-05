@@ -13,7 +13,10 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 
 # Checks for programs.
 AC_ARG_ENABLE([debug],
-        AS_HELP_STRING([--enable-debug], [Enable debugging output on stderr]))
+        AS_HELP_STRING([--enable-debug], [Enable debugging output]))
+
+AC_ARG_ENABLE([log4cxx],
+        AS_HELP_STRING([--enable-log4cxx], [Enable debugging output via log4cxx]))
 
 AC_ARG_WITH([includes],
         [AS_HELP_STRING([--with-includes], [look for additional header files in DIRS])],
@@ -36,12 +39,18 @@ do
         INCLUDEDIRS="$INCLUDEDIRS -I$dir"
 done
 
+BOOST_LOG=""
+AS_IF([test "x$enable_log4cxx" == "xyes"], [
+            AC_DEFINE([HAVE_LOG4CXX], [1], [Define if log4cxx is enabled])
+            AC_SUBST(LINK_LOG4CXX, [-llog4cxx])
+])
+
 DEBUG=""
 AS_IF([test "x$enable_debug" == "xyes"], [
         DEBUG="-Wall -Werror -g -ggdb -DDEBUG"
 ])
 
-CXXFLAGS="$CXXFLAGS -std=c++11 $INCLUDEDIRS $DEBUG"
+CXXFLAGS="$CXXFLAGS -std=c++11 $INCLUDEDIRS $DEBUG $BOOST_LOG"
 LDFLAGS="$LDFLAGS $LIBDIRS"
 
 AC_PROG_CC
@@ -54,5 +63,5 @@ AC_PROG_CXX
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
-AC_CONFIG_FILES([Makefile paxos++/Makefile paxos++/detail/Makefile test/Makefile test/test1/Makefile])
+AC_CONFIG_FILES([Makefile paxos++/Makefile paxos++/detail/Makefile test/Makefile])
 AC_OUTPUT

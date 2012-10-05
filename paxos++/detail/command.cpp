@@ -15,6 +15,7 @@ command::to_string (
    std::stringstream               value;
    boost::archive::binary_oarchive oa (value);
    oa << command;
+
    return value.str ();
 }
 

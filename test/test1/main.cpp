@@ -5,6 +5,7 @@
 
 #include <paxos++/client.hpp>
 #include <paxos++/server.hpp>
+#include <paxos++/detail/util/debug.hpp>
 
 int main ()
 {
