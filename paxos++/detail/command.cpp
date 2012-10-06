@@ -1,8 +1,12 @@
 #include <sstream>
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+#include "util/debug.hpp"
 #include "command.hpp"
 
 namespace paxos { namespace detail { 
@@ -13,8 +17,10 @@ command::to_string (
    command const &      command)
 {
    std::stringstream               value;
-   boost::archive::binary_oarchive oa (value);
+   boost::archive::text_oarchive oa (value);
    oa << command;
+
+   PAXOS_DEBUG ("writing command: '" << value.str () << "'");
 
    return value.str ();
 }
@@ -24,14 +30,35 @@ command::to_string (
 command::from_string (
    std::string const &  string)
 {
+   PAXOS_DEBUG ("reading command: '" << string << "'");
+
    command ret;
 
    std::stringstream value (string);
-   boost::archive::binary_iarchive ia (value);
+   boost::archive::text_iarchive ia (value);
    ia >> ret;
 
    return ret;
 }
+
+
+void
+command::set_host_id (
+   boost::uuids::uuid const &        id)
+{
+   std::stringstream str;
+   str << id;
+
+   host_id_ = str.str ();
+}
+
+boost::uuids::uuid
+command::host_id () const
+{
+   boost::uuids::string_generator gen;
+   return gen (host_id_);
+}
+
 
 
 void

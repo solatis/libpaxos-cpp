@@ -17,9 +17,9 @@ namespace paxos {
 
 
 server::server (
-   std::string const &                          host,
-   uint16_t                                     port,
-   detail::paxos_state::processor_type const &  processor)
+   std::string const &          host,
+   uint16_t                     port,
+   callback_type const &        processor)
    : server (io_thread_.io_service (),
              host,
              port,
@@ -30,10 +30,10 @@ server::server (
 
 
 server::server (
-   boost::asio::io_service &                    io_service,
-   std::string const &                          host,
-   uint16_t                                     port,
-   detail::paxos_state::processor_type const &  processor)
+   boost::asio::io_service &    io_service,
+   std::string const &          host,
+   uint16_t                     port,
+   callback_type const &        processor)
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (
                    boost::asio::ip::address::from_string (host), port)),
@@ -42,6 +42,7 @@ server::server (
                    boost::asio::ip::address::from_string (host), port)),
      state_ (processor)
 {
+
    /*! 
      Ensure that we start accepting new connections. We do this before
      start (), so that we can first construct multiple servers at the same time,
@@ -84,8 +85,8 @@ server::add (
 void
 server::accept ()
 {
-   detail::tcp_connection::pointer connection = 
-      detail::tcp_connection::create (acceptor_.get_io_service ());
+   detail::connection::tcp_connection::pointer connection = 
+      detail::connection::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (connection->socket (),
                            boost::bind (&server::handle_accept,
@@ -97,8 +98,8 @@ server::accept ()
 
 void
 server::handle_accept (
-   detail::tcp_connection::pointer      new_connection,
-   boost::system::error_code const &    error)
+   detail::connection::tcp_connection::pointer  new_connection,
+   boost::system::error_code const &            error)
 {
    if (error)
    {
@@ -118,9 +119,9 @@ server::handle_accept (
 
 /*! static */ void
 server::read_and_dispatch_command (
-   detail::tcp_connection::pointer      connection,
-   detail::quorum::quorum &             quorum,
-   detail::paxos_state &                state)
+   detail::connection::tcp_connection::pointer  connection,
+   detail::quorum::quorum &                     quorum,
+   detail::paxos_state &                        state)
 {
    /*!
      The code below essentially creates an infinite "recusion" loop, without

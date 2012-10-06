@@ -13,10 +13,10 @@ namespace paxos { namespace detail {
 
 /*! static */ void
 dispatcher::dispatch_command (
-   tcp_connection::pointer      connection,
-   detail::command const &      command,
-   detail::quorum::quorum &     quorum,
-   detail::paxos_state &        state)
+   connection::tcp_connection::pointer  connection,
+   detail::command const &              command,
+   detail::quorum::quorum &             quorum,
+   detail::paxos_state &                state)
 {
 
    switch (command.type ())

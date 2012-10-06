@@ -131,8 +131,8 @@ public:
      \brief Returns our leader's tcp_connection
      \pre we_have_a_leader () == true
     */
-   tcp_connection::pointer
-   our_leader_connection () const;
+   connection::scoped_connection::pointer
+   our_leader_connection ();
 
 
    /*!
@@ -159,21 +159,6 @@ public:
    void
    add (
       boost::asio::ip::tcp::endpoint const &    endpoint);
-
-   /*!
-     \brief Resets server to a 'dead' state 
-    */
-   void
-   mark_dead (
-      boost::asio::ip::tcp::endpoint const &    endpoint);      
-
-   /*!
-     \brief Called when a connection has been established with a server
-    */
-   void
-   connection_established (
-      boost::asio::ip::tcp::endpoint const &    endpoint,
-      tcp_connection::pointer                   connection);
 
 private:
 

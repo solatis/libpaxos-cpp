@@ -12,7 +12,6 @@
 
 #include "../../../error.hpp"
 #include "../../../exception/exception.hpp"
-#include "../../tcp_connection.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
 class quorum;

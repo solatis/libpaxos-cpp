@@ -2,6 +2,7 @@
 #include "../../command.hpp"
 #include "../../parser.hpp"
 #include "../../quorum/quorum.hpp"
+#include "../../connection/scoped_connection.hpp"
 
 #include "initiate_request.hpp"
 
@@ -25,7 +26,7 @@ initiate_request::step1 (
           true, and would thus lead to an assertion.
    */
 
-   detail::tcp_connection::pointer connection = quorum.our_leader_connection ();
+   detail::connection::scoped_connection::pointer connection = quorum.our_leader_connection ();
  
    /*!
      Now that we have our leader's connection, let's send it our command to initiate
@@ -34,12 +35,13 @@ initiate_request::step1 (
    command command;
    command.set_type (command::type_request_initiate);
    command.set_workload (byte_array);
-   parser::write_command (connection,
+   parser::write_command (connection->connection (),
                           command);
 
 
-   parser::read_command (connection,
-                         [callback] (
+   parser::read_command (connection->connection (),
+                         [connection,
+                          callback] (
                             detail::command const &   c)
                          {
                             switch (c.type ())
@@ -57,6 +59,8 @@ initiate_request::step1 (
                                   default:
                                      PAXOS_UNREACHABLE ();
                             };
+
+                            connection->done ();
                          });
 
 }

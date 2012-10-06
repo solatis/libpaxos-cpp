@@ -9,7 +9,7 @@ AC_CONFIG_HEADER([config.h])
 LT_INIT([shared static])
 
 # Makefile initialization.
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 
 # Checks for programs.
 AC_ARG_ENABLE([debug],

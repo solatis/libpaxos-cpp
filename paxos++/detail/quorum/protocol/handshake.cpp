@@ -12,12 +12,9 @@ namespace paxos { namespace detail { namespace quorum { namespace protocol {
 /*! static */ void
 handshake::step1 (
    boost::asio::io_service &                    io_service,
-   tcp_connection::pointer                      connection,
+   connection::scoped_connection::pointer       connection,
    detail::quorum::quorum &                     quorum)
 {
-   PAXOS_ASSERT (connection->socket ().is_open () == true);
-
-   
    command command;
    command.set_type (command::type_handshake_start);
    command.set_host_state (quorum.our_state ());
@@ -34,28 +31,31 @@ handshake::step1 (
      Writing this command to the connection will make the remote end enter
      step2 ().
     */   
-   parser::write_command (connection,
+   parser::write_command (connection->connection (),
                           command);
 
    /*!
      We're expecting a response to the handshake.
     */
-   parser::read_command (connection,
-                         [& quorum] (detail::command const &    command)
+   parser::read_command (connection->connection (),
+                         [connection,
+                          & quorum] (detail::command const &    command)
                          {
                             PAXOS_ASSERT (command.type () == command::type_handshake_response);
                             PAXOS_ASSERT (command.host_state () != server::state_client);
                             
                             quorum.set_host_state (command.host_endpoint (), command.host_state ());
                             quorum.set_host_id (command.host_endpoint (), command.host_id ());
+
+                            connection->done ();
                          });
 }
 
 /*! static */ void
 handshake::step2 (
-   tcp_connection::pointer      connection,
-   detail::command const &      command,
-   detail::quorum::quorum &     quorum)
+   connection::tcp_connection::pointer  connection,
+   detail::command const &              command,
+   detail::quorum::quorum &             quorum)
 {
    /*!
      Only servers can receive handshake requests, and servers must *always* have

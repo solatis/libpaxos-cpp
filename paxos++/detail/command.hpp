@@ -7,7 +7,6 @@
 
 #include <boost/function.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_serialize.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
@@ -30,41 +29,41 @@ public:
 
    enum type
    {
-      type_invalid,
+      type_invalid = -1,
 
       //! Sent by a host to initiate a handshake
-      type_handshake_start,
+      type_handshake_start = 1,
       
       //! Sent as a response to a handshake request
-      type_handshake_response,
+      type_handshake_response = 2,
 
       //! Sent when a node in the quorum claims leadership
-      type_leader_claim,
+      type_leader_claim = 3,
 
       //! Sent when a node acknowledges a new leader
-      type_leader_claim_ack,
+      type_leader_claim_ack = 4,
 
       //! Sent when a node rejects a new leader
-      type_leader_claim_reject,
+      type_leader_claim_reject = 5,
 
 
       //! Sent by a client to the leader when it wants to initiate a new request
-      type_request_initiate,
+      type_request_initiate = 6,
 
       //! Sent by a leader to all the followers when they must all prepare a request
-      type_request_prepare,
+      type_request_prepare = 7,
 
       //! Sent by all followers as a response to the prepare command
-      type_request_promise,
+      type_request_promise = 8,
 
       //! Sent by followers to leader if an inconsistency in the proposal ids has been detected
-      type_request_fail,
+      type_request_fail = 9,
 
       //! Sent by leader to all followers after they have sent a promise
-      type_request_accept,
+      type_request_accept = 10,
 
       //! Sent by followers to leader after they have accepted and processed a request
-      type_request_accepted,
+      type_request_accepted = 11,
 
 
 
@@ -72,7 +71,7 @@ public:
 
 
       //! Sent back to client when an error has occured. This will mean that error_code is also set
-      type_request_error
+      type_request_error = 12
    };
 
 
@@ -109,7 +108,7 @@ public:
    set_host_id (
       boost::uuids::uuid const &        id);
 
-   boost::uuids::uuid const &
+   boost::uuids::uuid
    host_id () const;
 
    void
@@ -152,7 +151,7 @@ private:
    enum type                    type_;
    enum paxos::error_code       error_code_;
 
-   boost::uuids::uuid           host_id_;
+   std::string                  host_id_;
    std::string                  host_address_;
    uint16_t                     host_port_;
    enum quorum::server::state   host_state_;

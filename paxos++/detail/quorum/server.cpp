@@ -35,15 +35,13 @@ server::to_string (
 }
 
 
-server::server ()
-   : state_ (state_unknown)
-{
-}
-
 server::server (
-   boost::asio::ip::tcp::endpoint const &    endpoint)
+   boost::asio::io_service &                    io_service,
+   boost::asio::ip::tcp::endpoint const &       endpoint)
    : endpoint_ (endpoint),
-     state_ (state_unknown)
+     state_ (state_unknown),
+     pool_ (io_service,
+            endpoint)
 {
 }
 
@@ -81,33 +79,18 @@ server::set_id (
 }
 
 
-bool
-server::connection_is_valid () const
-{
-   return
-      connection_.is_initialized () == true;
-}
 
-void
-server::reset_connection ()
+detail::connection::pool &
+server::connection_pool ()
 {
-   connection_ = boost::none;
+   return pool_;
 }
 
 
-void
-server::set_connection (
-   tcp_connection::pointer      connection)
+detail::connection::pool const &
+server::connection_pool () const
 {
-   connection_ = connection;
-}
-
-
-tcp_connection::pointer
-server::connection () const
-{
-   PAXOS_ASSERT (connection_is_valid () == true);
-   return *connection_;
+   return pool_;
 }
 
 

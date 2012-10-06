@@ -6,14 +6,14 @@
 #define LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP
 
 #include <vector>
+
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/deadline_timer.hpp>
-
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-namespace paxos { namespace detail {
+namespace paxos { namespace detail { namespace connection {
 
 /*!
   \brief Represents a tcp connection
@@ -29,7 +29,13 @@ class tcp_connection
 {
 public:
 
-   typedef boost::shared_ptr <tcp_connection>   pointer;
+   typedef boost::shared_ptr <tcp_connection>                                   pointer;
+
+private:
+
+   friend class tcp_connection_usage_guard;
+
+public:
 
    ~tcp_connection ();
 
@@ -45,7 +51,7 @@ public:
 
    void
    write (
-      std::string const &       message);   
+      std::string const &       message);
 
    /*!
      \brief Starts timer that calls socket_.cancel () when done
@@ -84,13 +90,12 @@ private:
       boost::system::error_code const & error);
 
 private:
-
    boost::asio::ip::tcp::socket socket_;
    boost::asio::deadline_timer  timeout_;
 
    std::string                  write_buffer_;
 };
 
-}; };
+}; }; };
 
 #endif //! LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP

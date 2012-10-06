@@ -34,21 +34,6 @@ command::error_code () const
    return error_code_;
 }
 
-
-inline void
-command::set_host_id (
-   boost::uuids::uuid const &        id)
-{
-   host_id_ = id;
-}
-
-inline boost::uuids::uuid const &
-command::host_id () const
-{
-   return host_id_;
-}
-
-
 inline void
 command::set_host_state (
    enum quorum::server::state state)

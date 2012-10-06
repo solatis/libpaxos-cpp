@@ -13,7 +13,7 @@
 #include "detail/io_thread.hpp"
 #include "detail/paxos_state.hpp"
 #include "detail/quorum/quorum.hpp"
-#include "detail/tcp_connection.hpp"
+#include "detail/connection/tcp_connection.hpp"
 
 namespace boost { namespace asio { namespace ip {
 class address;
@@ -51,6 +51,8 @@ class server
 {
 public:
 
+   typedef detail::paxos_state::processor_type  callback_type;
+
 public:
 
    /*!
@@ -63,10 +65,10 @@ public:
      quorum.we_are () to ensure the quorum knows the reference to the server.
    */
    server (
-      std::string const &                               server,
-      uint16_t                                          port,
-      detail::paxos_state::processor_type const &       callback);
-
+      std::string const &       server,
+      uint16_t                  port,
+      callback_type const &     callback);
+   
    /*!
      \brief Opens socket to listen on port
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
@@ -76,10 +78,10 @@ public:
      Automatically calls quorum.we_are () to ensure the quorum knows the reference to the server.
    */
    server (
-      boost::asio::io_service &                         io_service,
-      std::string const &                               server,
-      uint16_t                                          port,
-      detail::paxos_state::processor_type const &       callback);
+      boost::asio::io_service &   io_service,
+      std::string const &         server,
+      uint16_t                    port,
+      callback_type const &       callback);
 
    /*!
      \brief Destructor
@@ -118,14 +120,14 @@ private:
 
    void
    handle_accept (
-      detail::tcp_connection::pointer   new_connection,
-      boost::system::error_code const & error);
+      detail::connection::tcp_connection::pointer       new_connection,
+      boost::system::error_code const &                 error);
 
    static void
    read_and_dispatch_command (
-      detail::tcp_connection::pointer   new_connection,
-      detail::quorum::quorum &          quorum,
-      detail::paxos_state &             state);
+      detail::connection::tcp_connection::pointer       new_connection,
+      detail::quorum::quorum &                          quorum,
+      detail::paxos_state &                             state);
 
 private:
    

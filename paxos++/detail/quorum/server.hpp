@@ -10,7 +10,7 @@
 #include <boost/optional.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "../tcp_connection.hpp"
+#include "../connection/pool.hpp"
 
 namespace paxos { namespace detail { namespace quorum {
 
@@ -61,9 +61,8 @@ public:
       enum state);
 public:
 
-   server ();
-
    server (
+      boost::asio::io_service &                 io_service,
       boost::asio::ip::tcp::endpoint const &    endpoint);
 
    /*!
@@ -101,39 +100,25 @@ public:
 
 
    /*!
-     \brief Checks whether connection_ is valid
-     \return Returns true if connection_ is set
+     \brief Access to the underlying connection pool
     */
-   bool
-   connection_is_valid () const;
+   detail::connection::pool &
+   connection_pool ();
+
 
    /*!
-     \brief Resets connection to null
+     \brief Access to the underlying connection pool
     */
-   void
-   reset_connection ();
-
-   /*!
-     \brief Sets connection
-    */
-   void
-   set_connection (
-      tcp_connection::pointer   connection);
-
-   /*!
-     \brief Access to the connection
-     \pre connection_is_valid () == true
-    */
-   tcp_connection::pointer
-   connection () const;
+   detail::connection::pool const &
+   connection_pool () const;
 
 private:
 
-   boost::asio::ip::tcp::endpoint               endpoint_;
-   enum state                                   state_;
-   boost::uuids::uuid                           id_;
+   boost::asio::ip::tcp::endpoint       endpoint_;
+   enum state                           state_;
+   boost::uuids::uuid                   id_;
 
-   boost::optional <tcp_connection::pointer>    connection_;
+   detail::connection::pool             pool_;
 
 };
 

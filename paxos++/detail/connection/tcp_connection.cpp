@@ -8,7 +8,7 @@
 #include "util/debug.hpp"
 #include "tcp_connection.hpp"
 
-namespace paxos { namespace detail {
+namespace paxos { namespace detail { namespace connection {
 
 
 tcp_connection::tcp_connection (
@@ -44,6 +44,9 @@ tcp_connection::socket ()
 {
    return socket_;
 }
+
+
+
 
 void
 tcp_connection::start_timeout (
@@ -142,7 +145,4 @@ tcp_connection::handle_write (
    }
 }
 
-
-
-
-}; };
+}; }; };

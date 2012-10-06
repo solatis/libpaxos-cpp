@@ -5,7 +5,7 @@
 #ifndef LIBPAXOS_CPP_DETAIL_DISPATCHER_HPP
 #define LIBPAXOS_CPP_DETAIL_DISPATCHER_HPP
 
-#include "tcp_connection.hpp"
+#include "connection/tcp_connection.hpp"
 
 namespace paxos { namespace detail {
 class command;
@@ -34,10 +34,10 @@ public:
     */
    static void
    dispatch_command (
-      tcp_connection::pointer   connection,
-      detail::command const &   command,
-      detail::quorum::quorum &  quorum,
-      detail::paxos_state &     state);
+      connection::tcp_connection::pointer       connection,
+      detail::command const &                   command,
+      detail::quorum::quorum &                  quorum,
+      detail::paxos_state &                     state);
 
 private:
 
