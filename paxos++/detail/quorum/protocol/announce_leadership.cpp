@@ -38,7 +38,7 @@ announce_leadership::step1 (
    /*!
      We're not expecting a response to the leadership announcement
     */
-
+   connection->done ();
 }
 
 /*! static */ void

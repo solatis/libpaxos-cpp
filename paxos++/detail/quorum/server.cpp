@@ -41,7 +41,9 @@ server::server (
    : endpoint_ (endpoint),
      state_ (state_unknown),
      pool_ (io_service,
-            endpoint)
+            endpoint,
+            2,
+            5)
 {
 }
 

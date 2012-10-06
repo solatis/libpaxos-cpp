@@ -29,17 +29,9 @@ public:
 
    pool (
       boost::asio::io_service &                 io_service,
-      boost::asio::ip::tcp::endpoint const &    endpoint);
-
-   /*!
-     \brief Opens new connection pool
-     \param min_spare   Minimum amount of spare connections to hold in pool
-     \param max_spare   Maximum amount of spare connections to hold in pool
-    */
-   void
-   open (
-      uint16_t  min_spare,
-      uint16_t  max_spare);
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      uint16_t                                  min_spare,
+      uint16_t                                  max_spare);
 
    /*!
      \brief Checks amount of spare connections and adjusts pool accordingly

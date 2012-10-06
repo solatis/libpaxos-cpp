@@ -7,11 +7,13 @@ namespace paxos { namespace detail { namespace connection {
 
 pool::pool (
    boost::asio::io_service &                    io_service,
-   boost::asio::ip::tcp::endpoint const &       endpoint)
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   uint16_t                                     min_spare,
+   uint16_t                                     max_spare)
    : io_service_ (io_service),
      endpoint_ (endpoint),
-     min_spare_ (0),
-     max_spare_ (0)
+     min_spare_ (min_spare),
+     max_spare_ (max_spare)
 {
 }
 
@@ -25,6 +27,8 @@ pool::check_spare_connections ()
    }
 
    int16_t connections_to_allocate = min_spare_ - connections_.size ();
+
+   PAXOS_DEBUG ("allocating " << connections_to_allocate << " new connections!");
 
    for (int16_t i = 0; i < connections_to_allocate; ++i)
    {
