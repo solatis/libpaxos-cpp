@@ -16,7 +16,9 @@ include_HEADERS = \
 	command.inl \
 	dispatcher.hpp \
 	io_thread.hpp \
-	parser.hpp
+	parser.hpp \
+	paxos_state.hpp \
+	paxos_state.inl
 
 
 noinst_LTLIBRARIES=libpaxos_detail.la

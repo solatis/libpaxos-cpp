@@ -96,9 +96,8 @@ public:
    /*!
      \brief Sends data to entire quorum and call callback with result
      \param byte_array  Data to sent. Binary-safe.
-     \param callback    For each server in the quorum, called with response 
-                        to the command that has been received
      \param retries     Amount of times to retry in case the quorum is not yet ready
+     \returns Returns a future to the result
      \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
     */
    std::future <std::string>

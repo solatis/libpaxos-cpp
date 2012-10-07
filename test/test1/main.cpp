@@ -24,7 +24,8 @@ int main ()
    client.add ("127.0.0.1", 1337);
    client.start ();
 
-   PAXOS_ASSERT (client.send ("foo", 10).get () == "bar");
+   std::future <std::string> future = client.send ("foo", 10);
+   PAXOS_ASSERT (future.get () == "bar");
 }
 
 
