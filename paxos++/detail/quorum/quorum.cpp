@@ -259,10 +259,10 @@ quorum::our_leader_connection ()
    return lookup_server (our_leader ()).connection_pool ().connection ();
 }
 
-std::vector  <server>
-quorum::live_servers () const
+std::vector  <boost::asio::ip::tcp::endpoint>
+quorum::live_server_endpoints () const
 {
-   std::vector <server> servers;
+   std::vector <boost::asio::ip::tcp::endpoint> servers;
    
    for (auto const & i : servers_)
    {
@@ -276,7 +276,7 @@ quorum::live_servers () const
             case server::state_follower:
             case server::state_leader:
                PAXOS_ASSERT (i.second.connection_pool ().has_spare_connections () == true);
-               servers.push_back (i.second);
+               servers.push_back (i.first);
                break;
 
             case server::state_client:

@@ -83,6 +83,7 @@ void
 pool::release (
    tcp_connection::pointer      connection)
 {
+   PAXOS_DEBUG ("releasing connection " << connection.get ());
    connections_.push (connection);
 }
 

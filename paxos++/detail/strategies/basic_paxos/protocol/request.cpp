@@ -32,8 +32,10 @@ request::step1 (
    /*!
      Tell all nodes within this quorum to prepare this request.
     */
-   for (quorum::server & server : quorum.live_servers ())
+   for (boost::asio::ip::tcp::endpoint const & endpoint : quorum.live_server_endpoints ())
    {
+      detail::quorum::server & server = quorum.lookup_server (endpoint);
+
       step2 (client_connection,
              quorum.our_endpoint (),
              server.endpoint (),
@@ -143,6 +145,8 @@ request::step4 (
 {
    PAXOS_ASSERT (state->connections[follower_endpoint] == follower_connection);
 
+   PAXOS_DEBUG ("step4 received command");
+
    switch (command.type ())
    {
          case command::type_request_promise:
@@ -162,13 +166,15 @@ request::step4 (
 
 
 
-   bool everyone_responded = (state->connections.size () == state->responses.size ());
+   bool everyone_responded = (state->connections.size () == state->accepted.size ());
 
    bool everyone_promised  = true;
    for (auto const & i : state->accepted)
    {
       everyone_promised  = everyone_promised && i.second == response_ack;
    }
+
+   PAXOS_DEBUG ("step4 everyone_responsed = " << everyone_responded << ", everyone_promised = " << everyone_promised);
 
 
    if (everyone_responded == true && everyone_promised == false)

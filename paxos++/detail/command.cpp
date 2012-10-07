@@ -20,8 +20,6 @@ command::to_string (
    boost::archive::text_oarchive oa (value);
    oa << command;
 
-   PAXOS_DEBUG ("writing command: '" << value.str () << "'");
-
    return value.str ();
 }
 
@@ -30,8 +28,6 @@ command::to_string (
 command::from_string (
    std::string const &  string)
 {
-   PAXOS_DEBUG ("reading command: '" << string << "'");
-
    command ret;
 
    std::stringstream value (string);

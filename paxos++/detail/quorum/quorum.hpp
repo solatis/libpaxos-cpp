@@ -141,8 +141,8 @@ public:
      This function is useful for when messages need to be broadcasted to all nodes within
      the quorum.
     */
-   std::vector  <server>
-   live_servers () const;
+   std::vector  <boost::asio::ip::tcp::endpoint>
+   live_server_endpoints () const;
 
    /*!
      \brief Basically a forward to heartbeat ()
@@ -158,6 +158,23 @@ public:
     */
    void
    add (
+      boost::asio::ip::tcp::endpoint const &    endpoint);
+
+
+   /*!
+     \brief Access to a server
+     \pre servers_.find (endpoint) != servers_.end ();
+    */
+   detail::quorum::server const &
+   lookup_server (
+      boost::asio::ip::tcp::endpoint const &    endpoint) const;
+
+   /*!
+     \brief Access to a server
+     \pre servers_.find (endpoint) != servers_.end ();
+    */
+   detail::quorum::server &
+   lookup_server (
       boost::asio::ip::tcp::endpoint const &    endpoint);
 
 private:
@@ -194,22 +211,6 @@ private:
     */
    void
    heartbeat_elect_leader ();
-
-   /*!
-     \brief Access to a server
-     \pre servers_.find (endpoint) != servers_.end ();
-    */
-   detail::quorum::server const &
-   lookup_server (
-      boost::asio::ip::tcp::endpoint const &    endpoint) const;
-
-   /*!
-     \brief Access to a server
-     \pre servers_.find (endpoint) != servers_.end ();
-    */
-   detail::quorum::server &
-   lookup_server (
-      boost::asio::ip::tcp::endpoint const &    endpoint);
 
 private:
 

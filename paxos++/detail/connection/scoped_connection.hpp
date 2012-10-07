@@ -32,6 +32,11 @@ public:
    scoped_connection (
       pool &    pool);
 
+   
+   /*!
+     \brief Releases connection to pool
+   */
+   ~scoped_connection ();
 
    /*!
      \brief Creates new scoped connection
@@ -41,7 +46,7 @@ public:
       pool &    pool);
 
    /*!
-     \brief Releases connection to pool
+     \brief Marks connection ready to be released to the pool
     */
    void
    done ();
@@ -54,6 +59,7 @@ private:
 
    pool &                       pool_;
    tcp_connection::pointer      connection_;
+   bool                         done_;
 
 };
 

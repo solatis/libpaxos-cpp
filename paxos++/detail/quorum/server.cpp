@@ -42,8 +42,9 @@ server::server (
      state_ (state_unknown),
      pool_ (io_service,
             endpoint,
-            2,
-            5)
+            2, //! min spare 
+            5  //! max spare
+            )
 {
 }
 

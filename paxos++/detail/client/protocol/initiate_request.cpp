@@ -19,6 +19,8 @@ initiate_request::step1 (
    */
    PAXOS_CHECK_THROW (quorum.we_have_a_leader () == false, exception::not_ready ());
 
+   PAXOS_DEBUG ("quorum is reading, sending request..");
+
    /*!
      \bug There is a race condition here: quorum.our_leader_connection () assumes that
           quorum.we_have_a_leader () == true, but another thread in the meantime may have
@@ -37,6 +39,8 @@ initiate_request::step1 (
    command.set_workload (byte_array);
    parser::write_command (connection->connection (),
                           command);
+
+   PAXOS_INFO ("client initiating request!");
 
 
    parser::read_command (connection->connection (),
