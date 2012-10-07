@@ -4,6 +4,8 @@ Makefile.in
 
 .deps
 .libs
+.dirstamp
+core
 
 /autom4te.cache
 /aclocal.m4
@@ -30,5 +32,5 @@ Makefile.in
 *.lo
 *.so
 
-test/test1
-test/test2
+test/test1/test1
+test/test2/test2
