@@ -5,6 +5,7 @@
 #ifndef LIBPAXOS_CPP_CLIENT_HPP
 #define LIBPAXOS_CPP_CLIENT_HPP
 
+#include <future>
 #include <boost/function.hpp>
 
 #include "exception/exception.hpp"
@@ -100,24 +101,11 @@ public:
      \param retries     Amount of times to retry in case the quorum is not yet ready
      \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
     */
-   void
-   async_send (
-      std::string const &       byte_array,
-      callback_type             callback,
-      uint16_t                  retries = 1) throw (exception::not_ready);
-
-   /*!
-     \brief Sends data to entire quorum and blocks until command is completed
-     \param byte_array  Data to sent. Binary-safe.
-     \param retries     Amount of times to retry in case the quorum is not yet ready
-     \returns Returns response string returned by all servers
-     \throws Can throw a 'not_ready_exception' when the quorum is in an inconsistent state
-    */
-   std::string
+   std::future <std::string>
    send (
       std::string const &       byte_array,
-      uint16_t                  retries = 1) throw (exception::not_ready,
-                                                    exception::request_error);
+      uint16_t                  retries = 1)
+      throw (exception::not_ready);
 
 
 private:

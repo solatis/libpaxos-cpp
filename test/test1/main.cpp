@@ -25,7 +25,11 @@ int main ()
    client.start ();
 
 
-   PAXOS_ASSERT (client.send ("foo", 10) == "bar");
+   std::future <std::string> future = client.send ("foo", 10);
+   std::string const & value = future.get ();
+   PAXOS_ASSERT (value == "bar");
+
+   PAXOS_INFO ("test executed succesfully!");
 }
 
 

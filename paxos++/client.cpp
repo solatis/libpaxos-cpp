@@ -47,13 +47,15 @@ client::add (
 }
 
 
-void
-client::async_send (
+std::future <std::string>
+client::send (
    std::string const &  byte_array,
-   callback_type        callback,
    uint16_t             retries)
    throw (exception::not_ready)
 {
+   boost::shared_ptr <std::promise <std::string> > promise (
+      new std::promise <std::string> ());
+
    /*!
      We are a client, we can NEVER EVER be a leader.
     */
@@ -64,11 +66,24 @@ client::async_send (
          /*!
            Throws exception if quorum is not ready yet
           */
-         detail::client::protocol::initiate_request::step1 (byte_array,
-                                                            quorum_,
-                                                            callback);
+         detail::client::protocol::initiate_request::step1 (
+            byte_array,
+            quorum_,
+            [promise] (
+               boost::optional <enum error_code>        error_code,
+               std::string const &                      response)
+            {
+               if (error_code.is_initialized () == true)
+               {
+                  promise->set_exception (std::make_exception_ptr (exception::request_error ()));
+               }
+               else
+               {
+                  promise->set_value (response);
+               }
+            });
 
-         return;
+         return promise->get_future ();
       }
       catch (exception::not_ready const & e)
       {
@@ -87,41 +102,6 @@ client::async_send (
 
 
    PAXOS_THROW (exception::not_ready ());
-}
-
-std::string
-client::send (
-   std::string const &  byte_array,
-   uint16_t             retries)
-   throw (exception::not_ready,
-          exception::request_error)
-{
-   boost::mutex lock;
-   boost::unique_lock <boost::mutex> guard (lock);
-
-   boost::condition response_received;   
-
-   std::string output_response;
-
-   callback_type callback = 
-      [& response_received,
-       & output_response] (boost::optional <enum error_code> error_code,
-                           std::string const & input_response)
-   {
-      PAXOS_CHECK_THROW (
-         error_code.is_initialized () == true, exception::request_error ());                   
-
-      output_response = input_response;
-      //! We should wait until we have received responses for all nodes in quorum
-      response_received.notify_one ();
-   };
-
-   async_send (byte_array, callback, retries);
-
-
-   response_received.wait (guard);
-
-   return output_response;
 }
 
 

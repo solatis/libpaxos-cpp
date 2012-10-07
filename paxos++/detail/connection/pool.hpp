@@ -65,7 +65,6 @@ protected:
    tcp_connection::pointer
    acquire ();
 
-
    /*!
      \brief Used by scoped_connection to release connection
     */
