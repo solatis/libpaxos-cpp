@@ -9,8 +9,8 @@ namespace paxos { namespace detail {
 
 /*! static */ void
 parser::write_command (
-   connection::tcp_connection::pointer  connection,
-   command const &                      command)
+   tcp_connection::pointer      connection,
+   command const &              command)
 {
    std::string binary_string = command::to_string (command);
    uint32_t size             = binary_string.size ();
@@ -23,8 +23,8 @@ parser::write_command (
 
 /*! static */ void
 parser::read_command (
-   connection::tcp_connection::pointer  connection,
-   callback_function                    callback)
+   tcp_connection::pointer      connection,
+   callback_function            callback)
 {
    boost::shared_array <char> buffer (new char[4]);
 
@@ -45,7 +45,7 @@ parser::read_command (
 
 /*! static */ void
 parser::read_command_parse_size (
-   connection::tcp_connection::pointer  connection,
+   tcp_connection::pointer              connection,
    boost::system::error_code const &    error,
    size_t                               bytes_transferred,
    boost::shared_array <char>           bytes_buffer,
@@ -79,7 +79,7 @@ parser::read_command_parse_size (
 
 /*! static */ void
 parser::read_command_parse_command (
-   connection::tcp_connection::pointer  connection,
+   tcp_connection::pointer              connection,
    boost::system::error_code const &    error,
    size_t                               bytes_transferred,
    boost::shared_array <char>           buffer,

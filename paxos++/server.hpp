@@ -13,7 +13,7 @@
 #include "detail/io_thread.hpp"
 #include "detail/paxos_state.hpp"
 #include "detail/quorum/quorum.hpp"
-#include "detail/connection/tcp_connection.hpp"
+#include "detail/tcp_connection.hpp"
 
 namespace boost { namespace asio { namespace ip {
 class address;
@@ -120,14 +120,14 @@ private:
 
    void
    handle_accept (
-      detail::connection::tcp_connection::pointer       new_connection,
-      boost::system::error_code const &                 error);
+      detail::tcp_connection::pointer   new_connection,
+      boost::system::error_code const & error);
 
    static void
    read_and_dispatch_command (
-      detail::connection::tcp_connection::pointer       new_connection,
-      detail::quorum::quorum &                          quorum,
-      detail::paxos_state &                             state);
+      detail::tcp_connection::pointer   new_connection,
+      detail::quorum::quorum &          quorum,
+      detail::paxos_state &             state);
 
 private:
    

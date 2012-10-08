@@ -7,7 +7,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include "../../connection/scoped_connection.hpp"
+#include "../../tcp_connection.hpp"
 
 namespace boost { namespace asio {
 class io_service;
@@ -38,18 +38,18 @@ public:
     */
    static void
    step1 (
-      boost::asio::io_service &                 io_service,
-      connection::scoped_connection::pointer    connection,
-      detail::quorum::quorum &                  quorum);
+      boost::asio::io_service & io_service,
+      tcp_connection::pointer   connection,
+      detail::quorum::quorum &  quorum);
 
    /*!
      \brief Entry point when a handshake has been received
     */
    static void
    step2 (
-      connection::tcp_connection::pointer       connection,
-      detail::command const &                   command,
-      detail::quorum::quorum &                  quorum);
+      tcp_connection::pointer   connection,
+      detail::command const &   command,
+      detail::quorum::quorum &  quorum);
 
 
 private:   

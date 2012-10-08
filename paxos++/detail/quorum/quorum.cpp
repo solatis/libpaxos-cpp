@@ -189,12 +189,12 @@ quorum::is_ready_for_leader_election () const
          return false;
       }
       else if (i.second.state () == server::state_non_participant
-               && i.second.connection_pool ().has_spare_connections ()== false)
+               && i.second.has_connection ()== false)
       {
          /*!
            This will take one handshake to recover, either the node will be set in a
            DEAD state or the connection will be established.
-          */
+         */
          PAXOS_WARN ("server " << i.first << " has state_non_participant and no connection");
          return false;
       }
@@ -237,6 +237,15 @@ quorum::we_have_a_leader () const
    return leader_count == 1;
 }
 
+bool
+quorum::we_have_a_leader_connection () const
+{
+   return 
+      this->we_have_a_leader () == true
+      && this->lookup_server (this->our_leader ()).has_connection () == true;
+}
+
+
 boost::asio::ip::tcp::endpoint const &
 quorum::our_leader () const
 {
@@ -253,10 +262,10 @@ quorum::our_leader () const
    PAXOS_UNREACHABLE ();
 }
 
-connection::scoped_connection::pointer
+tcp_connection::pointer
 quorum::our_leader_connection () 
 {
-   return lookup_server (our_leader ()).connection_pool ().connection ();
+   return lookup_server (our_leader ()).connection ();
 }
 
 std::vector  <boost::asio::ip::tcp::endpoint>
@@ -275,7 +284,6 @@ quorum::live_server_endpoints () const
 
             case server::state_follower:
             case server::state_leader:
-               PAXOS_ASSERT (i.second.connection_pool ().has_spare_connections () == true);
                servers.push_back (i.first);
                break;
 
@@ -335,9 +343,9 @@ quorum::heartbeat_validate_connections ()
 {
    PAXOS_DEBUG ("validating connections");
 
-   for (auto & i : servers_)
+//   for (auto & i : servers_)
    {
-      i.second.connection_pool ().check_spare_connections ();
+//      i.second.connection_pool ().check_spare_connections ();
    }
 }
 
@@ -349,7 +357,7 @@ quorum::heartbeat_handshake ()
 
    for (auto & i : servers_)
    {
-      if (i.second.connection_pool ().has_spare_connections () == false)
+      if (i.second.has_connection () == false)
       {
          continue;
       }
@@ -367,7 +375,7 @@ quorum::heartbeat_handshake ()
 
       PAXOS_DEBUG ("connection " << i.first << " is valid, have id = " << i.second.id () << ", performing handshake");
       protocol::handshake::step1 (io_service_,
-                                  i.second.connection_pool ().connection (),
+                                  i.second.connection (),
                                   *this);
    }
 }
@@ -395,12 +403,12 @@ quorum::heartbeat_elect_leader ()
             continue;
          }
 
-         PAXOS_ASSERT (i.second.connection_pool ().has_spare_connections () == true);
+         PAXOS_ASSERT (i.second.has_connection () == true);
 
          PAXOS_DEBUG ("announcing leadership to server with state = " << server::to_string (i.second.state ()));
 
          protocol::announce_leadership::step1 (io_service_,
-                                               i.second.connection_pool ().connection (),
+                                               i.second.connection (),
                                                *this);
       }
    }

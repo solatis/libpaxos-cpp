@@ -1,8 +1,5 @@
 include_HEADERS = \
 	client/protocol/initiate_request.hpp \
-	connection/pool.hpp \
-	connection/scoped_connection.hpp \
-	connection/tcp_connection.hpp \
 	quorum/quorum.hpp \
 	quorum/quorum.inl \
 	quorum/server.hpp \
@@ -18,15 +15,13 @@ include_HEADERS = \
 	io_thread.hpp \
 	parser.hpp \
 	paxos_state.hpp \
-	paxos_state.inl
+	paxos_state.inl \
+	tcp_connection.hpp 
 
 
 noinst_LTLIBRARIES=libpaxos_detail.la
 libpaxos_detail_la_SOURCES = \
 	client/protocol/initiate_request.cpp \
-	connection/pool.cpp \
-	connection/scoped_connection.cpp \
-	connection/tcp_connection.cpp \
 	quorum/quorum.cpp \
 	quorum/server.cpp \
 	quorum/protocol/announce_leadership.cpp \
@@ -35,4 +30,5 @@ libpaxos_detail_la_SOURCES = \
 	command.cpp \
 	dispatcher.cpp \
 	io_thread.cpp \
-	parser.cpp 
+	parser.cpp \
+	tcp_connection.cpp

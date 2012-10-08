@@ -120,6 +120,14 @@ public:
    bool
    we_have_a_leader () const;
 
+
+   /*!
+     \brief Returns true if we have one leader in the quorum and that leader 
+            has a connection
+    */
+   bool
+   we_have_a_leader_connection () const;
+
    /*!
      \brief Returns endpoint of the current leader of the quorum
      \pre we_have_a_leader () == true
@@ -131,7 +139,7 @@ public:
      \brief Returns our leader's tcp_connection
      \pre we_have_a_leader () == true
     */
-   connection::scoped_connection::pointer
+   tcp_connection::pointer
    our_leader_connection ();
 
 

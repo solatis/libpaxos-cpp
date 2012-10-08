@@ -9,9 +9,9 @@ namespace paxos { namespace detail { namespace quorum { namespace protocol {
 
 /*! static */ void
 announce_leadership::step1 (
-   boost::asio::io_service &                    io_service,
-   connection::scoped_connection::pointer       connection,
-   detail::quorum::quorum &                     quorum)
+   boost::asio::io_service &    io_service,
+   tcp_connection::pointer      connection,
+   detail::quorum::quorum &     quorum)
 {
    /*!
      Only the leader can announce leadership
@@ -32,20 +32,15 @@ announce_leadership::step1 (
      Writing this command to the connection will make the remote end enter
      step2 ().
     */   
-   parser::write_command (connection->connection (),
+   parser::write_command (connection,
                           command);
-
-   /*!
-     We're not expecting a response to the leadership announcement
-    */
-   connection->done ();
 }
 
 /*! static */ void
 announce_leadership::step2 (
-   connection::tcp_connection::pointer  connection,
-   detail::command const &              command,
-   detail::quorum::quorum &             quorum)
+   tcp_connection::pointer      connection,
+   detail::command const &      command,
+   detail::quorum::quorum &     quorum)
 {
    if (quorum.who_should_be_leader () == command.host_endpoint ())
    {

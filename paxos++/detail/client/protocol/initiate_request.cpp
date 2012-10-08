@@ -2,7 +2,7 @@
 #include "../../command.hpp"
 #include "../../parser.hpp"
 #include "../../quorum/quorum.hpp"
-#include "../../connection/scoped_connection.hpp"
+#include "../../tcp_connection.hpp"
 
 #include "initiate_request.hpp"
 
@@ -17,7 +17,7 @@ initiate_request::step1 (
    /*!
      If the quorum doesn't have a leader, we're not ready yet.
    */
-   PAXOS_CHECK_THROW (quorum.we_have_a_leader () == false, exception::not_ready ());
+   PAXOS_CHECK_THROW (quorum.we_have_a_leader_connection () == false, exception::not_ready ());
 
    PAXOS_DEBUG ("quorum is reading, sending request..");
 
@@ -28,7 +28,7 @@ initiate_request::step1 (
           true, and would thus lead to an assertion.
    */
 
-   detail::connection::scoped_connection::pointer connection = quorum.our_leader_connection ();
+   detail::tcp_connection::pointer connection = quorum.our_leader_connection ();
  
    /*!
      Now that we have our leader's connection, let's send it our command to initiate
@@ -37,13 +37,13 @@ initiate_request::step1 (
    command command;
    command.set_type (command::type_request_initiate);
    command.set_workload (byte_array);
-   parser::write_command (connection->connection (),
+   parser::write_command (connection,
                           command);
 
    PAXOS_INFO ("client initiating request!");
 
 
-   parser::read_command (connection->connection (),
+   parser::read_command (connection,
                          [connection,
                           callback] (
                             detail::command const &   c)
@@ -63,8 +63,6 @@ initiate_request::step1 (
                                   default:
                                      PAXOS_UNREACHABLE ();
                             };
-
-                            connection->done ();
                          });
 
 }

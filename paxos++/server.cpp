@@ -85,8 +85,8 @@ server::add (
 void
 server::accept ()
 {
-   detail::connection::tcp_connection::pointer connection = 
-      detail::connection::tcp_connection::create (acceptor_.get_io_service ());
+   detail::tcp_connection::pointer connection = 
+      detail::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (connection->socket (),
                            boost::bind (&server::handle_accept,
@@ -98,8 +98,8 @@ server::accept ()
 
 void
 server::handle_accept (
-   detail::connection::tcp_connection::pointer  new_connection,
-   boost::system::error_code const &            error)
+   detail::tcp_connection::pointer      new_connection,
+   boost::system::error_code const &    error)
 {
    if (error)
    {
@@ -119,9 +119,9 @@ server::handle_accept (
 
 /*! static */ void
 server::read_and_dispatch_command (
-   detail::connection::tcp_connection::pointer  connection,
-   detail::quorum::quorum &                     quorum,
-   detail::paxos_state &                        state)
+   detail::tcp_connection::pointer      connection,
+   detail::quorum::quorum &             quorum,
+   detail::paxos_state &                state)
 {
    /*!
      The code below essentially creates an infinite "recusion" loop, without

@@ -10,7 +10,7 @@
 #include <boost/optional.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "../connection/pool.hpp"
+#include "../tcp_connection.hpp"
 
 namespace paxos { namespace detail { namespace quorum {
 
@@ -98,27 +98,40 @@ public:
    set_id (
       boost::uuids::uuid const &        id);
 
+   
+   /*!
+     \brief Returns true if connection_ is set
+    */
+   bool
+   has_connection () const;
 
    /*!
-     \brief Access to the underlying connection pool
+     \brief Sets a connection
     */
-   detail::connection::pool &
-   connection_pool ();
-
+   void
+   set_connection (
+      detail::tcp_connection::pointer   connection);
 
    /*!
-     \brief Access to the underlying connection pool
+     \brief Resets the connection to a nullptr
     */
-   detail::connection::pool const &
-   connection_pool () const;
+   void
+   reset_connection ();
+
+   /*!
+     \brief Access to the underlying connection
+     \pre has_connection () == true
+    */
+      detail::tcp_connection::pointer
+   connection ();
 
 private:
 
-   boost::asio::ip::tcp::endpoint       endpoint_;
-   enum state                           state_;
-   boost::uuids::uuid                   id_;
+   boost::asio::ip::tcp::endpoint                       endpoint_;
+   enum state                                           state_;
+   boost::uuids::uuid                                   id_;
 
-   detail::connection::pool             pool_;
+   boost::optional <detail::tcp_connection::pointer>    connection_;
 
 };
 

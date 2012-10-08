@@ -8,7 +8,7 @@
 #include "util/debug.hpp"
 #include "tcp_connection.hpp"
 
-namespace paxos { namespace detail { namespace connection {
+namespace paxos { namespace detail { 
 
 
 tcp_connection::tcp_connection (
@@ -152,4 +152,4 @@ tcp_connection::handle_write (
    }
 }
 
-}; }; };
+}; };

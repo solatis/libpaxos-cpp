@@ -10,10 +10,10 @@ namespace paxos { namespace detail { namespace strategies { namespace basic_paxo
 
 /*! static */ void
 request::step1 (      
-   connection::tcp_connection::pointer  client_connection,
-   detail::command const &              command,
-   detail::quorum::quorum &             quorum,
-   detail::paxos_state &                proposal_id)
+   tcp_connection::pointer      client_connection,
+   detail::command const &      command,
+   detail::quorum::quorum &     quorum,
+   detail::paxos_state &        proposal_id)
 {
 
    PAXOS_ASSERT (quorum.our_leader () == quorum.our_endpoint ());
@@ -39,7 +39,7 @@ request::step1 (
       step2 (client_connection,
              quorum.our_endpoint (),
              server.endpoint (),
-             server.connection_pool ().connection (),
+             server.connection (),
              proposal_id.proposal_id (),
              command.workload (),
              state);
@@ -49,10 +49,10 @@ request::step1 (
 
 /*! static */ void
 request::step2 (
-   connection::tcp_connection::pointer          client_connection,
+   tcp_connection::pointer                      client_connection,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,   
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
-   connection::scoped_connection::pointer       follower_connection,
+   tcp_connection::pointer                      follower_connection,
    uint64_t                                     proposal_id,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state)
@@ -78,7 +78,7 @@ request::step2 (
 
    PAXOS_DEBUG ("step2 writing command");
 
-   parser::write_command (follower_connection->connection (),
+   parser::write_command (follower_connection,
                           command);
 
    PAXOS_DEBUG ("step2 reading command");   
@@ -86,7 +86,7 @@ request::step2 (
    /*!
      We expect either an 'ack' or a 'reject' response to this command.
     */
-   parser::read_command (follower_connection->connection (),
+   parser::read_command (follower_connection,
                          boost::bind (&request::step4,
                                       client_connection,
                                       leader_endpoint,
@@ -100,10 +100,10 @@ request::step2 (
 
 /*! static */ void
 request::step3 (      
-   connection::tcp_connection::pointer  leader_connection,
-   detail::command const &              command,
-   detail::quorum::quorum &             quorum,
-   detail::paxos_state &                state)
+   tcp_connection::pointer      leader_connection,
+   detail::command const &      command,
+   detail::quorum::quorum &     quorum,
+   detail::paxos_state &        state)
 {
    detail::command response;
 
@@ -134,10 +134,10 @@ request::step3 (
 
 /*! static */ void
 request::step4 (
-   connection::tcp_connection::pointer          client_connection,
+   tcp_connection::pointer                      client_connection,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
-   connection::scoped_connection::pointer       follower_connection,
+   tcp_connection::pointer                      follower_connection,
    uint64_t                                     proposal_id,
    std::string                                  byte_array,
    detail::command const &                      command,
@@ -218,10 +218,10 @@ request::step4 (
 
 /*! static */ void
 request::step5 (
-   connection::tcp_connection::pointer          client_connection,
+   tcp_connection::pointer                      client_connection,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
-   connection::scoped_connection::pointer       follower_connection,
+   tcp_connection::pointer                      follower_connection,
    uint64_t                                     proposal_id,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state)
@@ -239,7 +239,7 @@ request::step5 (
 
    PAXOS_DEBUG ("step5 writing command");   
    
-   parser::write_command (follower_connection->connection (),
+   parser::write_command (follower_connection,
                           command);
 
    PAXOS_DEBUG ("step5 reading command");   
@@ -247,7 +247,7 @@ request::step5 (
    /*!
      We expect a response to this command.
     */
-   parser::read_command (follower_connection->connection (),
+   parser::read_command (follower_connection,
                          boost::bind (&request::step7,
                                       client_connection,
                                       leader_endpoint,
@@ -261,10 +261,10 @@ request::step5 (
 
 /*! static */ void
 request::step6 (      
-   connection::tcp_connection::pointer  leader_connection,
-   detail::command const &              command,
-   detail::quorum::quorum &             quorum,
-   detail::paxos_state &                state)
+   tcp_connection::pointer      leader_connection,
+   detail::command const &      command,
+   detail::quorum::quorum &     quorum,
+   detail::paxos_state &        state)
 {
    /*!
      If the proposal id's do not match, something went terribly wrong! Most likely a switch
@@ -291,10 +291,10 @@ request::step6 (
 
 /*! static */ void
 request::step7 (
-   connection::tcp_connection::pointer          client_connection,
+   tcp_connection::pointer                      client_connection,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
-   connection::scoped_connection::pointer       follower_connection,
+   tcp_connection::pointer                      follower_connection,
    detail::command const &                      command,
    boost::shared_ptr <struct state>             state)
 {
@@ -359,8 +359,6 @@ request::step7 (
                                 response);
       }
    }
-
-   follower_connection->done ();
 }
 
 

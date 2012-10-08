@@ -13,7 +13,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-namespace paxos { namespace detail { namespace connection {
+namespace paxos { namespace detail { 
 
 /*!
   \brief Represents a tcp connection
@@ -96,6 +96,6 @@ private:
    std::string                  write_buffer_;
 };
 
-}; }; };
+}; };
 
 #endif //! LIBPAXOS_CPP_DETAIL_TCP_CONNECTION_HPP

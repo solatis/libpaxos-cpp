@@ -39,12 +39,7 @@ server::server (
    boost::asio::io_service &                    io_service,
    boost::asio::ip::tcp::endpoint const &       endpoint)
    : endpoint_ (endpoint),
-     state_ (state_unknown),
-     pool_ (io_service,
-            endpoint,
-            2, //! min spare 
-            5  //! max spare
-            )
+     state_ (state_unknown)
 {
 }
 
@@ -82,18 +77,30 @@ server::set_id (
 }
 
 
-
-detail::connection::pool &
-server::connection_pool ()
+bool
+server::has_connection () const
 {
-   return pool_;
+   return connection_.is_initialized () == true;
+}
+
+void
+server::set_connection (
+   detail::tcp_connection::pointer   connection)
+{
+   connection_ = connection;
 }
 
 
-detail::connection::pool const &
-server::connection_pool () const
+void
+server::reset_connection ()
 {
-   return pool_;
+   this->set_connection (detail::tcp_connection::pointer ());
+}
+
+detail::tcp_connection::pointer
+server::connection ()
+{
+   return *connection_;
 }
 
 
