@@ -2,9 +2,41 @@ namespace paxos { namespace detail {
 
 
 inline command::command ()
-   : type_ (type_invalid),
+   : id_ (0),
+     response_id_ (0),
+     type_ (type_invalid),
      proposal_id_ (0)
 {
+}
+
+
+
+inline void
+command::set_id (
+   uint64_t  id)
+{
+   id_ = id;
+}
+
+inline uint64_t
+command::id () const
+{
+   return id_;
+}
+
+
+
+inline void
+command::set_response_id (
+   uint64_t  response_id)
+{
+   response_id_ = response_id;
+}
+
+inline uint64_t
+command::response_id () const
+{
+   return response_id_;
 }
 
 
@@ -83,6 +115,9 @@ command::serialize (
    Archive &                 ar,
    unsigned int const        version) 
 {
+   ar & id_;
+   ar & response_id_;
+
    ar & type_;
    ar & error_code_;
 

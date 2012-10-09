@@ -8,9 +8,12 @@
 #include <map>
 #include <vector>
 
+#include <boost/bind.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/deadline_timer.hpp>
+
 
 #include "server.hpp"
 
@@ -139,7 +142,7 @@ public:
      \brief Returns our leader's tcp_connection
      \pre we_have_a_leader () == true
     */
-   tcp_connection::pointer
+   tcp_connection_ptr
    our_leader_connection ();
 
 
@@ -168,6 +171,20 @@ public:
    add (
       boost::asio::ip::tcp::endpoint const &    endpoint);
 
+   /*!
+     \brief Resets server to a 'dead' state 
+    */
+   void
+   mark_dead (
+      boost::asio::ip::tcp::endpoint const &    endpoint);      
+
+   /*!
+     \brief Called when a connection has been established with a server
+    */
+   void
+   connection_established (
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      tcp_connection_ptr                        connection);
 
    /*!
      \brief Access to a server

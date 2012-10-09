@@ -14,22 +14,28 @@ namespace paxos { namespace detail {
 tcp_connection::tcp_connection (
    boost::asio::io_service & io_service)
    : socket_ (io_service),
-     timeout_ (io_service)
+     command_dispatcher_ (*this)
 {
 }
-
 
 tcp_connection::~tcp_connection ()
 {
-   PAXOS_DEBUG ("connection dies: " << this);
-   cancel_timeout ();
+   PAXOS_DEBUG ("destructing connection " << this);
 }
 
-/*! static */ tcp_connection::pointer 
+
+detail::command_dispatcher &
+tcp_connection::command_dispatcher ()
+{
+   return command_dispatcher_;
+}
+
+
+/*! static */ tcp_connection_ptr 
 tcp_connection::create (
    boost::asio::io_service &    io_service)
 {
-   return pointer (
+   return tcp_connection_ptr (
       new tcp_connection (io_service));
 }
 
@@ -45,50 +51,16 @@ tcp_connection::socket ()
    return socket_;
 }
 
-
-
-
-void
-tcp_connection::start_timeout (
-   boost::asio::deadline_timer::duration_type const &   expiry_time)
-{
-   timeout_.expires_from_now (expiry_time);
-   timeout_.async_wait (
-      boost::bind (&tcp_connection::handle_timeout, 
-                   this, 
-                   boost::asio::placeholders::error));
-
-}
-
-void
-tcp_connection::cancel_timeout ()
-{
-   timeout_.cancel ();
-}
-
-void
-tcp_connection::handle_timeout (
-   boost::system::error_code const &    error)
-{
-   if (error == boost::asio::error::operation_aborted)
-   {
-      //! Nothing to see here, please pass along
-      return;
-   }
-
-   /*!
-     Timeout occured, so cancel the socket. This will force the completion of any async_read
-     commands with an boost::asio::error::operation_aborted as the error.
-
-     Note: this is not the same as socket_.close ()! But in effect, in most cases, will lead
-     to the destruction of this connection.
-    */
-   socket_.cancel ();
-}
-
-
 void
 tcp_connection::write (
+   std::string const &  message)
+{
+   boost::mutex::scoped_lock lock (mutex_);
+   write_locked (message);
+}
+
+void
+tcp_connection::write_locked (
    std::string const &  message)
 {
    /*!
@@ -107,7 +79,7 @@ tcp_connection::write (
    {
       write_buffer_ = message;
 
-      start_write ();
+      start_write_locked ();
    }
    else
    {
@@ -116,7 +88,7 @@ tcp_connection::write (
 }
 
 void
-tcp_connection::start_write ()
+tcp_connection::start_write_locked ()
 {
    PAXOS_ASSERT (write_buffer_.empty () == false);
 
@@ -140,6 +112,23 @@ tcp_connection::handle_write (
    boost::system::error_code const &    error,
    size_t                               bytes_transferred)
 {
+   if (error)
+   {
+      PAXOS_WARN ("an error occured while writing data: " << error.message ());
+      return;
+   }
+
+   boost::mutex::scoped_lock lock (mutex_);
+   handle_write_locked (bytes_transferred);
+}
+
+
+void
+tcp_connection::handle_write_locked (
+   size_t                               bytes_transferred)
+{
+   PAXOS_ASSERT (write_buffer_.size () >= bytes_transferred);
+
    write_buffer_ = write_buffer_.substr (bytes_transferred);
 
    /*!
@@ -148,7 +137,7 @@ tcp_connection::handle_write (
     */
    if (write_buffer_.empty () == false)
    {
-      start_write ();
+      start_write_locked ();
    }
 }
 

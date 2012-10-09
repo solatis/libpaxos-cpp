@@ -28,7 +28,7 @@ initiate_request::step1 (
           true, and would thus lead to an assertion.
    */
 
-   detail::tcp_connection::pointer connection = quorum.our_leader_connection ();
+   detail::tcp_connection_ptr connection = quorum.our_leader_connection ();
  
    /*!
      Now that we have our leader's connection, let's send it our command to initiate
@@ -37,34 +37,34 @@ initiate_request::step1 (
    command command;
    command.set_type (command::type_request_initiate);
    command.set_workload (byte_array);
-   parser::write_command (connection,
-                          command);
+   connection->command_dispatcher ().write (command);
 
    PAXOS_INFO ("client initiating request!");
 
 
-   parser::read_command (connection,
-                         [connection,
-                          callback] (
-                            detail::command const &   c)
-                         {
-                            switch (c.type ())
-                            {
-                                  case command::type_request_accepted:
-                                     PAXOS_DEBUG ("received command with workload = " << c.workload () << ", now calling callback!");
-                                     callback (boost::none, c.workload ());
-                                     break;
+   connection->command_dispatcher ().read (
+      command,
+      [connection,
+       callback] (
+          detail::command const &   c)
+      {
+         switch (c.type ())
+         {
+               case command::type_request_accepted:
+                  PAXOS_DEBUG ("received command with workload = " << c.workload () << ", "
+                               "now calling callback!");
+                  callback (boost::none, c.workload ());
+                  break;
+                  
+               case command::type_request_error:
+                  PAXOS_WARN ("request error occured");
+                  callback (c.error_code (), c.workload ());
+                  break;
 
-                                  case command::type_request_error:
-                                     PAXOS_WARN ("request error occured");
-                                     callback (c.error_code (), c.workload ());
-                                     break;
-
-                                  default:
-                                     PAXOS_UNREACHABLE ();
-                            };
-                         });
-
+               default:
+                  PAXOS_UNREACHABLE ();
+         };
+      });
 }
 
 

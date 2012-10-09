@@ -8,10 +8,13 @@
 #include <vector>
 
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/deadline_timer.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/mutex.hpp>
+
+#include "command_dispatcher.hpp"
+#include "tcp_connection_fwd.hpp"
 
 namespace paxos { namespace detail { 
 
@@ -29,56 +32,41 @@ class tcp_connection
 {
 public:
 
-   typedef boost::shared_ptr <tcp_connection>                                   pointer;
-
-private:
-
-   friend class tcp_connection_usage_guard;
-
-public:
-
    ~tcp_connection ();
 
-   static pointer 
+   static tcp_connection_ptr
    create (
       boost::asio::io_service &        io_service);   
 
-   void
-   close ();
 
    boost::asio::ip::tcp::socket &
    socket ();
 
    void
+   close ();
+
+   void
    write (
       std::string const &       message);
 
-   /*!
-     \brief Starts timer that calls socket_.cancel () when done
-
-     This is useful to issue right before an async_read is done on a connection when
-     a response is expected. Due to it calling socket_.cancel () after the timeout has
-     occurred, the async_read () will return with a boost::asio::error::operation_aborted
-     error.
-     
-     The caller must ensure that cancel_timeout () is called after a response has actually
-     been received.
+   /*!  
+     \brief Access to the underlying command dispatcher
     */
-   void
-   start_timeout (
-      boost::asio::deadline_timer::duration_type const &        expiry_time);
-
-   void
-   cancel_timeout ();
-
+   detail::command_dispatcher &
+   command_dispatcher ();
 
 private:
+
 
    tcp_connection (
       boost::asio::io_service & io_service);
 
    void
-   start_write ();
+   write_locked (
+      std::string const &       message);
+
+   void
+   start_write_locked ();
 
    void
    handle_write (
@@ -86,14 +74,22 @@ private:
       size_t                            bytes_transferred);
 
    void
-   handle_timeout (
-      boost::system::error_code const & error);
+   handle_write_locked (
+      size_t                            bytes_transferred);
 
 private:
+
+
    boost::asio::ip::tcp::socket socket_;
-   boost::asio::deadline_timer  timeout_;
+
+   /*!
+     \brief Synchronizes access to write_buffer_
+    */
+   boost::mutex                 mutex_;
 
    std::string                  write_buffer_;
+
+   detail::command_dispatcher   command_dispatcher_;
 };
 
 }; };

@@ -85,7 +85,7 @@ server::has_connection () const
 
 void
 server::set_connection (
-   detail::tcp_connection::pointer   connection)
+   detail::tcp_connection_ptr   connection)
 {
    connection_ = connection;
 }
@@ -94,10 +94,10 @@ server::set_connection (
 void
 server::reset_connection ()
 {
-   this->set_connection (detail::tcp_connection::pointer ());
+   this->set_connection (detail::tcp_connection_ptr ());
 }
 
-detail::tcp_connection::pointer
+detail::tcp_connection_ptr
 server::connection ()
 {
    return *connection_;

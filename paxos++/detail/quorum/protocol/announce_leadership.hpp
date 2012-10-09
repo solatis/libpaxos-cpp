@@ -7,7 +7,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include "../../tcp_connection.hpp"
+#include "../../tcp_connection_fwd.hpp"
 
 namespace boost { namespace asio {
 class io_service;
@@ -39,7 +39,7 @@ public:
    static void
    step1 (
       boost::asio::io_service & io_service,
-      tcp_connection::pointer   connection,
+      tcp_connection_ptr   connection,
       detail::quorum::quorum &  quorum);
 
    /*!
@@ -47,7 +47,7 @@ public:
     */
    static void
    step2 (
-      tcp_connection::pointer   connection,
+      tcp_connection_ptr   connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum);
 

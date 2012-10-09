@@ -1,6 +1,7 @@
 #include "../../util/debug.hpp"
 #include "../../command.hpp"
 #include "../../parser.hpp"
+#include "../../tcp_connection.hpp"
 #include "../quorum.hpp"
 
 #include "announce_leadership.hpp"
@@ -10,7 +11,7 @@ namespace paxos { namespace detail { namespace quorum { namespace protocol {
 /*! static */ void
 announce_leadership::step1 (
    boost::asio::io_service &    io_service,
-   tcp_connection::pointer      connection,
+   tcp_connection_ptr           connection,
    detail::quorum::quorum &     quorum)
 {
    /*!
@@ -32,13 +33,12 @@ announce_leadership::step1 (
      Writing this command to the connection will make the remote end enter
      step2 ().
     */   
-   parser::write_command (connection,
-                          command);
+   connection->command_dispatcher ().write (command);
 }
 
 /*! static */ void
 announce_leadership::step2 (
-   tcp_connection::pointer      connection,
+   tcp_connection_ptr      connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum)
 {

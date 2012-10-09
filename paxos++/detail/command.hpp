@@ -90,6 +90,21 @@ public:
    to_string (
       command const &                   command);
 
+
+   void
+   set_id (
+      uint64_t  id);
+
+   uint64_t
+   id () const;
+
+   void
+   set_response_id (
+      uint64_t  id);
+
+   uint64_t
+   response_id () const;
+
    void
    set_type (
       enum type                         type);
@@ -147,6 +162,9 @@ private:
       unsigned int const        version);
    
 private:
+
+   uint64_t                     id_;
+   uint64_t                     response_id_;
 
    enum type                    type_;
    enum paxos::error_code       error_code_;

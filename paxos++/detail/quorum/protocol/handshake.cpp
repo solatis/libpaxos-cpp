@@ -1,8 +1,7 @@
-#include <boost/uuid/uuid_io.hpp>
-
 #include "../../util/debug.hpp"
 #include "../../command.hpp"
 #include "../../parser.hpp"
+#include "../../tcp_connection.hpp"
 #include "../quorum.hpp"
 
 #include "handshake.hpp"
@@ -12,7 +11,7 @@ namespace paxos { namespace detail { namespace quorum { namespace protocol {
 /*! static */ void
 handshake::step1 (
    boost::asio::io_service &    io_service,
-   tcp_connection::pointer      connection,
+   tcp_connection_ptr      connection,
    detail::quorum::quorum &     quorum)
 {
    command command;
@@ -31,27 +30,27 @@ handshake::step1 (
      Writing this command to the connection will make the remote end enter
      step2 ().
     */   
-   parser::write_command (connection,
-                          command);
+   connection->command_dispatcher ().write (command);
 
    /*!
      We're expecting a response to the handshake.
     */
-   parser::read_command (connection,
-                         [connection,
-                          & quorum] (detail::command const &    command)
-                         {
-                            PAXOS_ASSERT (command.type () == command::type_handshake_response);
-                            PAXOS_ASSERT (command.host_state () != server::state_client);
-                            
-                            quorum.set_host_state (command.host_endpoint (), command.host_state ());
-                            quorum.set_host_id (command.host_endpoint (), command.host_id ());
-                         });
+   connection->command_dispatcher ().read (
+      command,
+      [connection,
+       & quorum] (detail::command const &    command)
+      {
+         PAXOS_ASSERT (command.type () == command::type_handshake_response);
+         PAXOS_ASSERT (command.host_state () != server::state_client);
+         
+         quorum.set_host_state (command.host_endpoint (), command.host_state ());
+         quorum.set_host_id (command.host_endpoint (), command.host_id ());
+      });
 }
 
 /*! static */ void
 handshake::step2 (
-   tcp_connection::pointer      connection,
+   tcp_connection_ptr           connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum)
 {
@@ -76,8 +75,8 @@ handshake::step2 (
    response.set_host_endpoint (quorum.our_endpoint ());
    response.set_host_id (quorum.our_id ());
 
-   parser::write_command (connection,
-                          response);
+   connection->command_dispatcher ().write (command,
+                                            response);
 }
 
 

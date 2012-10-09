@@ -9,8 +9,8 @@
 #include "exception/exception.hpp"
 
 #include "detail/util/debug.hpp"
-#include "detail/dispatcher.hpp"
 #include "detail/parser.hpp"
+#include "detail/tcp_connection.hpp"
 #include "server.hpp"
 
 namespace paxos {
@@ -85,7 +85,7 @@ server::add (
 void
 server::accept ()
 {
-   detail::tcp_connection::pointer connection = 
+   detail::tcp_connection_ptr connection = 
       detail::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (connection->socket (),
@@ -98,7 +98,7 @@ server::accept ()
 
 void
 server::handle_accept (
-   detail::tcp_connection::pointer      new_connection,
+   detail::tcp_connection_ptr           new_connection,
    boost::system::error_code const &    error)
 {
    if (error)
@@ -107,50 +107,24 @@ server::handle_accept (
       return;
    }
    
-   server::read_and_dispatch_command (new_connection,
-                                      quorum_,
-                                      state_);
+
+   new_connection->command_dispatcher ().read_loop (
+
+      /*!
+        Note that we provide the 'new_connection' shared_ptr here as a default callback,
+        which will ensure that the tcp_connection shared ptr stays alive for as long as
+        there are not any errors while reading commands.
+       */
+      boost::bind (&detail::command_dispatcher::dispatch_stateless_command,
+                   new_connection,
+                   _1,
+                   boost::ref (quorum_),
+                   boost::ref (state_)));
    
    /*!
      Enter "recursion" by accepting a new connection
    */
    accept ();
 }
-
-/*! static */ void
-server::read_and_dispatch_command (
-   detail::tcp_connection::pointer      connection,
-   detail::quorum::quorum &             quorum,
-   detail::paxos_state &                state)
-{
-   /*!
-     The code below essentially creates an infinite "recusion" loop, without
-     the recursion (since the async_reads in the parser unwind the stack).
-
-     \warning This also means that no other async_read can occur on this
-              connection, and that this loop "owns" this connection. 
-
-     \todo We could enforce this by making a separate "writable" and "readable"
-           interface for the connection; if we could somehow give the dispatcher
-           only a reference to the "writable" connection and not the "readable"
-           connection, this could be enforced by design.
-    */
-   detail::parser::read_command (connection,
-                                 [connection,
-                                  & quorum,
-                                  & state] (detail::command const & command)
-                                 {
-                                    detail::dispatcher::dispatch_command (connection,
-                                                                          command,
-                                                                          quorum,
-                                                                          state);
-
-                                    //! Enters recursion
-                                    server::read_and_dispatch_command (connection,
-                                                                       quorum,
-                                                                       state);
-                                 });
-
-};
 
 };

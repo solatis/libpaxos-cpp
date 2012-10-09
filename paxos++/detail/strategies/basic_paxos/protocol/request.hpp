@@ -7,7 +7,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include "../../../tcp_connection.hpp"
+#include "../../../tcp_connection_fwd.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
 class quorum;
@@ -37,7 +37,7 @@ private:
    {
       std::map <boost::asio::ip::tcp::endpoint, enum response>                   accepted;
       std::map <boost::asio::ip::tcp::endpoint, std::string>                     responses;
-      std::map <boost::asio::ip::tcp::endpoint, detail::tcp_connection::pointer> connections;
+      std::map <boost::asio::ip::tcp::endpoint, detail::tcp_connection_ptr> connections;
    };
    
 public:
@@ -47,7 +47,7 @@ public:
     */
    static void
    step1 (      
-      tcp_connection::pointer   client_connection,
+      tcp_connection_ptr        client_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
       detail::paxos_state &     state);
@@ -58,7 +58,7 @@ public:
     */
    static void
    step3 (      
-      tcp_connection::pointer   leader_connection,
+      tcp_connection_ptr        leader_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
       detail::paxos_state &     state);
@@ -73,7 +73,7 @@ public:
     */
    static void
    step6 (      
-      tcp_connection::pointer   leader_connection,
+      tcp_connection_ptr        leader_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
       detail::paxos_state &     state);
@@ -85,10 +85,11 @@ private:
     */
    static void
    step2 (
-      tcp_connection::pointer                   client_connection,
+      tcp_connection_ptr                        client_connection,
+      detail::command const &                   client_command,
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
-      tcp_connection::pointer                   follower_connection,
+      tcp_connection_ptr                        follower_connection,
       uint64_t                                  proposal_id,
       std::string const &                       byte_array,
       boost::shared_ptr <struct state>          state);
@@ -99,10 +100,11 @@ private:
     */
    static void
    step4 (
-      tcp_connection::pointer                   client_connection,
+      tcp_connection_ptr                        client_connection,
+      detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
-      tcp_connection::pointer                   follower_connection,
+      tcp_connection_ptr                        follower_connection,
       uint64_t                                  proposal_id,
       std::string                               byte_array,
       detail::command const &                   command,
@@ -113,10 +115,11 @@ private:
     */
    static void
    step5 (
-      tcp_connection::pointer                   client_connection,
+      tcp_connection_ptr                        client_connection,
+      detail::command const &                   client_command,
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
-      tcp_connection::pointer                   follower_connection,
+      tcp_connection_ptr                        follower_connection,
       uint64_t                                  proposal_id,
       std::string const &                       byte_array,
       boost::shared_ptr <struct state>          state);
@@ -127,10 +130,11 @@ private:
     */
    static void
    step7 (
-      tcp_connection::pointer                   client_connection,
+      tcp_connection_ptr                        client_connection,
+      detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
-      tcp_connection::pointer                   follower_connection,
+      tcp_connection_ptr                        follower_connection,
       detail::command const &                   command,
       boost::shared_ptr <struct state>          state);
 

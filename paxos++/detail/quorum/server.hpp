@@ -10,7 +10,7 @@
 #include <boost/optional.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "../tcp_connection.hpp"
+#include "../tcp_connection_fwd.hpp"
 
 namespace paxos { namespace detail { namespace quorum {
 
@@ -110,7 +110,7 @@ public:
     */
    void
    set_connection (
-      detail::tcp_connection::pointer   connection);
+      detail::tcp_connection_ptr   connection);
 
    /*!
      \brief Resets the connection to a nullptr
@@ -122,7 +122,7 @@ public:
      \brief Access to the underlying connection
      \pre has_connection () == true
     */
-      detail::tcp_connection::pointer
+      detail::tcp_connection_ptr
    connection ();
 
 private:
@@ -131,7 +131,7 @@ private:
    enum state                                           state_;
    boost::uuids::uuid                                   id_;
 
-   boost::optional <detail::tcp_connection::pointer>    connection_;
+   boost::optional <detail::tcp_connection_ptr>    connection_;
 
 };
 

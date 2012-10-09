@@ -2,8 +2,9 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include "protocol/handshake.hpp"
 #include "protocol/announce_leadership.hpp"
+#include "protocol/establish_connection.hpp"
+#include "protocol/handshake.hpp"
 
 #include "../util/debug.hpp"
 #include "../../configuration.hpp"
@@ -154,6 +155,29 @@ quorum::add (
    }
 }
 
+void
+quorum::mark_dead (
+   boost::asio::ip::tcp::endpoint const &    endpoint)
+{
+   PAXOS_DEBUG ("Unable to connect to " << endpoint << ", setting state to dead");
+
+   server & server = lookup_server (endpoint);
+   server.reset_connection ();
+   server.set_state (server::state_dead);
+   server.set_id (boost::uuids::uuid ());
+}
+
+void
+quorum::connection_established (
+   boost::asio::ip::tcp::endpoint const &    endpoint,
+   tcp_connection_ptr                           connection)
+{
+   PAXOS_DEBUG ("Established connection with " << endpoint << ", setting state to non-participant");
+
+   server & server = lookup_server (endpoint);
+   server.set_connection (connection);
+}
+
 
 detail::quorum::server const &
 quorum::lookup_server (
@@ -262,7 +286,7 @@ quorum::our_leader () const
    PAXOS_UNREACHABLE ();
 }
 
-tcp_connection::pointer
+tcp_connection_ptr
 quorum::our_leader_connection () 
 {
    return lookup_server (our_leader ()).connection ();
@@ -343,9 +367,14 @@ quorum::heartbeat_validate_connections ()
 {
    PAXOS_DEBUG ("validating connections");
 
-//   for (auto & i : servers_)
+   for (auto & i : servers_)
    {
-//      i.second.connection_pool ().check_spare_connections ();
+      if (i.second.has_connection () == false)
+      {
+         protocol::establish_connection::step1 (io_service_,
+                                                i.first,
+                                                *this);
+      }
    }
 }
 

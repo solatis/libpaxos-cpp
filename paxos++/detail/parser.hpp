@@ -7,7 +7,7 @@
 
 #include <boost/shared_array.hpp>
 
-#include "tcp_connection.hpp"
+#include "tcp_connection_fwd.hpp"
 #include "command.hpp"
 
 namespace paxos { namespace detail {
@@ -21,8 +21,6 @@ public:
 
    typedef boost::function <void (command const &)>     callback_function;
 
-public:
-
    /*!
      \brief Writes command to connection
      \param connection  Connection to write command to
@@ -30,8 +28,8 @@ public:
     */
    static void
    write_command (
-      tcp_connection::pointer   connection,
-      command const &           command);
+      tcp_connection &  connection,
+      command const &   command);
 
 
    /*!
@@ -41,16 +39,15 @@ public:
     */
    static void
    read_command (
-      tcp_connection::pointer   connection,
-      callback_function         callback);
+      tcp_connection &  connection,
+      callback_function callback);
+
 
 private:
 
-
-
    static void
    read_command_parse_size (
-      tcp_connection::pointer           connection,
+      tcp_connection &                  connection,
       boost::system::error_code const & error,
       size_t                            bytes_transferred,
       boost::shared_array <char>        buffer,
@@ -58,7 +55,6 @@ private:
 
    static void
    read_command_parse_command (
-      tcp_connection::pointer           connection,
       boost::system::error_code const & error,
       size_t                            bytes_transferred,
       boost::shared_array <char>        buffer,
