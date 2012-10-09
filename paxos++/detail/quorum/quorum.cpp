@@ -66,6 +66,9 @@ quorum::reset ()
       {
          i.second.set_state (server::state_unknown);
       }
+
+      i.second.reset_connection ();
+      i.second.reset_id ();
    }
 }
 
@@ -165,6 +168,8 @@ quorum::mark_dead (
    server.reset_connection ();
    server.set_state (server::state_dead);
    server.set_id (boost::uuids::uuid ());
+
+   PAXOS_ASSERT (server.has_connection () == false);
 }
 
 void
@@ -236,7 +241,6 @@ quorum::who_should_be_leader () const
 
    for (auto const & i : servers_)
    {
-      PAXOS_DEBUG ("host with id = " << i.second.id () << " endpoint = " << i.first);
       host_ids[i.second.id ()] = i.first;
    }
 
@@ -266,12 +270,12 @@ quorum::we_have_a_leader_connection () const
 {
    return 
       this->we_have_a_leader () == true
-      && this->lookup_server (this->our_leader ()).has_connection () == true;
+      && this->lookup_server (this->who_is_our_leader ()).has_connection () == true;
 }
 
 
 boost::asio::ip::tcp::endpoint const &
-quorum::our_leader () const
+quorum::who_is_our_leader () const
 {
    PAXOS_ASSERT (we_have_a_leader () == true);
 
@@ -289,7 +293,7 @@ quorum::our_leader () const
 tcp_connection_ptr
 quorum::our_leader_connection () 
 {
-   return lookup_server (our_leader ()).connection ();
+   return lookup_server (who_is_our_leader ()).connection ();
 }
 
 std::vector  <boost::asio::ip::tcp::endpoint>

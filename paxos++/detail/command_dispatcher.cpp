@@ -40,7 +40,8 @@ command_dispatcher::dispatch_stateless_command (
          case command::type_leader_claim:
             quorum::protocol::announce_leadership::step2 (connection,
                                                           command,
-                                                          quorum);
+                                                          quorum,
+                                                          state);
             break;
 
 

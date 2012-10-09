@@ -17,7 +17,7 @@ request::step1 (
    detail::paxos_state &        proposal_id)
 {
 
-   PAXOS_ASSERT (quorum.our_leader () == quorum.our_endpoint ());
+   PAXOS_ASSERT (quorum.who_is_our_leader () == quorum.our_endpoint ());
 
    /*!
      At the start of any request, we should, as defined in the Paxos protocol, increment
@@ -36,6 +36,8 @@ request::step1 (
    for (boost::asio::ip::tcp::endpoint const & endpoint : quorum.live_server_endpoints ())
    {
       detail::quorum::server & server = quorum.lookup_server (endpoint);
+
+      PAXOS_DEBUG ("sending paxos request to server " << endpoint);
 
       step2 (client_connection,
              command,
@@ -110,6 +112,9 @@ request::step3 (
    detail::paxos_state &        state)
 {
    detail::command response;
+
+   PAXOS_DEBUG ("state.proposal_id () = " << state.proposal_id () << ", "
+                "command.proposal_id () = " << command.proposal_id ());
 
    if (command.host_endpoint () == quorum.our_endpoint ())
    {
@@ -281,6 +286,8 @@ request::step6 (
 
      For now, we'll just assert on it, until the problem actually arises in the wild.
     */
+   PAXOS_DEBUG ("state.proposal_id () = " << state.proposal_id () << ", "
+                "command.proposal_id () = " << command.proposal_id ());
    PAXOS_ASSERT (command.proposal_id () <= state.proposal_id ());
 
 

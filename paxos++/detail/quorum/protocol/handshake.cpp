@@ -29,12 +29,12 @@ handshake::step1 (
    /*!
      Writing this command to the connection will make the remote end enter
      step2 ().
-    */   
+   */   
    connection->command_dispatcher ().write (command);
 
    /*!
      We're expecting a response to the handshake.
-    */
+   */
    connection->command_dispatcher ().read (
       command,
       [connection,
@@ -45,6 +45,14 @@ handshake::step1 (
          
          quorum.set_host_state (command.host_endpoint (), command.host_state ());
          quorum.set_host_id (command.host_endpoint (), command.host_id ());
+
+         if (quorum.we_have_a_leader () == true
+             && quorum.who_is_our_leader () != quorum.who_should_be_leader ())
+         {
+            PAXOS_WARN ("quorum is in an inconsistent state, " << quorum.who_is_our_leader () << " != " << quorum.who_should_be_leader ());
+            quorum.reset ();
+         }
+
       });
 }
 
@@ -77,6 +85,13 @@ handshake::step2 (
 
    connection->command_dispatcher ().write (command,
                                             response);
+
+   if (quorum.we_have_a_leader () == true
+       && quorum.who_is_our_leader () != quorum.who_should_be_leader ())
+   {
+      PAXOS_WARN ("quorum is in an inconsistent state, " << quorum.who_is_our_leader () << " != " << quorum.who_should_be_leader ());
+      quorum.reset ();
+   }
 }
 
 

@@ -1,6 +1,6 @@
 #include "../../util/debug.hpp"
 #include "../../command.hpp"
-#include "../../parser.hpp"
+#include "../../paxos_state.hpp"
 #include "../../tcp_connection.hpp"
 #include "../quorum.hpp"
 
@@ -28,6 +28,7 @@ announce_leadership::step1 (
    command.set_type (command::type_leader_claim);
    command.set_host_endpoint (quorum.our_endpoint ());
    command.set_host_id (quorum.our_id ());
+   command.set_proposal_id (0);
    
    /*!
      Writing this command to the connection will make the remote end enter
@@ -38,9 +39,10 @@ announce_leadership::step1 (
 
 /*! static */ void
 announce_leadership::step2 (
-   tcp_connection_ptr      connection,
+   tcp_connection_ptr           connection,
    detail::command const &      command,
-   detail::quorum::quorum &     quorum)
+   detail::quorum::quorum &     quorum,
+   detail::paxos_state &        state)
 {
    if (quorum.who_should_be_leader () == command.host_endpoint ())
    {

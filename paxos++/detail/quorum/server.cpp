@@ -76,6 +76,11 @@ server::set_id (
    id_ = id;
 }
 
+void
+server::reset_id ()
+{
+   id_ = boost::uuids::uuid ();
+}
 
 bool
 server::has_connection () const
@@ -94,7 +99,7 @@ server::set_connection (
 void
 server::reset_connection ()
 {
-   this->set_connection (detail::tcp_connection_ptr ());
+   connection_ = boost::none;
 }
 
 detail::tcp_connection_ptr

@@ -98,6 +98,11 @@ public:
    set_id (
       boost::uuids::uuid const &        id);
 
+   /*!
+     \brief Resets uinique identifier of the server
+    */
+   void
+   reset_id ();
    
    /*!
      \brief Returns true if connection_ is set

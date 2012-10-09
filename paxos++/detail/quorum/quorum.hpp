@@ -136,7 +136,7 @@ public:
      \pre we_have_a_leader () == true
     */
    boost::asio::ip::tcp::endpoint const &
-   our_leader () const;
+   who_is_our_leader () const;
 
    /*!
      \brief Returns our leader's tcp_connection
