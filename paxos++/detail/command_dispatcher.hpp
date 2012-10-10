@@ -16,7 +16,7 @@
 
 namespace paxos { namespace detail {
 class command;
-class paxos_state;
+class paxos_context;
 }; };
 
 namespace paxos { namespace detail { namespace quorum {
@@ -54,8 +54,18 @@ public:
       tcp_connection_ptr        connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
-      detail::paxos_state &     state);
+      detail::paxos_context &   state);
    
+
+   /*!
+     \brief Dispatches request initiate to appropriate handler, or enqueues it
+    */
+   static void
+   dispatch_request_initiate (
+      tcp_connection_ptr           connection,
+      detail::command const &      command,
+      detail::quorum::quorum &     quorum,
+      detail::paxos_context &      state);
 
    /*!
      \brief Writes a command to connection

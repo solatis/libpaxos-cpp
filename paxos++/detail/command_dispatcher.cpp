@@ -8,6 +8,7 @@
 
 #include "tcp_connection.hpp"
 #include "parser.hpp"
+#include "paxos_context.hpp"
 #include "command_dispatcher.hpp"
 
 namespace paxos { namespace detail {
@@ -26,7 +27,7 @@ command_dispatcher::dispatch_stateless_command (
    tcp_connection_ptr           connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_state &        state)
+   detail::paxos_context &      state)
 {
 
    switch (command.type ())
@@ -40,16 +41,18 @@ command_dispatcher::dispatch_stateless_command (
          case command::type_leader_claim:
             quorum::protocol::announce_leadership::step2 (connection,
                                                           command,
-                                                          quorum,
-                                                          state);
+                                                          quorum);
             break;
 
 
          case command::type_request_initiate:
-            strategies::basic_paxos::protocol::request::step1 (connection,
-                                                               command,
-                                                               quorum,
-                                                               state);
+            state.request_queue ().push (
+               {
+                  connection,
+                  command,
+                  quorum,
+                  state
+               });
             break;
 
          case command::type_request_prepare:
@@ -73,7 +76,6 @@ command_dispatcher::dispatch_stateless_command (
             PAXOS_THROW (paxos::exception::protocol_error ());
    };
 };
-
 
 void
 command_dispatcher::write (

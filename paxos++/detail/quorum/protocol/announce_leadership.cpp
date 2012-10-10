@@ -1,6 +1,5 @@
 #include "../../util/debug.hpp"
 #include "../../command.hpp"
-#include "../../paxos_state.hpp"
 #include "../../tcp_connection.hpp"
 #include "../quorum.hpp"
 
@@ -41,8 +40,7 @@ announce_leadership::step1 (
 announce_leadership::step2 (
    tcp_connection_ptr           connection,
    detail::command const &      command,
-   detail::quorum::quorum &     quorum,
-   detail::paxos_state &        state)
+   detail::quorum::quorum &     quorum)
 {
    if (quorum.who_should_be_leader () == command.host_endpoint ())
    {

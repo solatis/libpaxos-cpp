@@ -15,8 +15,12 @@ include_HEADERS = \
 	command_dispatcher.hpp \
 	io_thread.hpp \
 	parser.hpp \
-	paxos_state.hpp \
-	paxos_state.inl \
+	paxos_context.hpp \
+	paxos_context.inl \
+	paxos_request.hpp \
+	paxos_request.inl \
+	paxos_request_queue.hpp \
+	paxos_request_queue.inl \
 	tcp_connection.hpp 
 
 
@@ -33,4 +37,5 @@ libpaxos_detail_la_SOURCES = \
 	command_dispatcher.cpp \
 	io_thread.cpp \
 	parser.cpp \
+	paxos_request_queue.cpp \
 	tcp_connection.cpp

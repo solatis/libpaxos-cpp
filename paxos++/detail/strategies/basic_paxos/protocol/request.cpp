@@ -1,5 +1,5 @@
 #include "../../../quorum/quorum.hpp"
-#include "../../../paxos_state.hpp"
+#include "../../../paxos_context.hpp"
 #include "../../../command.hpp"
 #include "../../../parser.hpp"
 #include "../../../tcp_connection.hpp"
@@ -14,21 +14,27 @@ request::step1 (
    tcp_connection_ptr           client_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_state &        proposal_id)
+   detail::paxos_context &      global_state,
+   queue_guard_type             queue_guard)
 {
-
    PAXOS_ASSERT (quorum.who_is_our_leader () == quorum.our_endpoint ());
 
    /*!
      At the start of any request, we should, as defined in the Paxos protocol, increment
      our current proposal id.
     */
-   ++(proposal_id.proposal_id ());
+   ++(global_state.proposal_id ());
 
    /*!
      Keeps track of the current state / which servers have responded, etc.
     */
    boost::shared_ptr <struct state> state (new struct state ());
+
+   /*!
+     Note that this will ensure the queue guard is in place for as long as the request is
+     being processed.
+    */
+   state->queue_guard = queue_guard;
 
    /*!
      Tell all nodes within this quorum to prepare this request.
@@ -44,7 +50,7 @@ request::step1 (
              quorum.our_endpoint (),
              server.endpoint (),
              server.connection (),
-             proposal_id.proposal_id (),
+             global_state.proposal_id (),
              command.workload (),
              state);
    }
@@ -109,7 +115,7 @@ request::step3 (
    tcp_connection_ptr           leader_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_state &        state)
+   detail::paxos_context &        state)
 {
    detail::command response;
 
@@ -278,23 +284,24 @@ request::step6 (
    tcp_connection_ptr           leader_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_state &        state)
+   detail::paxos_context &      state)
 {
+   detail::command response;
+   
    /*!
      If the proposal id's do not match, something went terribly wrong! Most likely a switch
      of leaders during the operation.
-
-     For now, we'll just assert on it, until the problem actually arises in the wild.
     */
-   PAXOS_DEBUG ("state.proposal_id () = " << state.proposal_id () << ", "
-                "command.proposal_id () = " << command.proposal_id ());
-   PAXOS_ASSERT (command.proposal_id () <= state.proposal_id ());
-
-
-   detail::command response;
-   response.set_type (command::type_request_accepted);
-   response.set_workload (
-      state.processor () (command.workload ()));
+   if (command.proposal_id () != state.proposal_id ())
+   {
+      response.set_type (command::type_request_fail);
+   }
+   else
+   {
+      response.set_type (command::type_request_accepted);
+      response.set_workload (
+         state.processor () (command.workload ()));
+   }
 
    PAXOS_DEBUG ("step6 writing command");   
 
@@ -322,12 +329,23 @@ request::step7 (
    */
    state->responses[follower_endpoint] = command.workload ();
 
+   if (command.type () == command::type_request_fail)
+   {
+      state->accepted[follower_endpoint] = response_reject;
+   }
+
    std::string workload;
 
    PAXOS_ASSERT (state->connections.size () == state->accepted.size ());
    if (state->connections.size () == state->responses.size ())
    {
       bool all_same_response = true;
+      bool everyone_promised = true;
+
+      for (auto const & i : state->accepted)
+      {
+         everyone_promised  = everyone_promised && i.second == response_ack;
+      }
       
       for (auto const & i : state->responses)
       {
@@ -348,7 +366,8 @@ request::step7 (
          }
       }
 
-      if (all_same_response == true)
+      if (everyone_promised == true
+          && all_same_response == true)
       {
          /*!
            Send a copy of the last command to the client, since the workload should be the
@@ -371,7 +390,15 @@ request::step7 (
 
          detail::command response;
          response.set_type (command::type_request_error);
-         response.set_error_code (paxos::error_inconsistent_response);
+
+         if (everyone_promised == false)
+         {
+            response.set_error_code (paxos::error_incorrect_proposal);
+         }
+         else if (all_same_response == false)
+         {
+            response.set_error_code (paxos::error_inconsistent_response);
+         }
 
          client_connection->command_dispatcher ().write (client_command,
                                                          response);

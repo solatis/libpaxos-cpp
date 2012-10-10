@@ -11,7 +11,7 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include "detail/io_thread.hpp"
-#include "detail/paxos_state.hpp"
+#include "detail/paxos_context.hpp"
 #include "detail/quorum/quorum.hpp"
 #include "detail/tcp_connection_fwd.hpp"
 
@@ -51,7 +51,7 @@ class server
 {
 public:
 
-   typedef detail::paxos_state::processor_type  callback_type;
+   typedef detail::paxos_context::processor_type  callback_type;
 
 public:
 
@@ -129,7 +129,7 @@ private:
    detail::io_thread                    io_thread_;
    boost::asio::ip::tcp::acceptor       acceptor_;
    detail::quorum::quorum               quorum_;
-   detail::paxos_state                  state_;
+   detail::paxos_context                state_;
 };
 
 }

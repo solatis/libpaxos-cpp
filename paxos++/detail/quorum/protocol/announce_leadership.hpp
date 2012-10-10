@@ -15,7 +15,7 @@ class io_service;
 
 namespace paxos { namespace detail { 
 class command;
-class paxos_state;
+class paxos_context;
 }; }; 
 
 namespace paxos { namespace detail { namespace quorum { 
@@ -40,7 +40,7 @@ public:
    static void
    step1 (
       boost::asio::io_service & io_service,
-      tcp_connection_ptr   connection,
+      tcp_connection_ptr        connection,
       detail::quorum::quorum &  quorum);
 
    /*!
@@ -50,8 +50,7 @@ public:
    step2 (
       tcp_connection_ptr        connection,
       detail::command const &   command,
-      detail::quorum::quorum &  quorum,
-      detail::paxos_state &     state);
+      detail::quorum::quorum &  quorum);
 
 private:   
 

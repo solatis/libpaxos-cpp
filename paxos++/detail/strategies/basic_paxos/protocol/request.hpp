@@ -8,6 +8,7 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include "../../../tcp_connection_fwd.hpp"
+#include "../../../paxos_request_queue.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
 class quorum;
@@ -15,7 +16,7 @@ class quorum;
 
 namespace paxos { namespace detail { 
 class command;
-class paxos_state;
+class paxos_context;
 }; };
 
 namespace paxos { namespace detail { namespace strategies { namespace basic_paxos { namespace protocol {
@@ -33,12 +34,15 @@ private:
       response_reject
    };
 
+   typedef detail::paxos_request_queue::guard::pointer queue_guard_type;
    struct state
    {
-      std::map <boost::asio::ip::tcp::endpoint, enum response>                   accepted;
-      std::map <boost::asio::ip::tcp::endpoint, std::string>                     responses;
-      std::map <boost::asio::ip::tcp::endpoint, detail::tcp_connection_ptr> connections;
+      std::map <boost::asio::ip::tcp::endpoint, enum response>                  accepted;
+      std::map <boost::asio::ip::tcp::endpoint, std::string>                    responses;
+      std::map <boost::asio::ip::tcp::endpoint, detail::tcp_connection_ptr>     connections;
+      queue_guard_type                                                          queue_guard;
    };
+
    
 public:
 
@@ -50,7 +54,8 @@ public:
       tcp_connection_ptr        client_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
-      detail::paxos_state &     state);
+      detail::paxos_context &   state,
+      queue_guard_type          queue_guard);
 
 
    /*!
@@ -61,7 +66,7 @@ public:
       tcp_connection_ptr        leader_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
-      detail::paxos_state &     state);
+      detail::paxos_context &   state);
 
 
    /*!
@@ -76,7 +81,7 @@ public:
       tcp_connection_ptr        leader_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
-      detail::paxos_state &     state);
+      detail::paxos_context &   state);
 
 private:
 
