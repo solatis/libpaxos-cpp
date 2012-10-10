@@ -40,11 +40,11 @@ int main ()
    client.start ();
 
 
-   PAXOS_ASSERT (client.send ("foo", 10).get () == "bar");
-   PAXOS_ASSERT (client.send ("foo", 10).get () == "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
    PAXOS_DEBUG ("response_count = " << response_count);
 
-   PAXOS_ASSERT (response_count == 4);
+   PAXOS_ASSERT_EQ (response_count, 4);
    response_count = 0;
 
    paxos::server server3 ("127.0.0.1", 1339, callback);
@@ -62,8 +62,8 @@ int main ()
       boost::posix_time::milliseconds (
          paxos::configuration::heartbeat_interval * 3));
 
-   PAXOS_ASSERT (client.send ("foo", 10).get () == "bar");   
-   PAXOS_ASSERT (response_count == 3);
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");   
+   PAXOS_ASSERT_EQ (response_count, 3);
 
    PAXOS_INFO ("test succeeded");
 }

@@ -111,6 +111,13 @@ public:
       boost::asio::ip::tcp::endpoint const &    server,
       boost::uuids::uuid const &                id);
 
+
+   /*!
+     \brief Returns true if more than 50% of the servers in quorum are alive
+    */
+   bool
+   has_majority () const;
+
    /*!
      \brief Returns the endpoint of the host within our quorum we think should be a leader
     */

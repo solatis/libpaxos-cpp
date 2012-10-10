@@ -59,13 +59,51 @@ typedef boost::error_info <struct tag_solatis_debug, std::string> debug_exceptio
 
 
 #define PAXOS_ASSERT(check)\
-   do {                                                           \
-      if((check) == false) {                                      \
-         PAXOS_FATAL (BOOST_PP_STRINGIZE(check) << " == false");  \
+   if((check) == false) {                                         \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE(check) << " == false");     \
                                                                   \
-         abort ();                                                \
-      };                                                          \
-   } while (false);
+      abort ();                                                   \
+   };
+
+#define PAXOS_ASSERT_EQ(lhs, rhs)                                  \
+   if ((lhs == rhs) == false) {                                    \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (lhs) << " != " << BOOST_PP_STRINGIZE (rhs) << " [" << lhs << " != " << rhs << "]"); \
+      abort ();                                                         \
+   };
+
+
+#define PAXOS_ASSERT_NE(lhs, rhs)                                  \
+   if ((lhs != rhs) == false) {                                   \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (lhs) << " == " << BOOST_PP_STRINGIZE (rhs) << " [" << lhs << " == " << rhs << "]"); \
+      abort ();                                                         \
+   };
+
+
+#define PAXOS_ASSERT_GT(lhs, rhs)                                  \
+   if ((lhs > rhs) == false) {                                   \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (lhs) << " <= " << BOOST_PP_STRINGIZE (rhs) << " [" << lhs << " <= " << rhs << "]"); \
+      abort ();                                                         \
+   };
+
+#define PAXOS_ASSERT_GE(lhs, rhs)                                  \
+   if ((lhs >= rhs) == false) {                                   \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (lhs) << " < " << BOOST_PP_STRINGIZE (rhs) << " [" << lhs << " < " << rhs << "]"); \
+      abort ();                                                         \
+   };
+
+
+#define PAXOS_ASSERT_LT(lhs, rhs)                                  \
+   if ((lhs < rhs) == false) {                                   \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (lhs) << " >= " << BOOST_PP_STRINGIZE (rhs) << " [" << lhs << " >= " << rhs << "]"); \
+      abort ();                                                         \
+   };
+
+#define PAXOS_ASSERT_LE(lhs, rhs)                                  \
+   if ((lhs <= rhs) == false) {                                        \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (lhs) << " > " << BOOST_PP_STRINGIZE (rhs) << " [" << lhs << " > " << rhs << "]"); \
+      abort ();                                                         \
+   };
+
 
 
 /*!

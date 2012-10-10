@@ -9,9 +9,12 @@
 
 int main ()
 {
+   uint16_t response_count = 0;
+
    paxos::server::callback_type callback = 
-      [](std::string const &) -> std::string
+      [& response_count](std::string const &) -> std::string
       {
+         ++response_count;
          return "bar";
       };
 
@@ -42,7 +45,8 @@ int main ()
    client.start ();
 
 
-   PAXOS_ASSERT (client.send ("foo", 10).get () == "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (response_count, 3);
 }
 
 

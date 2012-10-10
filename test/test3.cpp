@@ -8,11 +8,16 @@
 #include <paxos++/server.hpp>
 #include <paxos++/detail/util/debug.hpp>
 
+#define TEST_COUNT 1000
+
 int main ()
 {
-   paxos::server::callback_type callback = 
-      [](std::string const & workload) -> std::string
+   uint16_t response_count = 0;
+
+   paxos::server::callback_type callback =
+      [& response_count](std::string const & workload) -> std::string
       {
+         ++response_count;
          return workload;
       };
 
@@ -47,7 +52,7 @@ int main ()
 
    std::map <size_t, std::future <std::string> >     results;
    
-   for (size_t i = 0; i < 1000; ++i)
+   for (size_t i = 0; i < TEST_COUNT; ++i)
    {
       results[i] = client.send (boost::lexical_cast <std::string> (i), 10);
    }
@@ -55,9 +60,11 @@ int main ()
    
    for (auto & i : results)
    {
-      PAXOS_ASSERT (i.second.get () == boost::lexical_cast <std::string> (i.first));
+      PAXOS_ASSERT_EQ (i.second.get (), boost::lexical_cast <std::string> (i.first));
       PAXOS_INFO ("validated result " << i.first);
    }
+
+   PAXOS_ASSERT_EQ (response_count, (3 * TEST_COUNT));
 
    PAXOS_INFO ("test succeeded");
 }

@@ -25,7 +25,7 @@ int main ()
    client.start ();
 
    std::future <std::string> future = client.send ("foo", 10);
-   PAXOS_ASSERT (future.get () == "bar");
+   PAXOS_ASSERT_EQ (future.get (), "bar");
 }
 
 

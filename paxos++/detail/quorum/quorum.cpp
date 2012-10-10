@@ -68,7 +68,6 @@ quorum::reset ()
       }
 
       i.second.reset_connection ();
-      i.second.reset_id ();
    }
 }
 
@@ -234,6 +233,13 @@ quorum::is_ready_for_leader_election () const
    return true;
 }
 
+bool
+quorum::has_majority () const
+{
+   return 
+      static_cast <double> (live_server_endpoints ().size ()) > static_cast <double> (servers_.size ()) / 2;
+}
+
 boost::asio::ip::tcp::endpoint
 quorum::who_should_be_leader () const
 {
@@ -244,6 +250,9 @@ quorum::who_should_be_leader () const
       host_ids[i.second.id ()] = i.first;
    }
 
+   /*!
+     If this check fails, we have multiple servers with the same id.
+    */
    PAXOS_ASSERT (host_ids.size () == servers_.size ());
    
    return host_ids.rbegin ()->second;
@@ -308,10 +317,12 @@ quorum::live_server_endpoints () const
             case server::state_unknown:
             case server::state_dead:
             case server::state_non_participant:
+               PAXOS_DEBUG ("skipping dead from live servers: " << i.first);
                continue;
 
             case server::state_follower:
             case server::state_leader:
+               PAXOS_DEBUG ("adding to live servers: " << i.first);
                servers.push_back (i.first);
                break;
 
