@@ -126,6 +126,8 @@ command::serialize (
    ar & host_port_;
    ar & host_state_;
 
+   ar & live_servers_;
+
    ar & proposal_id_;
    ar & workload_;
 }

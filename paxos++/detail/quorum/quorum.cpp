@@ -234,10 +234,13 @@ quorum::is_ready_for_leader_election () const
 }
 
 bool
-quorum::has_majority () const
+quorum::has_majority (
+   boost::asio::ip::tcp::endpoint const &       endpoint) const
 {
+   server const & server = lookup_server (endpoint);
+
    return 
-      static_cast <double> (live_server_endpoints ().size ()) > static_cast <double> (servers_.size ()) / 2;
+      static_cast <double> (server.live_servers ().size ()) > static_cast <double> (servers_.size ()) / 2;
 }
 
 boost::asio::ip::tcp::endpoint

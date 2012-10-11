@@ -11,6 +11,8 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <boost/serialization/access.hpp>
+#include <boost/serialization/map.hpp> //! For std::pair
+#include <boost/serialization/vector.hpp>
 
 #include "quorum/server.hpp"
 
@@ -140,6 +142,14 @@ public:
    enum quorum::server::state
    host_state () const;
 
+
+   void
+   set_live_servers (
+      std::vector <boost::asio::ip::tcp::endpoint> const &      endpoints);
+
+   std::vector <boost::asio::ip::tcp::endpoint>
+   live_servers () const;
+
    void
    set_proposal_id (
       uint64_t                  proposal_id);
@@ -163,19 +173,21 @@ private:
    
 private:
 
-   uint64_t                     id_;
-   uint64_t                     response_id_;
+   uint64_t                                             id_;
+   uint64_t                                             response_id_;
 
-   enum type                    type_;
-   enum paxos::error_code       error_code_;
+   enum type                                            type_;
+   enum paxos::error_code                               error_code_;
 
-   std::string                  host_id_;
-   std::string                  host_address_;
-   uint16_t                     host_port_;
-   enum quorum::server::state   host_state_;
+   std::string                                          host_id_;
+   std::string                                          host_address_;
+   uint16_t                                             host_port_;
+   enum quorum::server::state                           host_state_;
 
-   uint64_t                     proposal_id_;
-   std::string                  workload_;
+   std::vector <std::pair <std::string, uint16_t> >     live_servers_;
+
+   uint64_t                                             proposal_id_;
+   std::string                                          workload_;
 };
 
 }; };

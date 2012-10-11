@@ -24,6 +24,7 @@ handshake::step1 (
 
       command.set_host_endpoint (quorum.our_endpoint ());
       command.set_host_id (quorum.our_id ());
+      command.set_live_servers (quorum.live_server_endpoints ());
    }
 
    /*!
@@ -45,6 +46,7 @@ handshake::step1 (
          
          quorum.set_host_state (command.host_endpoint (), command.host_state ());
          quorum.set_host_id (command.host_endpoint (), command.host_id ());
+         quorum.lookup_server (command.host_endpoint ()).set_live_servers (command.live_servers ());
 
          if (quorum.we_have_a_leader () == true
              && quorum.who_is_our_leader () != quorum.who_should_be_leader ())
@@ -72,6 +74,7 @@ handshake::step2 (
    {
       quorum.set_host_state (command.host_endpoint (), command.host_state ());
       quorum.set_host_id (command.host_endpoint (), command.host_id ());
+      quorum.lookup_server (command.host_endpoint ()).set_live_servers (command.live_servers ());
    }
 
    /*!
@@ -82,6 +85,7 @@ handshake::step2 (
    response.set_host_state (quorum.our_state ());
    response.set_host_endpoint (quorum.our_endpoint ());
    response.set_host_id (quorum.our_id ());
+   response.set_live_servers (quorum.live_server_endpoints ());
 
    connection->command_dispatcher ().write (command,
                                             response);

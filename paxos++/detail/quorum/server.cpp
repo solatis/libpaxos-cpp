@@ -109,4 +109,19 @@ server::connection ()
 }
 
 
+std::vector <boost::asio::ip::tcp::endpoint> const &
+server::live_servers () const
+{
+   return live_servers_;
+}
+
+
+void
+server::set_live_servers (
+   std::vector <boost::asio::ip::tcp::endpoint> const & servers)
+{
+   live_servers_ = servers;
+}
+
+
 }; }; };

@@ -127,8 +127,22 @@ public:
      \brief Access to the underlying connection
      \pre has_connection () == true
     */
-      detail::tcp_connection_ptr
+   detail::tcp_connection_ptr
    connection ();
+
+
+   /*!
+     \brief Access to the servers this server is currently seeing
+    */
+   std::vector <boost::asio::ip::tcp::endpoint> const &
+   live_servers () const;
+
+   /*!
+     \brief Sets  the servers this server is currently seeing
+    */
+   void
+   set_live_servers (
+      std::vector <boost::asio::ip::tcp::endpoint> const & servers);
 
 private:
 
@@ -136,7 +150,9 @@ private:
    enum state                                           state_;
    boost::uuids::uuid                                   id_;
 
-   boost::optional <detail::tcp_connection_ptr>    connection_;
+   boost::optional <detail::tcp_connection_ptr>         connection_;
+
+   std::vector <boost::asio::ip::tcp::endpoint>         live_servers_;
 
 };
 

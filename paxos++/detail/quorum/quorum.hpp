@@ -116,7 +116,8 @@ public:
      \brief Returns true if more than 50% of the servers in quorum are alive
     */
    bool
-   has_majority () const;
+   has_majority (
+      boost::asio::ip::tcp::endpoint const &    endpoint) const;
 
    /*!
      \brief Returns the endpoint of the host within our quorum we think should be a leader

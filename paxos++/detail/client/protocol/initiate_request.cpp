@@ -18,7 +18,7 @@ initiate_request::step1 (
      If the quorum doesn't have a leader, we're not ready yet.
    */
    PAXOS_CHECK_THROW (quorum.we_have_a_leader_connection () == false, exception::not_ready ());
-   PAXOS_CHECK_THROW (quorum.has_majority () == false, exception::not_ready ());
+   PAXOS_CHECK_THROW (quorum.has_majority (quorum.who_is_our_leader ()) == false, exception::not_ready ());
 
    PAXOS_DEBUG ("quorum is reading, sending request..");
 
