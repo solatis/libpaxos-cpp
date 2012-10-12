@@ -1,12 +1,5 @@
 namespace paxos { namespace detail {
 
-inline paxos_context::paxos_context (
-   processor_type const &       processor)
-   : proposal_id_ (0),
-     processor_ (processor)
-{
-}
-
 inline uint64_t &
 paxos_context::proposal_id ()
 {
@@ -24,6 +17,13 @@ paxos_context::processor () const
 {
    return processor_;
 }
+
+inline detail::strategy::strategy const &
+paxos_context::strategy () const
+{
+   return *strategy_;
+}
+
 
 inline paxos_request_queue &
 paxos_context::request_queue ()

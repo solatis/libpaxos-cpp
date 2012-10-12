@@ -4,7 +4,7 @@
 
 #include "quorum/protocol/handshake.hpp"
 #include "quorum/protocol/announce_leadership.hpp"
-#include "strategies/basic_paxos/protocol/request.hpp"
+#include "strategy/strategy.hpp"
 
 #include "tcp_connection.hpp"
 #include "parser.hpp"
@@ -56,17 +56,17 @@ command_dispatcher::dispatch_stateless_command (
             break;
 
          case command::type_request_prepare:
-            strategies::basic_paxos::protocol::request::step3 (connection,
-                                                               command,
-                                                               quorum,
-                                                               state);
-            break;
+            state.strategy ().prepare (connection,
+                                       command,
+                                       quorum,
+                                       state);
+            break;      
 
          case command::type_request_accept:
-            strategies::basic_paxos::protocol::request::step6 (connection,
-                                                               command,
-                                                               quorum,
-                                                               state);
+            state.strategy ().accept (connection,
+                                      command,
+                                      quorum,
+                                      state);
             break;
 
          default:

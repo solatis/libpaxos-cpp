@@ -14,6 +14,9 @@ io_thread::io_thread ()
 void
 io_thread::launch ()
 {
+   /*!
+     \todo Move to std::bind
+    */
    thread_ = std::move (
       boost::thread (boost::bind (&boost::asio::io_service::run,
                                   &io_service_)));

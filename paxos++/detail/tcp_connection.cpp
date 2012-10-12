@@ -1,7 +1,7 @@
 #include <iostream>
+#include <functional>
 
 #include <assert.h>
-#include <boost/bind.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/asio/placeholders.hpp>
 
@@ -94,17 +94,17 @@ tcp_connection::start_write_locked ()
 
    boost::asio::async_write (socket_,
                              boost::asio::buffer (write_buffer_),
-                             boost::bind (&tcp_connection::handle_write, 
+                             std::bind (&tcp_connection::handle_write, 
 
-                                          /*!
-                                            Using shared_from_this here instead of this ensures that
-                                            we obtain a shared pointer to ourselves, and so when our
-                                            object would go out of scope normally, it at least stays
-                                            alive until this callback is called.
-                                           */
-                                          shared_from_this(),
-                                          boost::asio::placeholders::error,
-                                          boost::asio::placeholders::bytes_transferred));
+                                        /*!
+                                          Using shared_from_this here instead of this ensures that
+                                          we obtain a shared pointer to ourselves, and so when our
+                                          object would go out of scope normally, it at least stays
+                                          alive until this callback is called.
+                                        */
+                                        shared_from_this(),
+                                        std::placeholders::_1,
+                                        std::placeholders::_2));
 }
 
 void

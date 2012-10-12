@@ -2,24 +2,29 @@
   This test validates whether request pipelining inside the client works properly
  */
 
+#include <atomic>
 #include <boost/lexical_cast.hpp>
 
 #include <paxos++/client.hpp>
 #include <paxos++/server.hpp>
+#include <paxos++/configuration.hpp>
 #include <paxos++/detail/util/debug.hpp>
 
 #define TEST_COUNT 1000
 
 int main ()
 {
-   uint16_t response_count = 0;
+   std::atomic <uint16_t> response_count (0);
 
    paxos::server::callback_type callback =
       [& response_count](std::string const & workload) -> std::string
       {
          ++response_count;
+
          return workload;
       };
+
+   paxos::configuration::quorum_majority_factor = 1.0;
 
    paxos::server server1 ("127.0.0.1", 1337, callback);
    paxos::server server2 ("127.0.0.1", 1338, callback);
@@ -61,11 +66,10 @@ int main ()
    for (auto & i : results)
    {
       PAXOS_ASSERT_EQ (i.second.get (), boost::lexical_cast <std::string> (i.first));
-      PAXOS_INFO ("validated result " << i.first);
    }
 
-   PAXOS_ASSERT_EQ (response_count, (3 * TEST_COUNT));
 
+   PAXOS_ASSERT_EQ (response_count.load (), 3 * TEST_COUNT);
    PAXOS_INFO ("test succeeded");
 }
 

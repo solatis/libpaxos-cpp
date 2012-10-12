@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "../../../quorum/quorum.hpp"
 #include "../../../paxos_context.hpp"
 #include "../../../command.hpp"
@@ -5,17 +7,17 @@
 #include "../../../tcp_connection.hpp"
 #include "../../../util/debug.hpp"
 
-#include "request.hpp"
+#include "strategy.hpp"
 
-namespace paxos { namespace detail { namespace strategies { namespace basic_paxos { namespace protocol {
+namespace paxos { namespace detail { namespace strategy { namespace basic_paxos { namespace protocol {
 
-/*! static */ void
-request::step1 (      
+/*! virtual */ void
+strategy::initiate (      
    tcp_connection_ptr           client_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
    detail::paxos_context &      global_state,
-   queue_guard_type             queue_guard)
+   queue_guard_type             queue_guard) const
 {
    PAXOS_ASSERT (quorum.who_is_our_leader () == quorum.our_endpoint ());
 
@@ -45,28 +47,28 @@ request::step1 (
 
       PAXOS_DEBUG ("sending paxos request to server " << endpoint);
 
-      step2 (client_connection,
-             command,
-             quorum.our_endpoint (),
-             server.endpoint (),
-             server.connection (),
-             global_state.proposal_id (),
-             command.workload (),
-             state);
+      send_prepare (client_connection,
+                    command,
+                    quorum.our_endpoint (),
+                    server.endpoint (),
+                    server.connection (),
+                    boost::ref (global_state),
+                    command.workload (),
+                    state);
    }
 }
 
 
-/*! static */ void
-request::step2 (
+/*! virtual */ void
+strategy::send_prepare (
    tcp_connection_ptr                           client_connection,
    detail::command const &                      client_command,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,   
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
-   uint64_t                                     proposal_id,
+   detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
-   boost::shared_ptr <struct state>             state)
+   boost::shared_ptr <struct state>             state) const
 {
 
    /*!
@@ -83,7 +85,7 @@ request::step2 (
     */
    command command;
    command.set_type (command::type_request_prepare);
-   command.set_proposal_id (proposal_id);
+   command.set_proposal_id (global_state.proposal_id ());
    command.set_host_endpoint (leader_endpoint);
 
 
@@ -98,28 +100,30 @@ request::step2 (
     */
    follower_connection->command_dispatcher ().read (
       command,
-      boost::bind (&request::step4,
-                   client_connection,
-                   client_command,
-                   leader_endpoint,
-                   follower_endpoint,
-                   follower_connection,
-                   proposal_id,
-                   byte_array,
-                   _1,
-                   state));
+      std::bind (&strategy::receive_promise,
+                 this,
+                 client_connection,
+                 client_command,
+                 leader_endpoint,
+                 follower_endpoint,
+                 follower_connection,
+                 boost::ref (global_state),
+                 byte_array,
+                 std::placeholders::_1,
+                 state));
 }
 
-/*! static */ void
-request::step3 (      
+/*! virtual */ void
+strategy::prepare (      
    tcp_connection_ptr           leader_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_context &        state)
+   detail::paxos_context &      state) const
 {
    detail::command response;
 
-   PAXOS_DEBUG ("state.proposal_id () = " << state.proposal_id () << ", "
+   PAXOS_DEBUG ("self = " << quorum.our_endpoint () << ", "
+                "state.proposal_id () = " << state.proposal_id () << ", "
                 "command.proposal_id () = " << command.proposal_id ());
 
    if (command.host_endpoint () == quorum.our_endpoint ())
@@ -139,6 +143,7 @@ request::step3 (
       response.set_type (command::type_request_fail);
    }
 
+   response.set_proposal_id (state.proposal_id ());
 
    PAXOS_DEBUG ("step3 writing command");   
 
@@ -147,17 +152,17 @@ request::step3 (
 }
 
 
-/*! static */ void
-request::step4 (
+/*! virtual */ void
+strategy::receive_promise (
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
-   uint64_t                                     proposal_id,
+   detail::paxos_context &                      global_state,
    std::string                                  byte_array,
    detail::command const &                      command,
-   boost::shared_ptr <struct state>             state)
+   boost::shared_ptr <struct state>             state) const
 {
    PAXOS_ASSERT (state->connections[follower_endpoint] == follower_connection);
 
@@ -166,11 +171,21 @@ request::step4 (
    switch (command.type ())
    {
          case command::type_request_promise:
+            PAXOS_ASSERT (command.proposal_id () == global_state.proposal_id ());
             state->accepted[follower_endpoint] = response_ack;
             break;
 
          case command::type_request_fail:
             state->accepted[follower_endpoint] = response_reject;
+            
+            /*!
+              Since our follower has rejected this based on our proposal id, it makes
+              sense to ensure that the next proposal id we will use it as least higher
+              than this follower's proposal id.
+             */
+            global_state.proposal_id () = std::max (global_state.proposal_id (),
+                                                    command.proposal_id ());
+
             break;
 
          default:
@@ -222,28 +237,28 @@ request::step4 (
 
       for (auto & i : state->connections)
       {
-         step5 (client_connection,
-                client_command,
-                leader_endpoint,
-                i.first,
-                i.second,
-                proposal_id,
-                byte_array,
-                state);
+         send_accept (client_connection,
+                      client_command,
+                      leader_endpoint,
+                      i.first,
+                      i.second,
+                      boost::ref (global_state),
+                      byte_array,
+                      state);
       }
    }
 }
 
-/*! static */ void
-request::step5 (
+/*! virtual */ void
+strategy::send_accept (
    tcp_connection_ptr                           client_connection,
    detail::command const &                      client_command,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
-   uint64_t                                     proposal_id,
+   detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
-   boost::shared_ptr <struct state>             state)
+   boost::shared_ptr <struct state>             state) const
 {
    
    PAXOS_ASSERT (state->connections[follower_endpoint] == follower_connection);
@@ -252,7 +267,7 @@ request::step5 (
 
    command command;
    command.set_type (command::type_request_accept);
-   command.set_proposal_id (proposal_id);
+   command.set_proposal_id (global_state.proposal_id ());
    command.set_host_endpoint (leader_endpoint);
    command.set_workload (byte_array);
 
@@ -267,24 +282,23 @@ request::step5 (
     */
    follower_connection->command_dispatcher ().read (
       command,
-      boost::bind (&request::step7,
-                   client_connection,
-                   client_command,
-                   leader_endpoint,
-                   follower_endpoint,
-                   follower_connection,
-                   _1,
-                   state));
+      std::bind (&strategy::receive_accepted,
+                 this,
+                 client_connection,
+                 client_command,
+                 follower_endpoint,
+                 std::placeholders::_1,
+                 state));
 
 }
 
 
-/*! static */ void
-request::step6 (      
+/*! virtual */ void
+strategy::accept (      
    tcp_connection_ptr           leader_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_context &      state)
+   detail::paxos_context &      state) const
 {
    detail::command response;
    
@@ -298,6 +312,8 @@ request::step6 (
    }
    else
    {
+      PAXOS_DEBUG ("server " << quorum.our_endpoint () << " calling processor "
+                   "with workload = '" << command.workload () << "'");
       response.set_type (command::type_request_accepted);
       response.set_workload (
          state.processor () (command.workload ()));
@@ -310,17 +326,14 @@ request::step6 (
 }
 
 
-/*! static */ void
-request::step7 (
+/*! virtual */ void
+strategy::receive_accepted (
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
-   boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
-   tcp_connection_ptr                           follower_connection,
    detail::command const &                      command,
-   boost::shared_ptr <struct state>             state)
+   boost::shared_ptr <struct state>             state) const
 {
-   PAXOS_ASSERT (state->connections[follower_endpoint] == follower_connection);
    PAXOS_ASSERT (state->accepted[follower_endpoint] == response_ack);
    PAXOS_ASSERT (state->responses.find (follower_endpoint) == state->responses.end ());
 

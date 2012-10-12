@@ -10,10 +10,13 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
+#include "detail/strategy/basic_paxos/factory.hpp"
+
 #include "detail/io_thread.hpp"
 #include "detail/paxos_context.hpp"
 #include "detail/quorum/quorum.hpp"
 #include "detail/tcp_connection_fwd.hpp"
+
 
 namespace boost { namespace asio { namespace ip {
 class address;
@@ -65,9 +68,10 @@ public:
      quorum.we_are () to ensure the quorum knows the reference to the server.
    */
    server (
-      std::string const &       server,
-      uint16_t                  port,
-      callback_type const &     callback);
+      std::string const &               server,
+      uint16_t                          port,
+      callback_type const &             callback,
+      detail::strategy::factory *       strategy_factory = new detail::strategy::basic_paxos::factory ());
    
    /*!
      \brief Opens socket to listen on port
@@ -78,10 +82,11 @@ public:
      Automatically calls quorum.we_are () to ensure the quorum knows the reference to the server.
    */
    server (
-      boost::asio::io_service &   io_service,
-      std::string const &         server,
-      uint16_t                    port,
-      callback_type const &       callback);
+      boost::asio::io_service &         io_service,
+      std::string const &               server,
+      uint16_t                          port,
+      callback_type const &             callback,
+      detail::strategy::factory *       strategy_factory = new detail::strategy::basic_paxos::factory ());
 
    /*!
      \brief Destructor
@@ -108,7 +113,7 @@ public:
    start ();
 
    /*!
-     \brief Stops listening for new connections and closes all existing connections
+     \brief Stops listening for new connections, closes all existing connections and stops the background thread (if any)
     */
    void
    close ();

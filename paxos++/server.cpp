@@ -1,7 +1,7 @@
 #include <iostream>
+#include <functional>
 
 #include <boost/ref.hpp>
-#include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -17,30 +17,34 @@ namespace paxos {
 
 
 server::server (
-   std::string const &          host,
-   uint16_t                     port,
-   callback_type const &        processor)
+   std::string const &                  host,
+   uint16_t                             port,
+   callback_type const &                processor,
+   detail::strategy::factory *          strategy_factory)
    : server (io_thread_.io_service (),
              host,
              port,
-             processor)
+             processor,
+             strategy_factory)
 {
    io_thread_.launch ();
 }
 
 
 server::server (
-   boost::asio::io_service &    io_service,
-   std::string const &          host,
-   uint16_t                     port,
-   callback_type const &        processor)
+   boost::asio::io_service &            io_service,
+   std::string const &                  host,
+   uint16_t                             port,
+   callback_type const &                processor,
+      detail::strategy::factory *       strategy_factory)
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (
                    boost::asio::ip::address::from_string (host), port)),
      quorum_ (io_service,
                 boost::asio::ip::tcp::endpoint (
                    boost::asio::ip::address::from_string (host), port)),
-     state_ (processor)
+   state_ (processor,
+           strategy_factory)
 {
 
    /*! 
@@ -89,10 +93,10 @@ server::accept ()
       detail::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (connection->socket (),
-                           boost::bind (&server::handle_accept,
-                                        this,
-                                        connection,
-                                        boost::asio::placeholders::error));
+                           std::bind (&server::handle_accept,
+                                      this,
+                                      connection,
+                                      std::placeholders::_1));
 }
 
 
@@ -115,11 +119,11 @@ server::handle_accept (
         which will ensure that the tcp_connection shared ptr stays alive for as long as
         there are not any errors while reading commands.
        */
-      boost::bind (&detail::command_dispatcher::dispatch_stateless_command,
-                   new_connection,
-                   _1,
-                   boost::ref (quorum_),
-                   boost::ref (state_)));
+      std::bind (&detail::command_dispatcher::dispatch_stateless_command,
+                 new_connection,
+                 std::placeholders::_1,
+                 boost::ref (quorum_),
+                 boost::ref (state_)));
    
    /*!
      Enter "recursion" by accepting a new connection

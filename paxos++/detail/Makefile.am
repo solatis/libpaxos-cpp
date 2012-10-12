@@ -6,7 +6,8 @@ include_HEADERS = \
 	quorum/protocol/announce_leadership.hpp \
 	quorum/protocol/establish_connection.hpp \
 	quorum/protocol/handshake.hpp \
-	strategies/basic_paxos/protocol/request.hpp \
+	strategy/basic_paxos/factory.hpp \
+	strategy/basic_paxos/protocol/strategy.hpp \
 	util/conversion.hpp \
 	util/conversion.inl \
 	util/debug.hpp \
@@ -32,10 +33,12 @@ libpaxos_detail_la_SOURCES = \
 	quorum/protocol/announce_leadership.cpp \
 	quorum/protocol/establish_connection.cpp \
 	quorum/protocol/handshake.cpp \
-	strategies/basic_paxos/protocol/request.cpp \
+	strategy/basic_paxos/factory.cpp \
+	strategy/basic_paxos/protocol/strategy.cpp \
 	command.cpp \
 	command_dispatcher.cpp \
 	io_thread.cpp \
 	parser.cpp \
+	paxos_context.cpp \
 	paxos_request_queue.cpp \
 	tcp_connection.cpp

@@ -27,7 +27,6 @@ announce_leadership::step1 (
    command.set_type (command::type_leader_claim);
    command.set_host_endpoint (quorum.our_endpoint ());
    command.set_host_id (quorum.our_id ());
-   command.set_proposal_id (0);
    
    /*!
      Writing this command to the connection will make the remote end enter

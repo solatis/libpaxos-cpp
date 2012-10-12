@@ -32,16 +32,16 @@ parser::read_command (
    boost::asio::async_read (
       connection.socket (), 
       boost::asio::buffer (buffer.get (), 4), 
-      boost::bind (&parser::read_command_parse_size,
-
-                   boost::ref (connection),
-
-                   _1,
-                   _2,
-
-                   buffer,
-
-                   callback));
+      std::bind (&parser::read_command_parse_size,
+                   
+                 boost::ref (connection),
+                   
+                 std::placeholders::_1,
+                 std::placeholders::_2,
+                   
+                 buffer,
+                   
+                 callback));
 }
 
 /*! static */ void
@@ -69,11 +69,11 @@ parser::read_command_parse_size (
    boost::asio::async_read (
       connection.socket (), 
       boost::asio::buffer (command_buffer.get (), bytes), 
-      boost::bind (&parser::read_command_parse_command,
-                   _1,
-                   _2,
-                   command_buffer,
-                   callback));
+      std::bind (&parser::read_command_parse_command,
+                 std::placeholders::_1,
+                 std::placeholders::_2,
+                 command_buffer,
+                 callback));
 }
 
 /*! static */ void

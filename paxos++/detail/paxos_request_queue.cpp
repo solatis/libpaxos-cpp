@@ -1,6 +1,7 @@
 #include "util/debug.hpp"
 
-#include "strategies/basic_paxos/protocol/request.hpp"
+#include "strategy/strategy.hpp"
+#include "paxos_context.hpp"
 #include "paxos_request_queue.hpp"
 
 
@@ -29,12 +30,12 @@ paxos_request_queue::guard::~guard ()
         This means we still have requests waiting in line
        */
       paxos_request & request = queue_.queue_.front ();
-      
-      strategies::basic_paxos::protocol::request::step1 (request.client_connection_,
-                                                         request.command_,
-                                                         request.quorum_,
-                                                         request.global_state_,
-                                                         guard::create (queue_));      
+
+      request.global_state_.strategy ().initiate (request.client_connection_,
+                                                  request.command_,
+                                                  request.quorum_,
+                                                  request.global_state_,
+                                                  guard::create (queue_));
    }
 }
 
@@ -54,11 +55,11 @@ paxos_request_queue::push (
 
    if (request_being_processed () == false)
    {
-      strategies::basic_paxos::protocol::request::step1 (request.client_connection_,
-                                                         request.command_,
-                                                         request.quorum_,
-                                                         request.global_state_,
-                                                         guard::create (*this));
+      request.global_state_.strategy ().initiate (request.client_connection_,
+                                                  request.command_,
+                                                  request.quorum_,
+                                                  request.global_state_,
+                                                  guard::create (*this));
    }
 }
 

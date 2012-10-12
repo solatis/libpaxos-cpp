@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include <boost/bind.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/asio/ip/tcp.hpp>

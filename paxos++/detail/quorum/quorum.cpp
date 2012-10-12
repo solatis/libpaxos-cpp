@@ -1,3 +1,4 @@
+#include <functional>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -240,7 +241,8 @@ quorum::has_majority (
    server const & server = lookup_server (endpoint);
 
    return 
-      static_cast <double> (server.live_servers ().size ()) > static_cast <double> (servers_.size ()) / 2;
+      static_cast <double> (server.live_servers ().size ()) 
+      >= (static_cast <double> (servers_.size ()) * configuration::quorum_majority_factor);
 }
 
 boost::asio::ip::tcp::endpoint
@@ -376,7 +378,7 @@ quorum::heartbeat ()
    heartbeat_timer_.expires_from_now (
       boost::posix_time::milliseconds (paxos::configuration::heartbeat_interval));
    heartbeat_timer_.async_wait (
-      boost::bind (&quorum::heartbeat, this));
+      std::bind (&quorum::heartbeat, this));
 }
 
 

@@ -42,9 +42,14 @@ int main ()
 
    PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
    PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
    PAXOS_DEBUG ("response_count = " << response_count);
 
-   PAXOS_ASSERT_EQ (response_count, 4);
+   PAXOS_ASSERT_EQ (response_count, 14);
    response_count = 0;
 
    paxos::server server3 ("127.0.0.1", 1339, callback);
@@ -62,8 +67,21 @@ int main ()
       boost::posix_time::milliseconds (
          paxos::configuration::heartbeat_interval * 3));
 
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");   
-   PAXOS_ASSERT_EQ (response_count, 3);
+
+   bool completed = false;
+   do
+   {
+      try
+      {
+         PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");   
+         PAXOS_ASSERT_EQ (response_count, 3);
+         completed = true;
+      }
+      catch (paxos::exception::request_error & e)
+      {
+         PAXOS_WARN ("leader failover, caught a request_error");
+      }
+   } while (completed == false);
 
    PAXOS_INFO ("test succeeded");
 }

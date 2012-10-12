@@ -1,3 +1,4 @@
+#include <functional>
 #include <boost/asio/placeholders.hpp>
 
 #include "../../util/debug.hpp"
@@ -19,11 +20,11 @@ establish_connection::step1 (
    PAXOS_ASSERT (connection->socket ().is_open () == false);
 
    connection->socket ().async_connect (endpoint,
-                                        boost::bind (&establish_connection::step2,
-                                                     boost::asio::placeholders::error,
-                                                     boost::ref (endpoint),
-                                                     connection,
-                                                     boost::ref (quorum)));
+                                        std::bind (&establish_connection::step2,
+                                                   std::placeholders::_1,
+                                                   boost::ref (endpoint),
+                                                   connection,
+                                                   boost::ref (quorum)));
 }
 
 /*! static */ void

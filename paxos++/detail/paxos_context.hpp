@@ -12,6 +12,12 @@
 
 #include "paxos_request_queue.hpp"
 
+namespace paxos { namespace detail { namespace strategy {
+class factory;
+class strategy;
+}; }; };
+
+
 namespace paxos { namespace detail {
 
 /*!
@@ -26,7 +32,10 @@ public:
 public:
 
    paxos_context (
-      processor_type const &    processor);
+      processor_type const &            processor,
+      detail::strategy::factory *       strategy_factory);
+
+   ~paxos_context ();
 
    uint64_t &
    proposal_id ();
@@ -36,6 +45,9 @@ public:
 
    processor_type const &
    processor () const;
+
+   detail::strategy::strategy const &
+   strategy () const;
 
    /*!
      \brief This is our request queue where pending Paxos requests are queued
@@ -52,6 +64,7 @@ private:
    uint64_t                     proposal_id_;
 
    processor_type               processor_;
+   detail::strategy::strategy * strategy_;
    paxos_request_queue          request_queue_;
 };
 
