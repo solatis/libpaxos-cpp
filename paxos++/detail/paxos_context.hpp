@@ -12,8 +12,11 @@
 
 #include "paxos_request_queue.hpp"
 
+namespace paxos { 
+class configuration;
+};
+
 namespace paxos { namespace detail { namespace strategy {
-class factory;
 class strategy;
 }; }; };
 
@@ -33,7 +36,7 @@ public:
 
    paxos_context (
       processor_type const &            processor,
-      detail::strategy::factory *       strategy_factory);
+      paxos::configuration const &      configuration);
 
    ~paxos_context ();
 

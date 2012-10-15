@@ -13,12 +13,15 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/deadline_timer.hpp>
 
-
 #include "server.hpp"
 
 namespace boost { namespace uuids {
 struct uuid;
 }; };
+
+namespace paxos {
+class configuration;
+};
 
 namespace paxos { namespace detail { namespace quorum {
 
@@ -36,7 +39,8 @@ public:
      This constructor assumes we are not part of the quorum. 
     */
    quorum (
-      boost::asio::io_service &                 io_service);
+      boost::asio::io_service &                 io_service,
+      paxos::configuration const &              configuration);
 
    /*
      \brief Constructor for servers
@@ -48,7 +52,8 @@ public:
     */
    quorum (
       boost::asio::io_service &                 io_service,
-      boost::asio::ip::tcp::endpoint const &    endpoint);
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      paxos::configuration const &              configuration);
 
    /*!
      \brief Resets our state completely
@@ -247,6 +252,10 @@ private:
 private:
 
    boost::asio::io_service &                                            io_service_;
+   float                                                                quorum_majority_factor_;
+   uint32_t                                                             heartbeat_interval_;
+
+
    boost::optional <boost::asio::ip::tcp::endpoint>                     our_endpoint_;
    boost::asio::deadline_timer                                          heartbeat_timer_;
 

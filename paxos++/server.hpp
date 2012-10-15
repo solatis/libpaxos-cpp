@@ -17,6 +17,7 @@
 #include "detail/quorum/quorum.hpp"
 #include "detail/tcp_connection_fwd.hpp"
 
+#include "configuration.hpp"
 
 namespace boost { namespace asio { namespace ip {
 class address;
@@ -71,7 +72,7 @@ public:
       std::string const &               server,
       uint16_t                          port,
       callback_type const &             callback,
-      detail::strategy::factory *       strategy_factory = new detail::strategy::basic_paxos::factory ());
+      paxos::configuration              configuration = paxos::configuration ());
    
    /*!
      \brief Opens socket to listen on port
@@ -86,7 +87,7 @@ public:
       std::string const &               server,
       uint16_t                          port,
       callback_type const &             callback,
-      detail::strategy::factory *       strategy_factory = new detail::strategy::basic_paxos::factory ());
+      paxos::configuration              configuration = paxos::configuration ());
 
    /*!
      \brief Destructor
@@ -129,7 +130,6 @@ private:
       boost::system::error_code const & error);
 
 private:
-   
    
    detail::io_thread                    io_thread_;
    boost::asio::ip::tcp::acceptor       acceptor_;

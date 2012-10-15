@@ -12,16 +12,21 @@
 
 namespace paxos {
 
-client::client ()
-   : client (io_thread_.io_service ())
+client::client (
+   paxos::configuration configuration)
+   : client (io_thread_.io_service (),
+             configuration)
 {
    io_thread_.launch ();
 }
 
 client::client (
-   boost::asio::io_service &            io_service)
+   boost::asio::io_service &    io_service,
+   paxos::configuration         configuration)
    : io_service_ (io_service),
-     quorum_ (io_service)
+     quorum_ (io_service,
+              configuration),
+     heartbeat_interval_ (configuration.heartbeat_interval ())
 {
 }
 
@@ -95,7 +100,7 @@ client::send (
           */
          boost::asio::deadline_timer timer (io_service_);
          timer.expires_from_now (
-            boost::posix_time::milliseconds (configuration::heartbeat_interval));
+            boost::posix_time::milliseconds (heartbeat_interval_));
          timer.wait ();
       }
    } while (--retries > 0);

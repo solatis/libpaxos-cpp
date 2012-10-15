@@ -14,8 +14,11 @@
 namespace paxos { namespace detail { namespace quorum {
 
 quorum::quorum (
-   boost::asio::io_service &    io_service)
+   boost::asio::io_service &    io_service,
+   paxos::configuration const & configuration)
    : io_service_ (io_service),
+     quorum_majority_factor_ (configuration.quorum_majority_factor ()),
+     heartbeat_interval_ (configuration.heartbeat_interval ()),
      heartbeat_timer_ (io_service)
 {
    /*!
@@ -26,8 +29,11 @@ quorum::quorum (
 
 quorum::quorum (
    boost::asio::io_service &                    io_service,
-   boost::asio::ip::tcp::endpoint const &       endpoint)
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   paxos::configuration const &                 configuration)
    : io_service_ (io_service),
+     quorum_majority_factor_ (configuration.quorum_majority_factor ()),
+     heartbeat_interval_ (configuration.heartbeat_interval ()),
      our_endpoint_ (endpoint),
      heartbeat_timer_ (io_service)
 {
@@ -242,7 +248,7 @@ quorum::has_majority (
 
    return 
       static_cast <double> (server.live_servers ().size ()) 
-      >= (static_cast <double> (servers_.size ()) * configuration::quorum_majority_factor);
+      >= (static_cast <double> (servers_.size ()) * quorum_majority_factor_);
 }
 
 boost::asio::ip::tcp::endpoint
@@ -376,7 +382,7 @@ quorum::heartbeat ()
      And ensure that we're called again
     */
    heartbeat_timer_.expires_from_now (
-      boost::posix_time::milliseconds (paxos::configuration::heartbeat_interval));
+      boost::posix_time::milliseconds (heartbeat_interval_));
    heartbeat_timer_.async_wait (
       std::bind (&quorum::heartbeat, this));
 }

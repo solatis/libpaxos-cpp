@@ -22,9 +22,9 @@ establish_connection::step1 (
    connection->socket ().async_connect (endpoint,
                                         std::bind (&establish_connection::step2,
                                                    std::placeholders::_1,
-                                                   boost::ref (endpoint),
+                                                   std::ref (endpoint),
                                                    connection,
-                                                   boost::ref (quorum)));
+                                                   std::ref (quorum)));
 }
 
 /*! static */ void

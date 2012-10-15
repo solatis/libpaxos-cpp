@@ -52,7 +52,7 @@ strategy::initiate (
                     quorum.our_endpoint (),
                     server.endpoint (),
                     server.connection (),
-                    boost::ref (global_state),
+                    std::ref (global_state),
                     command.workload (),
                     state);
    }
@@ -107,7 +107,7 @@ strategy::send_prepare (
                  leader_endpoint,
                  follower_endpoint,
                  follower_connection,
-                 boost::ref (global_state),
+                 std::ref (global_state),
                  byte_array,
                  std::placeholders::_1,
                  state));
@@ -242,7 +242,7 @@ strategy::receive_promise (
                       leader_endpoint,
                       i.first,
                       i.second,
-                      boost::ref (global_state),
+                      std::ref (global_state),
                       byte_array,
                       state);
       }

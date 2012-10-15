@@ -14,6 +14,7 @@
 #include "detail/quorum/quorum.hpp"
 #include "detail/client/protocol/initiate_request.hpp"
 
+#include "configuration.hpp"
 #include "error.hpp"
 
 namespace boost { namespace asio {
@@ -61,14 +62,16 @@ public:
 
      This constructor launches its own background thread with i/o context
     */
-   client ();
+   client (
+      paxos::configuration              configuration = paxos::configuration ());
 
    /*!
      \brief Opens client
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
    */
    client (
-      boost::asio::io_service &         io_service);
+      boost::asio::io_service &         io_service,
+      paxos::configuration              configuration = paxos::configuration ());
 
    /*!
      \brief Destructor
@@ -112,6 +115,8 @@ private:
    detail::io_thread            io_thread_;
    boost::asio::io_service &    io_service_;
    detail::quorum::quorum       quorum_;
+
+   uint32_t                     heartbeat_interval_;
 
 };
 

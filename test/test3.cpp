@@ -24,11 +24,12 @@ int main ()
          return workload;
       };
 
-   paxos::configuration::quorum_majority_factor = 1.0;
+   paxos::configuration configuration;
+   configuration.set_quorum_majority_factor (1.0);
 
-   paxos::server server1 ("127.0.0.1", 1337, callback);
-   paxos::server server2 ("127.0.0.1", 1338, callback);
-   paxos::server server3 ("127.0.0.1", 1339, callback);
+   paxos::server server1 ("127.0.0.1", 1337, callback, configuration);
+   paxos::server server2 ("127.0.0.1", 1338, callback, configuration);
+   paxos::server server3 ("127.0.0.1", 1339, callback, configuration);
 
    server1.add ("127.0.0.1", 1337);
    server1.add ("127.0.0.1", 1338);
@@ -49,7 +50,7 @@ int main ()
 
 
 
-   paxos::client client;
+   paxos::client client (configuration);
    client.add ("127.0.0.1", 1337);
    client.add ("127.0.0.1", 1338);
    client.add ("127.0.0.1", 1339);

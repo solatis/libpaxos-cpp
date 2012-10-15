@@ -33,6 +33,12 @@ public:
    launch ();
 
    /*!
+     \brief Thread control function
+    */
+   void
+   run ();
+
+   /*!
      \brief Stops thread, if any
     */
    void

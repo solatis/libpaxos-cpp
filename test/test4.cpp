@@ -65,7 +65,7 @@ int main ()
     */
    boost::this_thread::sleep (
       boost::posix_time::milliseconds (
-         paxos::configuration::heartbeat_interval * 3));
+         paxos::configuration ().heartbeat_interval () * 3));
 
 
    bool completed = false;

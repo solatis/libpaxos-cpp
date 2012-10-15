@@ -1,7 +1,6 @@
 #include <iostream>
 #include <functional>
 
-#include <boost/ref.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -20,33 +19,32 @@ server::server (
    std::string const &                  host,
    uint16_t                             port,
    callback_type const &                processor,
-   detail::strategy::factory *          strategy_factory)
+   paxos::configuration                 configuration)
    : server (io_thread_.io_service (),
              host,
              port,
              processor,
-             strategy_factory)
+             configuration)
 {
    io_thread_.launch ();
 }
-
 
 server::server (
    boost::asio::io_service &            io_service,
    std::string const &                  host,
    uint16_t                             port,
    callback_type const &                processor,
-      detail::strategy::factory *       strategy_factory)
+   paxos::configuration                 configuration)
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (
                    boost::asio::ip::address::from_string (host), port)),
      quorum_ (io_service,
-                boost::asio::ip::tcp::endpoint (
-                   boost::asio::ip::address::from_string (host), port)),
+              boost::asio::ip::tcp::endpoint (
+                 boost::asio::ip::address::from_string (host), port),
+              configuration),
    state_ (processor,
-           strategy_factory)
+           configuration)
 {
-
    /*! 
      Ensure that we start accepting new connections. We do this before
      start (), so that we can first construct multiple servers at the same time,
@@ -122,8 +120,8 @@ server::handle_accept (
       std::bind (&detail::command_dispatcher::dispatch_stateless_command,
                  new_connection,
                  std::placeholders::_1,
-                 boost::ref (quorum_),
-                 boost::ref (state_)));
+                 std::ref (quorum_),
+                 std::ref (state_)));
    
    /*!
      Enter "recursion" by accepting a new connection

@@ -1,4 +1,4 @@
-#include <boost/bind.hpp>
+#include <functional>
 
 #include "io_thread.hpp"
 
@@ -14,12 +14,15 @@ io_thread::io_thread ()
 void
 io_thread::launch ()
 {
-   /*!
-     \todo Move to std::bind
-    */
    thread_ = std::move (
-      boost::thread (boost::bind (&boost::asio::io_service::run,
-                                  &io_service_)));
+      boost::thread (std::bind (&io_thread::run,
+                                this)));
+}
+
+void
+io_thread::run ()
+{
+   io_service_.run ();
 }
 
 

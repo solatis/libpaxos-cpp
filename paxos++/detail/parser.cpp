@@ -34,7 +34,7 @@ parser::read_command (
       boost::asio::buffer (buffer.get (), 4), 
       std::bind (&parser::read_command_parse_size,
                    
-                 boost::ref (connection),
+                 std::ref (connection),
                    
                  std::placeholders::_1,
                  std::placeholders::_2,
