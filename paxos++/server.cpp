@@ -88,7 +88,9 @@ void
 server::accept ()
 {
    detail::tcp_connection_ptr connection = 
-      detail::tcp_connection::create (acceptor_.get_io_service ());
+      detail::tcp_connection::create (acceptor_.get_io_service (),
+                                      boost::asio::ip::tcp::endpoint (),
+                                      quorum_);
 
    acceptor_.async_accept (connection->socket (),
                            std::bind (&server::handle_accept,
@@ -118,8 +120,9 @@ server::handle_accept (
         there are not any errors while reading commands.
        */
       std::bind (&detail::command_dispatcher::dispatch_stateless_command,
-                 new_connection,
                  std::placeholders::_1,
+                 new_connection,
+                 std::placeholders::_2,
                  std::ref (quorum_),
                  std::ref (state_)));
    

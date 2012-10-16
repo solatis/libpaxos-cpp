@@ -104,7 +104,14 @@ typedef boost::error_info <struct tag_solatis_debug, std::string> debug_exceptio
       abort ();                                                         \
    };
 
-
+#define PAXOS_ASSERT_THROW(check, exception) \
+   try \
+   { \
+      check; \
+      PAXOS_FATAL (BOOST_PP_STRINGIZE (check) << " did not throw: " << BOOST_PP_STRINGIZE (exception));\
+      abort ();\
+   } catch (exception) {\
+   }
 
 /*!
   Hides the 'missing return value on function returning non-void' warnings; note that

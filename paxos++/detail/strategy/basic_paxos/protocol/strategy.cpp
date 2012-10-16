@@ -19,7 +19,7 @@ strategy::initiate (
    detail::paxos_context &      global_state,
    queue_guard_type             queue_guard) const
 {
-   PAXOS_ASSERT (quorum.who_is_our_leader () == quorum.our_endpoint ());
+   PAXOS_ASSERT_EQ (quorum.who_is_our_leader (), quorum.our_endpoint ());
 
    /*!
      At the start of any request, we should, as defined in the Paxos protocol, increment
@@ -102,6 +102,7 @@ strategy::send_prepare (
       command,
       std::bind (&strategy::receive_promise,
                  this,
+                 std::placeholders::_1,
                  client_connection,
                  client_command,
                  leader_endpoint,
@@ -109,7 +110,7 @@ strategy::send_prepare (
                  follower_connection,
                  std::ref (global_state),
                  byte_array,
-                 std::placeholders::_1,
+                 std::placeholders::_2,
                  state));
 }
 
@@ -154,6 +155,7 @@ strategy::prepare (
 
 /*! virtual */ void
 strategy::receive_promise (
+   boost::optional <enum paxos::error_code>     error,
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
@@ -164,14 +166,20 @@ strategy::receive_promise (
    detail::command const &                      command,
    boost::shared_ptr <struct state>             state) const
 {
-   PAXOS_ASSERT (state->connections[follower_endpoint] == follower_connection);
+   if (error)
+   {
+      PAXOS_WARN ("An error occured while receiving promise from " << follower_endpoint << ": " << paxos::to_string (*error));
+      return;
+   }
 
-   PAXOS_DEBUG ("step4 received command");
+   PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
+
+   PAXOS_DEBUG ("step4 received command from follower " << follower_endpoint);
 
    switch (command.type ())
    {
          case command::type_request_promise:
-            PAXOS_ASSERT (command.proposal_id () == global_state.proposal_id ());
+            PAXOS_ASSERT_EQ (command.proposal_id (), global_state.proposal_id ());
             state->accepted[follower_endpoint] = response_ack;
             break;
 
@@ -261,8 +269,8 @@ strategy::send_accept (
    boost::shared_ptr <struct state>             state) const
 {
    
-   PAXOS_ASSERT (state->connections[follower_endpoint] == follower_connection);
-   PAXOS_ASSERT (state->accepted[follower_endpoint] == response_ack);
+   PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
+   PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
 
 
    command command;
@@ -284,10 +292,11 @@ strategy::send_accept (
       command,
       std::bind (&strategy::receive_accepted,
                  this,
+                 std::placeholders::_1,
                  client_connection,
                  client_command,
                  follower_endpoint,
-                 std::placeholders::_1,
+                 std::placeholders::_2,
                  state));
 
 }
@@ -328,13 +337,20 @@ strategy::accept (
 
 /*! virtual */ void
 strategy::receive_accepted (
+   boost::optional <enum paxos::error_code>     error,
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    detail::command const &                      command,
    boost::shared_ptr <struct state>             state) const
 {
-   PAXOS_ASSERT (state->accepted[follower_endpoint] == response_ack);
+   if (error)
+   {
+      PAXOS_WARN ("An error occured while receiving accepted from " << follower_endpoint << ": " << paxos::to_string (*error));
+      return;
+   }
+
+   PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
    PAXOS_ASSERT (state->responses.find (follower_endpoint) == state->responses.end ());
 
    /*!
@@ -349,7 +365,7 @@ strategy::receive_accepted (
 
    std::string workload;
 
-   PAXOS_ASSERT (state->connections.size () == state->accepted.size ());
+   PAXOS_ASSERT_EQ (state->connections.size (), state->accepted.size ());
    if (state->connections.size () == state->responses.size ())
    {
       bool all_same_response = true;

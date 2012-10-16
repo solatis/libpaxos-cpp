@@ -31,23 +31,29 @@ namespace paxos {
 
   This is the main entry point which communications within the paxos quorum take place. It
   hooks itself onto the io_service, and will start accepting connections as soon as 
-  io_service.handle_events () is called by an outside thread.
+  io_service.handle_events () is called by an outside thread. This thread can, however, be
+  created by the server itself. 
 
   \b Example \b usage:
-  \code{.cpp}
- 
-  paxos::quorum quorum;
-  quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337);
-  quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338);
+  \code{.cpp} 
 
-  paxos::server server1 (io_service, 
-                         boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337,
-                         quorum);
-  paxos::server server2 (io_service, 
-                         boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1339,
-                         quorum);
+  paxos::server::callback_type callback = 
+     [& response_count](std::string const & byte_array) -> std::string
+     {
+        return byte_array;
+     };  
 
-  io_service.run ();
+  paxos::server server1 ("127.0.0.1", 1337, callback);
+  paxos::server server2 ("127.0.0.1", 1338, callback);
+
+  server1.add ("127.0.0.1", 1337);
+  server1.add ("127.0.0.1", 1338);
+  server2.add ("127.0.0.1", 1337);
+  server2.add ("127.0.0.1", 1338);
+
+  server1.start ();
+  server2.start ();
+
   \endcode
   
  */

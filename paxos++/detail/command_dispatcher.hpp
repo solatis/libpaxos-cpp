@@ -9,9 +9,12 @@
 #include <map>
 
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
+#include "../error.hpp"
 #include "tcp_connection_fwd.hpp"
 
 namespace paxos { namespace detail {
@@ -27,20 +30,57 @@ namespace paxos { namespace detail {
 
 /*!
   \brief Ensures that commands are dispatched to the proper handler
+
+  In our traffic flow, we support the pipelining of multiple commands simultaneously over the same
+  connection. This means that we need to do some kind of state tracking: replies to commands do not
+  necessarily have to be received in the same order as they arrived.
+
+  This class keeps track of this state. It ensures every command is associated with an id, and
+  if a reply to a specific command is expected, waits until this reply is given (or a timeout).
  */
 class command_dispatcher : private boost::noncopyable
 {
 public:
 
-   typedef boost::function <void (command const &)>     callback;
+   typedef boost::function <void (boost::optional <enum paxos::error_code>,
+                                  command const &)>                             callback;
+
+   class state : private boost::noncopyable
+   {
+   public:
+      friend command_dispatcher;
+
+      state (
+         boost::asio::io_service &      io_service,
+         callback                       callback) 
+         : callback_ (callback),
+           timer_ (io_service)
+         {
+         }
+
+   private:
+      callback                          callback_;
+      boost::asio::deadline_timer       timer_;
+   };
 
 public:
 
    /*!
      \brief Constructor
+     \param io_service  Connection with our underlying OS'es io services
+     \param connection  The connection we live in
+     \param endpoint    The endpoint that our connection is associated with
+     \param quorum      The quorum this connection lives in
+
+     Note that the endpoint might not be registered within the endpoint; however, if this
+     connection is the connection of a follower, the endpoint *will* be inside the quorum,
+     and it allows us to mark the follower as dead when a connection error occurs.
     */
    command_dispatcher (
-      tcp_connection &  connection);
+      boost::asio::io_service &                 io_service,
+      tcp_connection &                          connection,
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      detail::quorum::quorum &                  quorum);
 
    /*!
      \brief Dispatches stateless command to the appropriate handler
@@ -51,10 +91,11 @@ public:
     */
    static void
    dispatch_stateless_command (
-      tcp_connection_ptr        connection,
-      detail::command const &   command,
-      detail::quorum::quorum &  quorum,
-      detail::paxos_context &   state);
+      boost::optional <enum paxos::error_code>  error,
+      tcp_connection_ptr                        connection,
+      detail::command const &                   command,
+      detail::quorum::quorum &                  quorum,
+      detail::paxos_context &                   state);
    
 
    /*!
@@ -62,10 +103,10 @@ public:
     */
    static void
    dispatch_request_initiate (
-      tcp_connection_ptr           connection,
-      detail::command const &      command,
-      detail::quorum::quorum &     quorum,
-      detail::paxos_context &      state);
+      tcp_connection_ptr                        connection,
+      detail::command const &                   command,
+      detail::quorum::quorum &                  quorum,
+      detail::paxos_context &                   state);
 
    /*!
      \brief Writes a command to connection
@@ -79,7 +120,7 @@ public:
     */
    void
    write (
-      detail::command &         command);
+      detail::command &                         command);
 
 
    /*!
@@ -95,8 +136,8 @@ public:
     */
    void
    write (
-      detail::command const &   input_command,
-      detail::command &         output_command);
+      detail::command const &                   input_command,
+      detail::command &                         output_command);
 
    /*!
      \brief Reads the next command that is a response to an exact other command
@@ -106,8 +147,8 @@ public:
     */
    void
    read (
-      detail::command const &   command,
-      callback                  callback);
+      detail::command const &                   command,
+      callback                                  callback);
 
 
 
@@ -132,7 +173,7 @@ public:
     */
    void
    read_loop (
-      callback  stateless_command_callback);
+      callback                                  stateless_command_callback);
 
 private:
 
@@ -144,48 +185,89 @@ private:
     */
    void
    dispatch (
-      detail::command const &   command,
-      callback                  stateless_command_callback);
+      detail::command const &                   command,
+      callback                                  stateless_command_callback);
 
 
 
    void
    write_locked (
-      detail::command &         command);
+      detail::command &                         command);
 
    void
    write_locked (
-      detail::command const &   input_command,
-      detail::command &         output_command);
+      detail::command const &                   input_command,
+      detail::command &                         output_command);
 
    void
    read_locked (
-      detail::command const &   command,
-      callback                  callback);
+      detail::command const &                   command,
+      callback                                  callback);
 
-   callback
+   boost::optional <callback>
    lookup_callback (
-      detail::command const &   command,
-      callback                  stateless_command_callback);
+      detail::command const &                   command,
+      callback                                  stateless_command_callback);
 
 
-   callback
+   boost::optional <callback>
    lookup_callback_locked (
-      detail::command const &   command,
-      callback                  stateless_command_callback);
+      detail::command const &                   command,
+      callback                                  stateless_command_callback);
 
+   /*!
+     \brief Called when the remote end didn't receive a response for a certain amount of time
+    */
+   void
+   handle_timeout (
+      boost::system::error_code const &         error,
+      uint64_t                                  command_id);
+
+   void
+   handle_timeout_locked (
+      uint64_t                                  command_id);
+
+   /*!
+     \brief Called when an error occured while reading a command from the other connection
+    */
+   void
+   handle_error (
+      enum paxos::error_code                    error,
+      callback                                  stateless_command_callback);
+
+   void
+   handle_error_locked (
+      enum paxos::error_code                    error,
+      callback                                  stateless_command_callback);
 
 private:
 
    /*!
+     \brief io_service is needed to setup timers
+    */
+   boost::asio::io_service &                            io_service_;
+
+   tcp_connection &                                     connection_;
+
+   /*!
+     \brief The endpoint we're dealing with
+    */
+   boost::asio::ip::tcp::endpoint const &               endpoint_;
+
+   /*!
+     \brief The quorum this connection might live in
+    */
+   detail::quorum::quorum &                             quorum_;
+
+
+   /*!
      \brief Synchronizes access to private variables
     */
-   boost::mutex                         mutex_;
+   boost::mutex                                         mutex_;
 
-   tcp_connection &                     connection_;
 
-   uint64_t                             next_command_id_;
-   std::map <uint64_t, callback>        state_;
+   uint64_t                                             next_command_id_;
+   std::map <uint64_t, boost::shared_ptr <state> >      state_;
 
 };
 

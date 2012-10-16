@@ -15,7 +15,9 @@ establish_connection::step1 (
    boost::asio::ip::tcp::endpoint const &       endpoint,
    detail::quorum::quorum &                     quorum)
 {
-   tcp_connection_ptr connection = tcp_connection::create (io_service);
+   tcp_connection_ptr connection = tcp_connection::create (io_service,
+                                                           endpoint,
+                                                           quorum);
 
    PAXOS_ASSERT (connection->socket ().is_open () == false);
 

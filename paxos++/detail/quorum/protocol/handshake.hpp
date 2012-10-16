@@ -33,21 +33,23 @@ public:
    /*!
      \brief Performs handshake with a specific host
      \param io_service  Interface to the OS'es underlying I/O functions
+     \param endpoint    The endpoint of the host we're handshaking with
      \param connection  Connection to the host we're shaking hands with     
      \param quorum      Quorum to store the host's details in
     */
    static void
    step1 (
-      boost::asio::io_service & io_service,
-      tcp_connection_ptr   connection,
-      detail::quorum::quorum &  quorum);
+      boost::asio::io_service &                 io_service,
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      tcp_connection_ptr                        connection,
+      detail::quorum::quorum &                  quorum);
 
    /*!
      \brief Entry point when a handshake has been received
     */
    static void
    step2 (
-      tcp_connection_ptr   connection,
+      tcp_connection_ptr        connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum);
 

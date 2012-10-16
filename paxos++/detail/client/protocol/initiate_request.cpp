@@ -47,24 +47,33 @@ initiate_request::step1 (
       command,
       [connection,
        callback] (
-          detail::command const &   c)
+          boost::optional <enum paxos::error_code>      error,          
+          detail::command const &                       c)
       {
-         switch (c.type ())
+         if (error)
          {
-               case command::type_request_accepted:
-                  PAXOS_DEBUG ("received command with workload = " << c.workload () << ", "
-                               "now calling callback!");
-                  callback (boost::none, c.workload ());
-                  break;
+            callback (*error,
+                      "");
+         }
+         else
+         {
+            switch (c.type ())
+            {
+                  case command::type_request_accepted:
+                     PAXOS_DEBUG ("received command with workload = " << c.workload () << ", "
+                                  "now calling callback!");
+                     callback (boost::none, c.workload ());
+                     break;
                   
-               case command::type_request_error:
-                  PAXOS_WARN ("request error occured");
-                  callback (c.error_code (), c.workload ());
-                  break;
+                  case command::type_request_error:
+                     PAXOS_WARN ("request error occured");
+                     callback (c.error_code (), c.workload ());
+                     break;
 
-               default:
-                  PAXOS_UNREACHABLE ();
-         };
+                  default:
+                     PAXOS_UNREACHABLE ();
+            };
+         }
       });
 }
 

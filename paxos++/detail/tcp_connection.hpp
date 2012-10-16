@@ -35,14 +35,25 @@ public:
 
    static tcp_connection_ptr
    create (
-      boost::asio::io_service &        io_service);   
+      boost::asio::io_service &                 io_service,
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      detail::quorum::quorum &                  quorum);
 
 
    boost::asio::ip::tcp::socket &
    socket ();
 
+   /*!
+     \brief Closes socket ()
+    */
    void
    close ();
+
+   /*!
+     \brief Returns true if socket () is open
+    */
+   bool
+   is_open () const;
 
    void
    write (
@@ -56,9 +67,10 @@ public:
 
 private:
 
-
    tcp_connection (
-      boost::asio::io_service & io_service);
+      boost::asio::io_service &                 io_service,
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      detail::quorum::quorum &                  quorum);
 
    void
    write_locked (

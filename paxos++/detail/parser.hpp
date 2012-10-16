@@ -19,7 +19,7 @@ class parser
 {
 public:
 
-   typedef boost::function <void (command const &)>     callback_function;
+   typedef boost::function <void (boost::optional <enum paxos::error_code>, command const &)> callback_function;
 
    /*!
      \brief Writes command to connection

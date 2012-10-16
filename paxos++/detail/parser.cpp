@@ -54,26 +54,28 @@ parser::read_command_parse_size (
 {
    if (error)
    {
-      PAXOS_WARN ("An error occured while reading command size: " << error.message ());
-      return;
+      callback (paxos::error_connection_close,
+                command ());
    }
+   else
+   {
+      PAXOS_ASSERT (bytes_transferred == 4);
+      
+      std::string bytes_raw (bytes_buffer.get (), 4);
+      uint32_t    bytes = util::conversion::from_byte_array <uint32_t> (bytes_raw);
 
-   PAXOS_ASSERT (bytes_transferred == 4);
+      boost::shared_array <char> command_buffer (new char[bytes]);   
 
-   std::string bytes_raw (bytes_buffer.get (), 4);
-   uint32_t    bytes = util::conversion::from_byte_array <uint32_t> (bytes_raw);
-
-   boost::shared_array <char> command_buffer (new char[bytes]);   
-
-   //! Now send a request for the amount of bytes we just parsed
-   boost::asio::async_read (
-      connection.socket (), 
-      boost::asio::buffer (command_buffer.get (), bytes), 
-      std::bind (&parser::read_command_parse_command,
-                 std::placeholders::_1,
-                 std::placeholders::_2,
-                 command_buffer,
-                 callback));
+      //! Now send a request for the amount of bytes we just parsed
+      boost::asio::async_read (
+         connection.socket (), 
+         boost::asio::buffer (command_buffer.get (), bytes), 
+         std::bind (&parser::read_command_parse_command,
+                    std::placeholders::_1,
+                    std::placeholders::_2,
+                    command_buffer,
+                    callback));
+   }
 }
 
 /*! static */ void
@@ -85,14 +87,17 @@ parser::read_command_parse_command (
 {
    if (error)
    {
-      PAXOS_WARN ("An error occured while reading command: " << error.message ());
-      return;
+      callback (paxos::error_connection_close,
+                command ());
    }
+   else
+   {
+      std::string byte_array (buffer.get (),
+                              bytes_transferred);
 
-   std::string byte_array (buffer.get (),
-                           bytes_transferred);
-
-   callback (command::from_string (byte_array));
+      callback (boost::none,
+                command::from_string (byte_array));
+   }
 }
 
 

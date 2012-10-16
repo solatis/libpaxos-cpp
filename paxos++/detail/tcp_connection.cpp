@@ -12,9 +12,14 @@ namespace paxos { namespace detail {
 
 
 tcp_connection::tcp_connection (
-   boost::asio::io_service & io_service)
+   boost::asio::io_service &                    io_service,
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   detail::quorum::quorum &                     quorum)
    : socket_ (io_service),
-     command_dispatcher_ (*this)
+     command_dispatcher_ (io_service,
+                          *this,
+                          endpoint,
+                          quorum)
 {
 }
 
@@ -33,16 +38,26 @@ tcp_connection::command_dispatcher ()
 
 /*! static */ tcp_connection_ptr 
 tcp_connection::create (
-   boost::asio::io_service &    io_service)
+   boost::asio::io_service &                    io_service,
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   detail::quorum::quorum &                     quorum)
 {
    return tcp_connection_ptr (
-      new tcp_connection (io_service));
+      new tcp_connection (io_service,
+                          endpoint,
+                          quorum));
 }
 
 void
 tcp_connection::close ()
 {
    socket_.close ();
+}
+
+bool
+tcp_connection::is_open () const
+{
+   return socket_.is_open ();
 }
 
 boost::asio::ip::tcp::socket &

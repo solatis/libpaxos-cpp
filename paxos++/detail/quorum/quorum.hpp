@@ -165,7 +165,7 @@ public:
      the quorum.
     */
    std::vector  <boost::asio::ip::tcp::endpoint>
-   live_server_endpoints () const;
+   live_server_endpoints ();
 
    /*!
      \brief Basically a forward to heartbeat ()
@@ -197,6 +197,13 @@ public:
    connection_established (
       boost::asio::ip::tcp::endpoint const &    endpoint,
       tcp_connection_ptr                        connection);
+
+   /*!
+     \brief Determines whether an endpoint is inside this quorum
+    */
+   bool
+   has_server (
+      boost::asio::ip::tcp::endpoint const &    endpoint) const;
 
    /*!
      \brief Access to a server
@@ -254,7 +261,6 @@ private:
    boost::asio::io_service &                                            io_service_;
    float                                                                quorum_majority_factor_;
    uint32_t                                                             heartbeat_interval_;
-
 
    boost::optional <boost::asio::ip::tcp::endpoint>                     our_endpoint_;
    boost::asio::deadline_timer                                          heartbeat_timer_;

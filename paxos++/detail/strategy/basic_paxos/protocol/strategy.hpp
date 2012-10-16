@@ -93,6 +93,7 @@ protected:
     */
    virtual void
    receive_promise (
+      boost::optional <enum paxos::error_code>  error,
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
@@ -123,6 +124,7 @@ protected:
     */
    virtual void
    receive_accepted (
+      boost::optional <enum paxos::error_code>  error,
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,

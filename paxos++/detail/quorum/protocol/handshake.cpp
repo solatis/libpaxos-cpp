@@ -10,9 +10,10 @@ namespace paxos { namespace detail { namespace quorum { namespace protocol {
 
 /*! static */ void
 handshake::step1 (
-   boost::asio::io_service &    io_service,
-   tcp_connection_ptr      connection,
-   detail::quorum::quorum &     quorum)
+   boost::asio::io_service &                    io_service,
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   tcp_connection_ptr                           connection,
+   detail::quorum::quorum &                     quorum)
 {
    command command;
    command.set_type (command::type_handshake_start);
@@ -38,9 +39,18 @@ handshake::step1 (
    */
    connection->command_dispatcher ().read (
       command,
-      [connection,
-       & quorum] (detail::command const &    command)
+      [endpoint,
+       connection,
+       & quorum] (
+          boost::optional <enum paxos::error_code>      error,
+          detail::command const &                       command)
       {
+         if (error)
+         {
+            quorum.mark_dead (endpoint);
+            return;
+         }
+
          PAXOS_ASSERT (command.type () == command::type_handshake_response);
          PAXOS_ASSERT (command.host_state () != server::state_client);
          

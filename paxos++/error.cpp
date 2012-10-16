@@ -18,6 +18,14 @@ to_string (
          case error_inconsistent_response:
             return "Inconsistent response";
             break;
+
+         case error_connection_timeout:
+            return "Connection timeout";
+            break;
+
+         case error_connection_close:
+            return "Connection closed";
+            break;
    };
 
    PAXOS_UNREACHABLE ();

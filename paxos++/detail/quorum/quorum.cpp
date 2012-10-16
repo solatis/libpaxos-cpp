@@ -168,7 +168,13 @@ void
 quorum::mark_dead (
    boost::asio::ip::tcp::endpoint const &    endpoint)
 {
-   PAXOS_DEBUG ("Unable to connect to " << endpoint << ", setting state to dead");
+   if (has_server (endpoint) == false)
+   {
+      PAXOS_DEBUG ("Endpoint " << endpoint << " not part of quorum, not marking dead");
+      return;
+   }
+
+   PAXOS_DEBUG ("Connection error with " << endpoint << ", setting state to dead");
 
    server & server = lookup_server (endpoint);
    server.reset_connection ();
@@ -180,13 +186,20 @@ quorum::mark_dead (
 
 void
 quorum::connection_established (
-   boost::asio::ip::tcp::endpoint const &    endpoint,
+   boost::asio::ip::tcp::endpoint const &       endpoint,
    tcp_connection_ptr                           connection)
 {
    PAXOS_DEBUG ("Established connection with " << endpoint << ", setting state to non-participant");
 
    server & server = lookup_server (endpoint);
    server.set_connection (connection);
+}
+
+bool
+quorum::has_server (
+   boost::asio::ip::tcp::endpoint const &       endpoint) const
+{
+   return servers_.find (endpoint) != servers_.end ();
 }
 
 
@@ -317,10 +330,10 @@ quorum::our_leader_connection ()
 }
 
 std::vector  <boost::asio::ip::tcp::endpoint>
-quorum::live_server_endpoints () const
+quorum::live_server_endpoints ()
 {
    std::vector <boost::asio::ip::tcp::endpoint> servers;
-   
+
    for (auto const & i : servers_)
    {
       switch (i.second.state ())
@@ -430,6 +443,7 @@ quorum::heartbeat_handshake ()
 
       PAXOS_DEBUG ("connection " << i.first << " is valid, have id = " << i.second.id () << ", performing handshake");
       protocol::handshake::step1 (io_service_,
+                                  i.first,
                                   i.second.connection (),
                                   *this);
    }
