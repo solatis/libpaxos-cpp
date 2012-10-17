@@ -349,6 +349,7 @@ quorum::live_server_endpoints ()
 
             case server::state_follower:
             case server::state_leader:
+               PAXOS_ASSERT (i.second.has_connection () == true);
                PAXOS_DEBUG ("adding to live servers: " << i.first);
                servers.push_back (i.first);
                break;

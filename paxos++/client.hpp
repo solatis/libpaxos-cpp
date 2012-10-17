@@ -117,8 +117,7 @@ public:
     */
    std::future <std::string>
    send (
-      std::string const &       byte_array,
-      uint16_t                  retries = 1)
+      std::string const &       byte_array)
       throw (exception::not_ready);
 
 private:

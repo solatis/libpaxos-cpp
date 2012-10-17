@@ -2,8 +2,8 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
  */
 
-#ifndef LIBPAXOS_CPP_DETAIL_CLIENT_PROTOCOL_REQUEST_HPP
-#define LIBPAXOS_CPP_DETAIL_CLIENT_PROTOCOL_REQUEST_HPP
+#ifndef LIBPAXOS_CPP_DETAIL_STRATEGY_BASIC_PAXOS_PROTOCOL_STRATEGY_HPP
+#define LIBPAXOS_CPP_DETAIL_STRATEGY_BASIC_PAXOS_PROTOCOL_STRATEGY_HPP
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -83,6 +83,7 @@ protected:
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
+      detail::quorum::quorum &                  quorum,
       detail::paxos_context &                   global_state,
       std::string const &                       byte_array,
       boost::shared_ptr <struct state>          state) const;
@@ -99,6 +100,7 @@ protected:
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
+      detail::quorum::quorum &                  quorum,
       detail::paxos_context &                   global_state,
       std::string                               byte_array,
       detail::command const &                   command,
@@ -114,6 +116,7 @@ protected:
       boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
+      detail::quorum::quorum &                  quorum,
       detail::paxos_context &                   global_state,
       std::string const &                       byte_array,
       boost::shared_ptr <struct state>          state) const;
@@ -128,13 +131,22 @@ protected:
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
+      detail::quorum::quorum &                  quorum,
       detail::command const &                   command,
       boost::shared_ptr <struct state>          state) const;
 
-private:   
+   /*!
+     \brief Sends error command back to client
+    */
+   virtual void
+   handle_error (
+      enum paxos::error_code    error,
+      tcp_connection_ptr        client_connection) const;
+
+private:
 
 };
 
 }; }; }; }; };
 
-#endif //! LIBPAXOS_CPP_DETAIL_CLIENT_PROTOCOL_REQUEST_HPP
+#endif //! LIBPAXOS_CPP_DETAIL_STRATEGY_BASIC_PAXOS_PROTOCOL_STRATEGY_HPP

@@ -87,8 +87,7 @@ client::wait_until_quorum_ready (
 
 std::future <std::string>
 client::send (
-   std::string const &  byte_array,
-   uint16_t             retries)
+   std::string const &  byte_array)
    throw (exception::not_ready)
 {
    boost::shared_ptr <std::promise <std::string> > promise (
@@ -99,12 +98,12 @@ client::send (
    */
    auto callback = 
       [promise] (
-         boost::optional <enum error_code>        error_code,
+         boost::optional <enum error_code>        error,
          std::string const &                      response)
       {
-         if (error_code.is_initialized () == true)
+         if (error)
          {
-            PAXOS_WARN ("Caught error in response to client request: " << paxos::to_string (*error_code));
+            PAXOS_WARN ("Caught error in response to client request: " << paxos::to_string (*error));
             promise->set_exception (std::make_exception_ptr (exception::request_error ()));
          }
          else

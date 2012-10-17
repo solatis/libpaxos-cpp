@@ -62,7 +62,7 @@ int main ()
    
    for (size_t i = 0; i < TEST_COUNT; ++i)
    {
-      results[i] = client.send (boost::lexical_cast <std::string> (i), 10);
+      results[i] = client.send (boost::lexical_cast <std::string> (i));
    }
 
    

@@ -41,13 +41,13 @@ int main ()
    client.wait_until_quorum_ready ();
 
 
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
-   PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
    PAXOS_DEBUG ("response_count = " << response_count);
 
    PAXOS_ASSERT_EQ (response_count, 14);
@@ -74,7 +74,7 @@ int main ()
    {
       try
       {
-         PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");   
+         PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");   
          PAXOS_ASSERT_EQ (response_count, 3);
          completed = true;
       }

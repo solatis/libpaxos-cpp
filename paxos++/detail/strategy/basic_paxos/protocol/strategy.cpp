@@ -19,6 +19,7 @@ strategy::initiate (
    detail::paxos_context &      global_state,
    queue_guard_type             queue_guard) const
 {
+   PAXOS_ASSERT_EQ (quorum.we_have_a_leader (), true);
    PAXOS_ASSERT_EQ (quorum.who_is_our_leader (), quorum.our_endpoint ());
 
    /*!
@@ -52,7 +53,8 @@ strategy::initiate (
                     quorum.our_endpoint (),
                     server.endpoint (),
                     server.broadcast_connection (),
-                    std::ref (global_state),
+                    quorum,
+                    global_state,
                     command.workload (),
                     state);
    }
@@ -63,9 +65,10 @@ strategy::initiate (
 strategy::send_prepare (
    tcp_connection_ptr                           client_connection,
    detail::command const &                      client_command,
-   boost::asio::ip::tcp::endpoint const &       leader_endpoint,   
+   boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
+   detail::quorum::quorum &                     quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state) const
@@ -107,6 +110,7 @@ strategy::send_prepare (
                  leader_endpoint,
                  follower_endpoint,
                  follower_connection,
+                 std::ref (quorum),
                  std::ref (global_state),
                  byte_array,
                  std::placeholders::_2,
@@ -159,6 +163,7 @@ strategy::receive_promise (
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
+   detail::quorum::quorum &                     quorum,
    detail::paxos_context &                      global_state,
    std::string                                  byte_array,
    detail::command const &                      command,
@@ -167,6 +172,9 @@ strategy::receive_promise (
    if (error)
    {
       PAXOS_WARN ("An error occured while receiving promise from " << follower_endpoint << ": " << paxos::to_string (*error));
+      quorum.mark_dead (follower_endpoint);
+      handle_error (*error,
+                    client_connection);
       return;
    }
 
@@ -222,13 +230,8 @@ strategy::receive_promise (
 
         We will send an error command to the client informing about the failed command.
        */
-      PAXOS_DEBUG ("step4 writing error command");   
-
-      detail::command response;
-      response.set_type (command::type_request_error);
-      response.set_error_code (paxos::error_incorrect_proposal);
-
-      client_connection->write_command (response);
+      handle_error (paxos::error_incorrect_proposal,
+                    client_connection);
    }
    else if (everyone_responded == true && everyone_promised == true)
    {
@@ -247,6 +250,7 @@ strategy::receive_promise (
                       leader_endpoint,
                       i.first,
                       i.second,
+                      quorum,
                       std::ref (global_state),
                       byte_array,
                       state);
@@ -261,6 +265,7 @@ strategy::send_accept (
    boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
+   detail::quorum::quorum &                     quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state) const
@@ -292,6 +297,7 @@ strategy::send_accept (
                  client_connection,
                  client_command,
                  follower_endpoint,
+                 std::ref (quorum),
                  std::placeholders::_2,
                  state));
 
@@ -336,12 +342,17 @@ strategy::receive_accepted (
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
+   detail::quorum::quorum &                     quorum,
    detail::command const &                      command,
    boost::shared_ptr <struct state>             state) const
 {
    if (error)
    {
       PAXOS_WARN ("An error occured while receiving accepted from " << follower_endpoint << ": " << paxos::to_string (*error));
+
+      quorum.mark_dead (follower_endpoint);
+      handle_error (*error,
+                    client_connection);
       return;
    }
 
@@ -407,23 +418,33 @@ strategy::receive_accepted (
            We're going to inform the client about an inconsistent response here. Perhaps
            he can recover from there.
          */
-         PAXOS_DEBUG ("step7 writing error command");   
-
-         detail::command response;
-         response.set_type (command::type_request_error);
+         PAXOS_DEBUG ("step7 writing error command");
 
          if (everyone_promised == false)
          {
-            response.set_error_code (paxos::error_incorrect_proposal);
+            handle_error (paxos::error_incorrect_proposal,
+                          client_connection);
          }
          else if (all_same_response == false)
          {
-            response.set_error_code (paxos::error_inconsistent_response);
+            handle_error (paxos::error_inconsistent_response,
+                          client_connection);
          }
-
-         client_connection->write_command (response);
       }
    }
+}
+
+
+/*! virtual */ void
+strategy::handle_error (
+   enum paxos::error_code       error,
+   tcp_connection_ptr           client_connection) const
+{
+   detail::command response;
+   response.set_type (command::type_request_error);
+   response.set_error_code (error);
+
+   client_connection->write_command (response);   
 }
 
 

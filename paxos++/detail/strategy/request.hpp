@@ -2,8 +2,8 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
  */
 
-#ifndef LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_HPP
-#define LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_HPP
+#ifndef LIBPAXOS_CPP_DETAIL_STRATEGY_REQUEST_HPP
+#define LIBPAXOS_CPP_DETAIL_STRATEGY_REQUEST_HPP
 
 #include "../command.hpp"
 #include "../tcp_connection_fwd.hpp"
@@ -31,4 +31,4 @@ struct request
 
 }; }; };
 
-#endif //! LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_HPP
+#endif //! LIBPAXOS_CPP_DETAIL_STRATEGY_REQUEST_HPP

@@ -94,8 +94,10 @@ int main ()
    client.start ();   
    client.wait_until_quorum_ready ();
 
-   PAXOS_ASSERT (client.send ("foo", 10).get () == "bar");
+   PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::request_error);
+   PAXOS_ASSERT (client.send ("foo").get () == "bar");
 
+   PAXOS_INFO ("test succeeded");   
 }
 
 
