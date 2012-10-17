@@ -12,7 +12,8 @@ namespace paxos { namespace detail { namespace client { namespace protocol {
 initiate_request::step1 (      
    std::string const &       byte_array,
    detail::quorum::quorum &  quorum,
-   callback_type             callback) throw (exception::not_ready)
+   callback_type             callback,
+   queue_guard_type          guard) throw (exception::not_ready)
 {
    /*!
      If the quorum doesn't have a leader, we're not ready yet.
@@ -20,16 +21,14 @@ initiate_request::step1 (
    PAXOS_CHECK_THROW (quorum.we_have_a_leader_connection () == false, exception::not_ready ());
    PAXOS_CHECK_THROW (quorum.has_majority (quorum.who_is_our_leader ()) == false, exception::not_ready ());
 
-   PAXOS_DEBUG ("quorum is reading, sending request..");
-
    /*!
      \bug There is a race condition here: quorum.our_leader_connection () assumes that
           quorum.we_have_a_leader () == true, but another thread in the meantime may have
           adjusted our quorum so that the previous check in the line above no longer holds
           true, and would thus lead to an assertion.
    */
-
-   detail::tcp_connection_ptr connection = quorum.our_leader_connection ();
+   detail::tcp_connection_ptr connection = 
+      quorum.lookup_server (quorum.who_is_our_leader ()).broadcast_connection ();
  
    /*!
      Now that we have our leader's connection, let's send it our command to initiate
@@ -38,15 +37,14 @@ initiate_request::step1 (
    command command;
    command.set_type (command::type_request_initiate);
    command.set_workload (byte_array);
-   connection->command_dispatcher ().write (command);
+   connection->write_command (command);
 
    PAXOS_INFO ("client initiating request!");
 
-
-   connection->command_dispatcher ().read (
-      command,
-      [connection,
-       callback] (
+   connection->read_command (
+      [connection, 
+       callback,
+       guard] (
           boost::optional <enum paxos::error_code>      error,          
           detail::command const &                       c)
       {

@@ -28,8 +28,8 @@ public:
     */
    static void
    write_command (
-      tcp_connection &  connection,
-      command const &   command);
+      tcp_connection_ptr        connection,
+      command const &           command);
 
 
    /*!
@@ -39,15 +39,15 @@ public:
     */
    static void
    read_command (
-      tcp_connection &  connection,
-      callback_function callback);
+      tcp_connection_ptr        connection,
+      callback_function         callback);
 
 
 private:
 
    static void
    read_command_parse_size (
-      tcp_connection &                  connection,
+      tcp_connection_ptr                connection,
       boost::system::error_code const & error,
       size_t                            bytes_transferred,
       boost::shared_array <char>        buffer,
@@ -55,6 +55,7 @@ private:
 
    static void
    read_command_parse_command (
+      tcp_connection_ptr                connection,
       boost::system::error_code const & error,
       size_t                            bytes_transferred,
       boost::shared_array <char>        buffer,

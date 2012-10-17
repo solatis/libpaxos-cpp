@@ -32,7 +32,7 @@ announce_leadership::step1 (
      Writing this command to the connection will make the remote end enter
      step2 ().
     */   
-   connection->command_dispatcher ().write (command);
+   connection->write_command (command);
 }
 
 /*! static */ void

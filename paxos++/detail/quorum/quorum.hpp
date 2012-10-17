@@ -13,15 +13,12 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/deadline_timer.hpp>
 
+#include "../../configuration.hpp"
 #include "server.hpp"
 
 namespace boost { namespace uuids {
 struct uuid;
 }; };
-
-namespace paxos {
-class configuration;
-};
 
 namespace paxos { namespace detail { namespace quorum {
 
@@ -150,13 +147,6 @@ public:
    boost::asio::ip::tcp::endpoint const &
    who_is_our_leader () const;
 
-   /*!
-     \brief Returns our leader's tcp_connection
-     \pre we_have_a_leader () == true
-    */
-   tcp_connection_ptr
-   our_leader_connection ();
-
 
    /*!
      \brief Provides access to all connections to all "live" nodes
@@ -194,7 +184,16 @@ public:
      \brief Called when a connection has been established with a server
     */
    void
-   connection_established (
+   control_connection_established (
+      boost::asio::ip::tcp::endpoint const &    endpoint,
+      tcp_connection_ptr                        connection);
+
+
+   /*!
+     \brief Called when a connection has been established with a server
+    */
+   void
+   broadcast_connection_established (
       boost::asio::ip::tcp::endpoint const &    endpoint,
       tcp_connection_ptr                        connection);
 
@@ -259,8 +258,7 @@ private:
 private:
 
    boost::asio::io_service &                                            io_service_;
-   float                                                                quorum_majority_factor_;
-   uint32_t                                                             heartbeat_interval_;
+   paxos::configuration                                                 configuration_;
 
    boost::optional <boost::asio::ip::tcp::endpoint>                     our_endpoint_;
    boost::asio::deadline_timer                                          heartbeat_timer_;

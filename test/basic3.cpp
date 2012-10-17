@@ -26,6 +26,7 @@ int main ()
 
    paxos::configuration configuration;
    configuration.set_quorum_majority_factor (1.0);
+   configuration.set_timeout (30000);
 
    paxos::server server1 ("127.0.0.1", 1337, callback, configuration);
    paxos::server server2 ("127.0.0.1", 1338, callback, configuration);
@@ -55,6 +56,7 @@ int main ()
    client.add ("127.0.0.1", 1338);
    client.add ("127.0.0.1", 1339);
    client.start ();
+   client.wait_until_quorum_ready ();
 
    std::map <size_t, std::future <std::string> >     results;
    

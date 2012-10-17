@@ -6,7 +6,9 @@
 #define LIBPAXOS_CPP_DETAIL_STRATEGY_STRATEGY_HPP
 
 #include "../tcp_connection_fwd.hpp"
-#include "../paxos_request_queue.hpp"
+#include "../request_queue/queue.hpp"
+
+#include "request.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
 class quorum;
@@ -26,7 +28,7 @@ class strategy
 {
 protected:
 
-   typedef detail::paxos_request_queue::guard::pointer queue_guard_type;
+   typedef detail::request_queue::queue <struct request>::guard::pointer queue_guard_type;
 
 public:
 

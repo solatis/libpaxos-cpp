@@ -7,13 +7,28 @@
 
 #include <vector>
 
+#include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "command_dispatcher.hpp"
+#include "../error.hpp"
 #include "tcp_connection_fwd.hpp"
+
+namespace paxos { 
+class configuration;
+};
+
+namespace paxos { namespace detail {
+class command;
+class parser;
+}; };
+
+namespace paxos { namespace detail { namespace quorum {
+class quorum;
+}; }; };
 
 namespace paxos { namespace detail { 
 
@@ -31,13 +46,17 @@ class tcp_connection
 {
 public:
 
+   friend detail::parser;
+
+   typedef boost::function <void (boost::optional <enum paxos::error_code>,
+                                  command const &)>                             read_callback;
+
+public:
    ~tcp_connection ();
 
    static tcp_connection_ptr
    create (
-      boost::asio::io_service &                 io_service,
-      boost::asio::ip::tcp::endpoint const &    endpoint,
-      detail::quorum::quorum &                  quorum);
+      boost::asio::io_service &                 io_service);
 
 
    boost::asio::ip::tcp::socket &
@@ -55,22 +74,39 @@ public:
    bool
    is_open () const;
 
-   void
-   write (
-      std::string const &       message);
-
-   /*!  
-     \brief Access to the underlying command dispatcher
+   /*!
+     \brief Writes a command to the other side
     */
-   detail::command_dispatcher &
-   command_dispatcher ();
+   void
+   write_command (
+      detail::command const &   command);
+
+   /*!
+     \brief Reads a command from the other side
+    */
+   void
+   read_command (
+      read_callback             callback);
+
+   /*!
+     \brief Keeps reading commands  until connection error occurs
+
+     This function is used by each paxos::server to respond to commands from accepted
+     connections. In essense, this is used by the leader to read input from all clients,
+     and used by all followers to read input from the leader.
+    */
+   void
+   read_command_loop (
+      read_callback             callback);
 
 private:
 
    tcp_connection (
-      boost::asio::io_service &                 io_service,
-      boost::asio::ip::tcp::endpoint const &    endpoint,
-      detail::quorum::quorum &                  quorum);
+      boost::asio::io_service &                 io_service);
+
+   void
+   write (
+      std::string const &       message);
 
    void
    write_locked (
@@ -90,7 +126,6 @@ private:
 
 private:
 
-
    boost::asio::ip::tcp::socket socket_;
 
    /*!
@@ -99,8 +134,6 @@ private:
    boost::mutex                 mutex_;
 
    std::string                  write_buffer_;
-
-   detail::command_dispatcher   command_dispatcher_;
 };
 
 }; };

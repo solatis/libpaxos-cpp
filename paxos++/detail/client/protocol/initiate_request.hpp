@@ -12,6 +12,7 @@
 
 #include "../../../error.hpp"
 #include "../../../exception/exception.hpp"
+#include "../../request_queue/queue.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
 class quorum;
@@ -25,6 +26,9 @@ namespace paxos { namespace detail { namespace client { namespace protocol {
 class initiate_request
 {
 public:
+
+   typedef detail::request_queue::queue <struct request>::guard::pointer queue_guard_type;
+
    typedef boost::function <void (boost::optional <enum paxos::error_code>,
                                   std::string const &)>                         callback_type;
 
@@ -39,7 +43,8 @@ public:
    step1 (      
       std::string const &       byte_array,
       detail::quorum::quorum &  quorum,
-      callback_type             callback) throw (exception::not_ready);
+      callback_type             callback,
+      queue_guard_type          guard) throw (exception::not_ready);
 
 private:   
 

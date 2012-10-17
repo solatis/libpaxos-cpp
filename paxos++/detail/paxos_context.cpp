@@ -8,11 +8,22 @@ namespace paxos { namespace detail {
 
 
 paxos_context::paxos_context (
-   processor_type const &       processor,
-   paxos::configuration const & configuration)
+   processor_type const &               processor,
+   paxos::configuration const &         configuration)
    : proposal_id_ (0),
      processor_ (processor),
-     strategy_ (configuration.strategy_factory ().create ())
+     strategy_ (configuration.strategy_factory ().create ()),
+     request_queue_ (
+        []
+        (strategy::request const &                                                      request,
+         detail::request_queue::queue <detail::strategy::request>::guard::pointer       guard)
+        {
+           request.global_state_.strategy ().initiate (request.connection_,
+                                                       request.command_,
+                                                       request.quorum_,
+                                                       request.global_state_,
+                                                       guard);
+        })
 {
 }
 

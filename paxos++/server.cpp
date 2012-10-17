@@ -10,6 +10,7 @@
 #include "detail/util/debug.hpp"
 #include "detail/parser.hpp"
 #include "detail/tcp_connection.hpp"
+#include "detail/command_dispatcher.hpp"
 #include "server.hpp"
 
 namespace paxos {
@@ -38,12 +39,14 @@ server::server (
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (
                    boost::asio::ip::address::from_string (host), port)),
+
      quorum_ (io_service,
               boost::asio::ip::tcp::endpoint (
                  boost::asio::ip::address::from_string (host), port),
               configuration),
-   state_ (processor,
-           configuration)
+
+     state_ (processor,
+             configuration)
 {
    /*! 
      Ensure that we start accepting new connections. We do this before
@@ -88,9 +91,7 @@ void
 server::accept ()
 {
    detail::tcp_connection_ptr connection = 
-      detail::tcp_connection::create (acceptor_.get_io_service (),
-                                      boost::asio::ip::tcp::endpoint (),
-                                      quorum_);
+      detail::tcp_connection::create (acceptor_.get_io_service ());
 
    acceptor_.async_accept (connection->socket (),
                            std::bind (&server::handle_accept,
@@ -110,22 +111,14 @@ server::handle_accept (
       PAXOS_ERROR ("Unable to accept connection: " << error.message ());
       return;
    }
-   
 
-   new_connection->command_dispatcher ().read_loop (
-
-      /*!
-        Note that we provide the 'new_connection' shared_ptr here as a default callback,
-        which will ensure that the tcp_connection shared ptr stays alive for as long as
-        there are not any errors while reading commands.
-       */
-      std::bind (&detail::command_dispatcher::dispatch_stateless_command,
+   new_connection->read_command_loop (
+      std::bind (&detail::command_dispatcher::dispatch_command,
                  std::placeholders::_1,
                  new_connection,
                  std::placeholders::_2,
                  std::ref (quorum_),
                  std::ref (state_)));
-   
    /*!
      Enter "recursion" by accepting a new connection
    */

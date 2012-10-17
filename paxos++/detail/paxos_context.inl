@@ -25,7 +25,7 @@ paxos_context::strategy () const
 }
 
 
-inline paxos_request_queue &
+inline request_queue::queue <strategy::request> &
 paxos_context::request_queue ()
 {
    return request_queue_;

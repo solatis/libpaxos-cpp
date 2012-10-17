@@ -5,13 +5,11 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_QUEUE_HPP
 #define LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_QUEUE_HPP
 
+#include <boost/function.hpp>
+
 #include <queue>
 
-#include <boost/shared_ptr.hpp>
-
-#include "paxos_request.hpp"
-
-namespace paxos { namespace detail {
+namespace paxos { namespace detail { namespace request_queue {
 
 /*!
   \brief Our queue with pending Paxos requests as received by leader
@@ -22,7 +20,8 @@ namespace paxos { namespace detail {
 
   It is therefore important that all paxos implementations acquire such a lock.
  */
-class paxos_request_queue
+template <typename Type>
+class queue
 {
 
 public:
@@ -32,29 +31,32 @@ public:
    public:
       typedef boost::shared_ptr <guard> pointer;
 
-
       ~guard ();
-
+      
       static pointer
       create (
-         paxos_request_queue &  queue);
-
+         queue <Type> &    queue);
+   
    private:
       guard (
-         paxos_request_queue &  queue);
-
+         queue <Type> &    queue);
+      
    private:
-
-      paxos_request_queue &     queue_;
+      
+      queue <Type> &       queue_;
    };
+
+   typedef boost::function <void (Type, typename guard::pointer)>       callback;
 
 public:
 
-   paxos_request_queue ();
+   queue (
+      callback  callback);
 
    void
    push (
-      paxos_request &&  request);
+      
+      Type &&  request);
 
    bool &
    request_being_processed ();
@@ -62,14 +64,14 @@ public:
 
 private:
 
-
-   bool                         request_being_processed_;
-   std::queue <paxos_request>   queue_;
+   callback             callback_;
+   bool                 request_being_processed_;
+   std::queue <Type>    queue_;
    
 };
 
-}; };
+}; }; };
 
-#include "paxos_request_queue.inl"
+#include "queue.inl"
 
 #endif //! LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_QUEUE_HPP

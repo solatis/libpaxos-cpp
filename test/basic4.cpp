@@ -38,6 +38,7 @@ int main ()
    client.add ("127.0.0.1", 1338);
    client.add ("127.0.0.1", 1339);
    client.start ();
+   client.wait_until_quorum_ready ();
 
 
    PAXOS_ASSERT_EQ (client.send ("foo", 10).get (), "bar");

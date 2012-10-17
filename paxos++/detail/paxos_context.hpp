@@ -10,7 +10,8 @@
 
 #include <boost/function.hpp>
 
-#include "paxos_request_queue.hpp"
+#include "strategy/request.hpp"
+#include "request_queue/queue.hpp"
 
 namespace paxos { 
 class configuration;
@@ -59,16 +60,16 @@ public:
      that this guarantee is provided.
     */
 
-   paxos_request_queue &
+   request_queue::queue <strategy::request> &
    request_queue ();
 
 private:
 
-   uint64_t                     proposal_id_;
+   uint64_t                                     proposal_id_;
 
-   processor_type               processor_;
-   detail::strategy::strategy * strategy_;
-   paxos_request_queue          request_queue_;
+   processor_type                               processor_;
+   detail::strategy::strategy *                 strategy_;
+   request_queue::queue <strategy::request>     request_queue_;
 };
 
 }; };

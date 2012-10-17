@@ -51,7 +51,7 @@ strategy::initiate (
                     command,
                     quorum.our_endpoint (),
                     server.endpoint (),
-                    server.connection (),
+                    server.broadcast_connection (),
                     std::ref (global_state),
                     command.workload (),
                     state);
@@ -91,15 +91,14 @@ strategy::send_prepare (
 
    PAXOS_DEBUG ("step2 writing command");
 
-   follower_connection->command_dispatcher ().write (command);
+   follower_connection->write_command (command);
 
-   PAXOS_DEBUG ("step2 reading command");   
+   PAXOS_DEBUG ("step2 reading command from follower = " << follower_connection.get ());   
 
    /*!
      We expect either an 'ack' or a 'reject' response to this command.
     */
-   follower_connection->command_dispatcher ().read (
-      command,
+   follower_connection->read_command (
       std::bind (&strategy::receive_promise,
                  this,
                  std::placeholders::_1,
@@ -148,8 +147,7 @@ strategy::prepare (
 
    PAXOS_DEBUG ("step3 writing command");   
 
-   leader_connection->command_dispatcher ().write (command,
-                                                   response);
+   leader_connection->write_command (response);
 }
 
 
@@ -230,8 +228,7 @@ strategy::receive_promise (
       response.set_type (command::type_request_error);
       response.set_error_code (paxos::error_incorrect_proposal);
 
-      client_connection->command_dispatcher ().write (client_command,
-                                                      response);
+      client_connection->write_command (response);
    }
    else if (everyone_responded == true && everyone_promised == true)
    {
@@ -281,15 +278,14 @@ strategy::send_accept (
 
    PAXOS_DEBUG ("step5 writing command");   
 
-   follower_connection->command_dispatcher ().write (command);
+   follower_connection->write_command (command);
    
    PAXOS_DEBUG ("step5 reading command");   
 
    /*!
      We expect a response to this command.
     */
-   follower_connection->command_dispatcher ().read (
-      command,
+   follower_connection->read_command (
       std::bind (&strategy::receive_accepted,
                  this,
                  std::placeholders::_1,
@@ -330,8 +326,7 @@ strategy::accept (
 
    PAXOS_DEBUG ("step6 writing command");   
 
-   leader_connection->command_dispatcher ().write (command,
-                                                   response);
+   leader_connection->write_command (response);
 }
 
 
@@ -404,10 +399,7 @@ strategy::receive_accepted (
          */
          PAXOS_DEBUG ("step7 writing command");   
 
-         detail::command command_copy (command);
-
-         client_connection->command_dispatcher ().write (client_command,
-                                                         command_copy);
+         client_connection->write_command (command);
       }
       else
       {
@@ -429,8 +421,7 @@ strategy::receive_accepted (
             response.set_error_code (paxos::error_inconsistent_response);
          }
 
-         client_connection->command_dispatcher ().write (client_command,
-                                                         response);
+         client_connection->write_command (response);
       }
    }
 }

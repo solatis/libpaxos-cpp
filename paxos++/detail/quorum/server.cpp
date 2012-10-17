@@ -1,5 +1,6 @@
 #include "../util/debug.hpp"
 
+#include "../tcp_connection.hpp"
 #include "server.hpp"
 
 namespace paxos { namespace detail { namespace quorum {
@@ -40,6 +41,10 @@ server::server (
    boost::asio::ip::tcp::endpoint const &       endpoint)
    : endpoint_ (endpoint),
      state_ (state_unknown)
+{
+}
+
+server::~server ()
 {
 }
 
@@ -85,27 +90,43 @@ server::reset_id ()
 bool
 server::has_connection () const
 {
-   return connection_.is_initialized () == true;
+   return 
+      broadcast_connection_.is_initialized () == true &&
+      control_connection_.is_initialized () == true;
 }
 
 void
-server::set_connection (
+server::set_broadcast_connection (
    detail::tcp_connection_ptr   connection)
 {
-   connection_ = connection;
+   broadcast_connection_ = connection;
+}
+
+void
+server::set_control_connection (
+   detail::tcp_connection_ptr   connection)
+{
+   control_connection_ = connection;
 }
 
 
 void
 server::reset_connection ()
 {
-   connection_ = boost::none;
+   broadcast_connection_ = boost::none;
+   control_connection_   = boost::none;
 }
 
 detail::tcp_connection_ptr
-server::connection ()
+server::broadcast_connection ()
 {
-   return *connection_;
+   return *broadcast_connection_;
+}
+
+detail::tcp_connection_ptr
+server::control_connection ()
+{
+   return *control_connection_;
 }
 
 

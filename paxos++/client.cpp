@@ -26,7 +26,18 @@ client::client (
    : io_service_ (io_service),
      quorum_ (io_service,
               configuration),
-     heartbeat_interval_ (configuration.heartbeat_interval ())
+     request_queue_ (
+        []
+        (detail::client::protocol::request const &                                              request,
+         detail::request_queue::queue <detail::client::protocol::request>::guard::pointer       guard)
+        {
+           detail::client::protocol::initiate_request::step1 (request.byte_array_,
+                                                              request.quorum_,
+                                                              request.callback_,
+                                                              guard);
+        }),
+
+   heartbeat_interval_ (configuration.heartbeat_interval ())
 {
 }
 
@@ -51,6 +62,28 @@ client::add (
          boost::asio::ip::address::from_string (server), port));
 }
 
+void
+client::wait_until_quorum_ready (
+   uint16_t     attempts) const
+   throw (exception::not_ready)
+{
+   while (--attempts)
+   {
+      if (quorum_.we_have_a_leader_connection () == true
+          && quorum_.has_majority (quorum_.who_is_our_leader ()) == true)
+      {
+         return;
+      }
+
+      boost::asio::deadline_timer timer (io_service_);
+      timer.expires_from_now (
+         boost::posix_time::milliseconds (heartbeat_interval_));
+      timer.wait ();
+   }
+
+   PAXOS_THROW (exception::not_ready ());
+}
+
 
 std::future <std::string>
 client::send (
@@ -62,52 +95,28 @@ client::send (
       new std::promise <std::string> ());
 
    /*!
-     We are a client, we can NEVER EVER be a leader.
-    */
-   do
-   {
-      try
+     Throws exception if quorum is not ready yet
+   */
+   auto callback = 
+      [promise] (
+         boost::optional <enum error_code>        error_code,
+         std::string const &                      response)
       {
-         /*!
-           Throws exception if quorum is not ready yet
-          */
-         detail::client::protocol::initiate_request::step1 (
-            byte_array,
-            quorum_,
-            [promise] (
-               boost::optional <enum error_code>        error_code,
-               std::string const &                      response)
-            {
-               if (error_code.is_initialized () == true)
-               {
-                  promise->set_exception (std::make_exception_ptr (exception::request_error ()));
-               }
-               else
-               {
-                  promise->set_value (response);
-               }
-            });
+         if (error_code.is_initialized () == true)
+         {
+            PAXOS_WARN ("Caught error in response to client request: " << paxos::to_string (*error_code));
+            promise->set_exception (std::make_exception_ptr (exception::request_error ()));
+         }
+         else
+         {
+            promise->set_value (response);
+         }
+      };
 
-         return promise->get_future ();
-      }
-      catch (exception::not_ready const & e)
-      {
-         PAXOS_WARN ("quorum is not yet ready, retries left = " << retries);
-
-         /*!
-           It makes sense to wait for configuration::heartbeat_interval amount of time,
-           since that means that each retry, at least one heartbeat has occured.
-          */
-         boost::asio::deadline_timer timer (io_service_);
-         timer.expires_from_now (
-            boost::posix_time::milliseconds (heartbeat_interval_));
-         timer.wait ();
-      }
-   } while (--retries > 0);
-
-
-   PAXOS_THROW (exception::not_ready ());
+   request_queue_.push (
+      {byte_array, quorum_, callback});
+   
+   return promise->get_future ();
 }
-
 
 };

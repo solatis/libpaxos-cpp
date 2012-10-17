@@ -66,6 +66,11 @@ public:
       boost::asio::ip::tcp::endpoint const &    endpoint);
 
    /*!
+     \brief Destructor
+    */
+   ~server ();
+
+   /*!
      \brief Returns endpoint this server listens at
     */
    boost::asio::ip::tcp::endpoint const &
@@ -105,16 +110,23 @@ public:
    reset_id ();
    
    /*!
-     \brief Returns true if connection_ is set
+     \brief Returns true if control_connection_ and broadcast_connection_ are set
     */
    bool
    has_connection () const;
 
    /*!
-     \brief Sets a connection
+     \brief Sets a broadcast connection
     */
    void
-   set_connection (
+   set_broadcast_connection (
+      detail::tcp_connection_ptr   connection);
+
+   /*!
+     \brief Sets a control connection
+    */
+   void
+   set_control_connection (
       detail::tcp_connection_ptr   connection);
 
    /*!
@@ -124,11 +136,18 @@ public:
    reset_connection ();
 
    /*!
-     \brief Access to the underlying connection
+     \brief Access to the underlying broadcast connection
      \pre has_connection () == true
     */
    detail::tcp_connection_ptr
-   connection ();
+   broadcast_connection ();
+
+   /*!
+     \brief Access to the underlying control connection
+     \pre has_connection () == true
+    */
+   detail::tcp_connection_ptr
+   control_connection ();
 
 
    /*!
@@ -150,7 +169,8 @@ private:
    enum state                                           state_;
    boost::uuids::uuid                                   id_;
 
-   boost::optional <detail::tcp_connection_ptr>         connection_;
+   boost::optional <detail::tcp_connection_ptr>         broadcast_connection_;
+   boost::optional <detail::tcp_connection_ptr>         control_connection_;
 
    std::vector <boost::asio::ip::tcp::endpoint>         live_servers_;
 

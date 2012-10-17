@@ -12,6 +12,8 @@
 
 #include "detail/io_thread.hpp"
 #include "detail/quorum/quorum.hpp"
+#include "detail/request_queue/queue.hpp"
+#include "detail/client/protocol/request.hpp"
 #include "detail/client/protocol/initiate_request.hpp"
 
 #include "configuration.hpp"
@@ -97,9 +99,19 @@ public:
    start ();
 
    /*!
+     \brief Blocks until the client is connected to a full quorum
+     \param attempts Amount of times to try polling the quorum before bailing out
+     \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
+             after \c attemps attempts
+    */
+   void
+   wait_until_quorum_ready (
+      uint16_t  attempts = 10) const
+      throw (exception::not_ready);
+
+   /*!
      \brief Sends data to entire quorum and call callback with result
      \param byte_array  Data to sent. Binary-safe.
-     \param retries     Amount of times to retry in case the quorum is not yet ready
      \returns Returns a future to the result
      \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
     */
@@ -109,14 +121,14 @@ public:
       uint16_t                  retries = 1)
       throw (exception::not_ready);
 
-
 private:
 
-   detail::io_thread            io_thread_;
-   boost::asio::io_service &    io_service_;
-   detail::quorum::quorum       quorum_;
+   detail::io_thread                                                    io_thread_;
+   boost::asio::io_service &                                            io_service_;
+   detail::quorum::quorum                                               quorum_;
+   detail::request_queue::queue <detail::client::protocol::request>     request_queue_;
 
-   uint32_t                     heartbeat_interval_;
+   uint32_t                                                             heartbeat_interval_;
 
 };
 

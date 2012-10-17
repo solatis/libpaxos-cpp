@@ -6,20 +6,17 @@
 #include <boost/asio/placeholders.hpp>
 
 #include "util/debug.hpp"
+
+#include "parser.hpp"
+#include "command_dispatcher.hpp"
 #include "tcp_connection.hpp"
 
 namespace paxos { namespace detail { 
 
 
 tcp_connection::tcp_connection (
-   boost::asio::io_service &                    io_service,
-   boost::asio::ip::tcp::endpoint const &       endpoint,
-   detail::quorum::quorum &                     quorum)
-   : socket_ (io_service),
-     command_dispatcher_ (io_service,
-                          *this,
-                          endpoint,
-                          quorum)
+   boost::asio::io_service &                    io_service)
+   : socket_ (io_service)
 {
 }
 
@@ -29,23 +26,13 @@ tcp_connection::~tcp_connection ()
 }
 
 
-detail::command_dispatcher &
-tcp_connection::command_dispatcher ()
-{
-   return command_dispatcher_;
-}
-
 
 /*! static */ tcp_connection_ptr 
 tcp_connection::create (
-   boost::asio::io_service &                    io_service,
-   boost::asio::ip::tcp::endpoint const &       endpoint,
-   detail::quorum::quorum &                     quorum)
+   boost::asio::io_service &                    io_service)
 {
    return tcp_connection_ptr (
-      new tcp_connection (io_service,
-                          endpoint,
-                          quorum));
+      new tcp_connection (io_service));
 }
 
 void
@@ -65,6 +52,47 @@ tcp_connection::socket ()
 {
    return socket_;
 }
+
+
+void
+tcp_connection::write_command (
+   detail::command const &      command)
+{
+   parser::write_command (shared_from_this (),
+                          command);
+}
+
+void
+tcp_connection::read_command (
+   read_callback        callback)
+{
+   parser::read_command (shared_from_this (),
+                         callback);
+}
+
+void
+tcp_connection::read_command_loop (
+   read_callback        callback)
+{
+   read_command (
+      [this,
+       callback] (boost::optional <enum paxos::error_code>      error,
+                  command const &                               command)
+      {
+         callback (error,
+                   command);
+
+         if (!error)
+         {
+            this->read_command_loop (callback);
+            
+         }
+      });
+}
+
+
+
+
 
 void
 tcp_connection::write (

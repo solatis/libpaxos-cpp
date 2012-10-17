@@ -13,6 +13,10 @@ namespace boost { namespace asio {
 class io_service;
 }; };
 
+namespace paxos {
+class configuration;
+};
+
 namespace paxos { namespace detail { namespace quorum { 
 class quorum;
 }; }; };

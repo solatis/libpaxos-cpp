@@ -2,6 +2,7 @@
 #include "../../command.hpp"
 #include "../../parser.hpp"
 #include "../../tcp_connection.hpp"
+#include "../../command_dispatcher.hpp"
 #include "../quorum.hpp"
 
 #include "handshake.hpp"
@@ -32,13 +33,12 @@ handshake::step1 (
      Writing this command to the connection will make the remote end enter
      step2 ().
    */   
-   connection->command_dispatcher ().write (command);
+   connection->write_command (command);
 
    /*!
      We're expecting a response to the handshake.
    */
-   connection->command_dispatcher ().read (
-      command,
+   connection->read_command (
       [endpoint,
        connection,
        & quorum] (
@@ -97,8 +97,7 @@ handshake::step2 (
    response.set_host_id (quorum.our_id ());
    response.set_live_servers (quorum.live_server_endpoints ());
 
-   connection->command_dispatcher ().write (command,
-                                            response);
+   connection->write_command (response);
 
    if (quorum.we_have_a_leader () == true
        && quorum.who_is_our_leader () != quorum.who_should_be_leader ())

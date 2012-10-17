@@ -5,9 +5,8 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_HPP
 #define LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_HPP
 
-#include "tcp_connection_fwd.hpp"
-
-#include "command.hpp"
+#include "../command.hpp"
+#include "../tcp_connection_fwd.hpp"
 
 namespace paxos { namespace detail {
 class paxos_context;
@@ -17,19 +16,19 @@ namespace paxos { namespace detail { namespace quorum {
 class quorum;
 }; }; };
 
-namespace paxos { namespace detail {
+namespace paxos { namespace detail { namespace strategy {
 
 /*!
   \brief Keeps track of context information required by the various Paxos protocol implementations
  */
-struct paxos_request
+struct request
 {
-   tcp_connection_ptr           client_connection_;
-   command                      command_;
-   quorum::quorum &             quorum_;
-   paxos_context &              global_state_;
+   detail::tcp_connection_ptr   connection_;
+   detail::command              command_;
+   detail::quorum::quorum &     quorum_;
+   detail::paxos_context &      global_state_;
 };
 
-}; };
+}; }; };
 
 #endif //! LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_HPP

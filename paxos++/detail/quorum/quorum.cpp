@@ -17,8 +17,7 @@ quorum::quorum (
    boost::asio::io_service &    io_service,
    paxos::configuration const & configuration)
    : io_service_ (io_service),
-     quorum_majority_factor_ (configuration.quorum_majority_factor ()),
-     heartbeat_interval_ (configuration.heartbeat_interval ()),
+     configuration_ (configuration),
      heartbeat_timer_ (io_service)
 {
    /*!
@@ -32,8 +31,7 @@ quorum::quorum (
    boost::asio::ip::tcp::endpoint const &       endpoint,
    paxos::configuration const &                 configuration)
    : io_service_ (io_service),
-     quorum_majority_factor_ (configuration.quorum_majority_factor ()),
-     heartbeat_interval_ (configuration.heartbeat_interval ()),
+     configuration_ (configuration),
      our_endpoint_ (endpoint),
      heartbeat_timer_ (io_service)
 {
@@ -185,14 +183,25 @@ quorum::mark_dead (
 }
 
 void
-quorum::connection_established (
+quorum::broadcast_connection_established (
    boost::asio::ip::tcp::endpoint const &       endpoint,
    tcp_connection_ptr                           connection)
 {
-   PAXOS_DEBUG ("Established connection with " << endpoint << ", setting state to non-participant");
+   PAXOS_DEBUG ("Established broadcast connection with " << endpoint);
 
    server & server = lookup_server (endpoint);
-   server.set_connection (connection);
+   server.set_broadcast_connection (connection);
+}
+
+void
+quorum::control_connection_established (
+   boost::asio::ip::tcp::endpoint const &       endpoint,
+   tcp_connection_ptr                           connection)
+{
+   PAXOS_DEBUG ("Established control connection with " << endpoint);
+
+   server & server = lookup_server (endpoint);
+   server.set_control_connection (connection);
 }
 
 bool
@@ -261,7 +270,7 @@ quorum::has_majority (
 
    return 
       static_cast <double> (server.live_servers ().size ()) 
-      >= (static_cast <double> (servers_.size ()) * quorum_majority_factor_);
+      >= (static_cast <double> (servers_.size ()) * configuration_.quorum_majority_factor ());
 }
 
 boost::asio::ip::tcp::endpoint
@@ -321,12 +330,6 @@ quorum::who_is_our_leader () const
    }
    
    PAXOS_UNREACHABLE ();
-}
-
-tcp_connection_ptr
-quorum::our_leader_connection () 
-{
-   return lookup_server (who_is_our_leader ()).connection ();
 }
 
 std::vector  <boost::asio::ip::tcp::endpoint>
@@ -395,7 +398,7 @@ quorum::heartbeat ()
      And ensure that we're called again
     */
    heartbeat_timer_.expires_from_now (
-      boost::posix_time::milliseconds (heartbeat_interval_));
+      boost::posix_time::milliseconds (configuration_.heartbeat_interval ()));
    heartbeat_timer_.async_wait (
       std::bind (&quorum::heartbeat, this));
 }
@@ -444,7 +447,7 @@ quorum::heartbeat_handshake ()
       PAXOS_DEBUG ("connection " << i.first << " is valid, have id = " << i.second.id () << ", performing handshake");
       protocol::handshake::step1 (io_service_,
                                   i.first,
-                                  i.second.connection (),
+                                  i.second.control_connection (),
                                   *this);
    }
 }
@@ -477,7 +480,7 @@ quorum::heartbeat_elect_leader ()
          PAXOS_DEBUG ("announcing leadership to server with state = " << server::to_string (i.second.state ()));
 
          protocol::announce_leadership::step1 (io_service_,
-                                               i.second.connection (),
+                                               i.second.control_connection (),
                                                *this);
       }
    }
