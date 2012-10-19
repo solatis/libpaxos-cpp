@@ -151,7 +151,14 @@ quorum::connection_died (
    boost::asio::ip::tcp::endpoint const &       endpoint)
 {
    lookup_server (endpoint).reset_connection ();
-   lookup_server (endpoint).reset_id ();
+
+   /*!
+     It is tempting to reset the uuid of the remote host at this point, but we won't.
+
+     Resetting the uuid of remote servers is only for clarity, and shouldn't really be necessary.
+     In case a remote server is rebooted, it would broadcast his new uuid very fast anyway,
+     and if he would be our new leader, he would reject any paxos requests.
+    */
 }
 
 

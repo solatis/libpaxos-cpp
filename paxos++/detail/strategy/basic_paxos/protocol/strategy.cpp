@@ -143,6 +143,8 @@ strategy::prepare (
 
 
 
+   PAXOS_DEBUG ("command.host_endpoint () = " << command.host_endpoint () << ", command.host_id () = " << command.host_id ());
+
    boost::optional <boost::asio::ip::tcp::endpoint> leader = quorum.who_is_our_leader ();
 
    if (leader.is_initialized () == false)

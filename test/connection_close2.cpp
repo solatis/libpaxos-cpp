@@ -26,7 +26,7 @@ public:
      \brief Overloaded from parent
     */
    virtual void
-   prepare (      
+   accept (      
       paxos::detail::tcp_connection_ptr leader_connection,
       paxos::detail::command const &    command,
       paxos::detail::quorum::quorum &   quorum,
@@ -80,7 +80,7 @@ int main ()
      This would be retried and shouldn't cause any troubles.
     */
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
-   PAXOS_ASSERT_EQ (response_count, 2);
+   PAXOS_ASSERT_EQ (response_count, 4);
 
    PAXOS_INFO ("test succeeded");   
 }
