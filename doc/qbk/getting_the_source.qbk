@@ -1,0 +1,11 @@
+[section Getting the source]
+
+You can obtain the source directly from the [@http://github.com/solatis/libpaxos-cpp github repository]:
+
+  git clone git@github.com:solatis/libpaxos-cpp.git
+
+However, this will require you to have autoconf, automake and libtool installed on your server. Alternatively, you can get the prepackaged distributions online:
+
+[@http://www.leonmergen.com/libpaxos-cpp/download/libpaxos-cpp-0.5.0.tar.gz]
+
+[endsect]

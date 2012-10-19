@@ -1,0 +1,34 @@
+[/
+                Copyright Jeroen Habraken 2011.
+
+   Distributed under the Boost Software License, Version 1.0.
+   (See accompanying file ../../../LICENSE_1_0.txt or copy at
+            http://www.boost.org/LICENSE_1_0.txt)
+]
+
+[section Acknowledgments]
+
+First of all I would like to thank the authors of Spirit, Harmut Kaiser and Joel
+de Guzman as well as everyone involved in the creation of this great library, 
+without which this would not have been possible.
+
+I am very grateful to Google for the Google Summer of Code allowing me time to
+work on this project and Hartmut Kaiser for mentoring me.
+
+A big thank you also goes out to Rudy Hardeman, for hosting a Hudson install
+with MSVC 10 allowing me to test my code using this compiler.
+
+Lastly a thank you to the whole Boost community, both on IRC and the
+mailinglist for advice, comments and critique. In particular:
+
+ * Michael Caisse
+ * Joel Falcou
+ * Thomas Heller
+ * Hartmut Kaiser
+ * Bryce Lelbach
+ * Leon Mergen
+ * Adam Merz
+ * Carl Philipp Reh
+ * Lars Viklund
+
+[endsect]

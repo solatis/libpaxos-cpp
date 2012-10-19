@@ -1,0 +1,70 @@
+[section Tutorial]
+
+Since a Paxos session has both a client and a server, we'll explain a simple use case for both below:
+
+
+[heading Server]
+  #include <paxos++/server.hpp>
+  
+  int main ()
+  {
+     /*!
+       This creates a new paxos server, and launches a new background thread which will poll
+       for activity.
+      */
+     paxos::server server ("127.0.0.1", 1337,
+                           
+                           /*!
+                             This is an example callback function used by the server to determine
+                             the response to a request a client sends. In this basic example, it
+                             completely ignores any input and always returns "bar".
+                            */
+                           [](std::string const &) -> std::string
+                           {
+                              return "bar";
+                           });
+  
+     /*!
+       Ensure our server knows the quorum it's a part of (in this example, the quorum consists
+       of only itself).
+      */
+     server.add ("127.0.0.1", 1337);
+  
+     /*!
+       Our server is now ready to accept connections!
+      */
+  }
+
+[heading Client]
+
+  #include <paxos++/client.hpp>
+
+  int main ()
+  {
+     /*!
+       This will create a very basic client, which launches a new background worker thread
+       that will handle the client's I/O.
+      */
+     paxos::client client;
+
+     /*!
+       Make sure the client knows which quorum it should connect to.
+      */
+     client.add ("127.0.0.1", 1337);
+
+     /*!
+       Send a command "foo" to all nodes inside the quorum: this will return immediately, and will
+       not block until the future's contents is actually inspected.
+      */
+     std::future <std::string> future = client.send ("foo");
+
+     /*!
+       And finally, this call will block until the client's response is ready.
+      */
+     assert (future.get () == "bar");
+  }
+
+
+
+
+[endsect]

@@ -1,0 +1,7 @@
+[section Requirements]
+All of this applies only to a Unix-like environment. Windows with cygwin will perhaps work, but is not tested. Libpaxos-cpp depends upon the following tools:
+
+* [@http://www.boost.org/ Boost.org] libraries, version 1.49 or higher;
+* GCC version 4.5 or higher (C++11 support is required).
+
+[endsect]

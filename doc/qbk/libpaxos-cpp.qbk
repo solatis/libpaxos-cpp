@@ -1,0 +1,26 @@
+[/              
+  Copyright (c) 2012, Leon Mergen, all rights reserved.
+]
+
+[article libpaxos-cpp
+    [quickbook 1.5]
+    [authors [Mergen, Leon]]
+    [copyright 2012 Leon Mergen]
+    [license
+        Distributed under the BSD 3-Clause License.
+        (See accompanying file COPYING or copy at
+            [@http://opensource.org/licenses/BSD-3-Clause])
+    ]
+    [version 0.5]
+]
+
+
+[include introduction.qbk]
+[include what_s_new.qbk]
+[include getting_the_source.qbk]
+[include requirements.qbk]
+[include installation.qbk]
+[include tutorial.qbk]
+[include support.qbk]
+
+[xinclude autodoc.xml]
