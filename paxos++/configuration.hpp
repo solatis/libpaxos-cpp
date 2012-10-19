@@ -29,22 +29,6 @@ public:
    configuration ();
 
    /*!
-     \brief Adjusts interval (in milliseconds) between heartbeats
-
-     Default is 3000 (3 seconds)
-    */
-   void
-   set_heartbeat_interval (
-      uint32_t  heartbeat_interval);
-
-   /*!
-     \brief Access to heartbeat interval
-    */
-   uint32_t
-   heartbeat_interval () const;
-
-
-   /*!
      \brief Adjusts timeout (in milliseconds) before marking a host as dead
 
      Default is 3000 (3 seconds)
@@ -58,21 +42,6 @@ public:
     */
    uint32_t
    timeout () const;
-
-   /*!
-     \brief Adjusts the amount of servers that need to be alive in order for the algorithm to make progress
-
-     Say, for example, you have a quorum of 3 servers, and 1 server is down, this factor would need to be
-     lower than 0.667 in order for the algorithm to make progress.
-
-     Defaults is 0.5 (at least 50% of the servers need to be online)
-    */
-   void
-   set_quorum_majority_factor (
-      float     quorum_majority_factor);
-
-   float
-   quorum_majority_factor () const;
 
    /*!
      \brief Adjusts the strategy used for internal paxos protocol
@@ -90,9 +59,7 @@ public:
 
 private:
 
-   uint32_t                                             heartbeat_interval_;
    uint32_t                                             timeout_;
-   float                                                quorum_majority_factor_;
 
    boost::shared_ptr <detail::strategy::factory>        strategy_factory_;
 };

@@ -28,7 +28,6 @@ namespace paxos {
 
 /*!
   \brief Represents a paxos client.
-  \related quorum
 
   Clients that want to talk to the Paxos quorum should use this class. It is
   very similar to server, in that it needs the same quorum and periodically
@@ -36,18 +35,13 @@ namespace paxos {
 
   \b Example \b usage:
   \code{.cpp}
- 
-  paxos::quorum quorum;
-  quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1337);
-  quorum.add (boost::asio::ip::address_v4::from_string ("127.0.0.1"), 1338);
 
-  paxos::client client (io_service, quorum);
-  client.send ("foo",
-               [] 
-               (boost::asio::ip::tcp::endpoint const &      host,
-                std::string const &                         response){});
+  paxos::client client;
+  client.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
-  io_service.run ();
+  std::future <std::string> future = client.send ("foo");
+  std::string result = future.get ();
+
   \endcode
   
  */
@@ -128,8 +122,6 @@ private:
    boost::asio::io_service &                                            io_service_;
    detail::quorum::quorum                                               quorum_;
    detail::request_queue::queue <detail::client::protocol::request>     request_queue_;
-
-   uint32_t                                                             heartbeat_interval_;
 
 };
 

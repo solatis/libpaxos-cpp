@@ -35,9 +35,7 @@ client::client (
                                                               request.quorum_,
                                                               request.callback_,
                                                               guard);
-        }),
-
-   heartbeat_interval_ (configuration.heartbeat_interval ())
+        })
 {
 }
 

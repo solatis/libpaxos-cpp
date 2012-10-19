@@ -46,13 +46,8 @@ namespace paxos {
   paxos::server server1 ("127.0.0.1", 1337, callback);
   paxos::server server2 ("127.0.0.1", 1338, callback);
 
-  server1.add ("127.0.0.1", 1337);
-  server1.add ("127.0.0.1", 1338);
-  server2.add ("127.0.0.1", 1337);
-  server2.add ("127.0.0.1", 1338);
-
-  server1.start ();
-  server2.start ();
+  server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}});
+  server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}});
 
   \endcode
   
@@ -67,12 +62,12 @@ public:
 
    /*!
      \brief Opens socket to listen on port
-     \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
-     \param endpoint    Endpoint where we're listening to new connections
-     \param callback    Callback used to process workload
+     \param server        Hostname we're listening at to new connections
+     \param port          Port we're listening at to new connections
+     \param callback      Callback used to process workload
+     \param configuration (Optional) Runtime configuration
 
-     This constructor launches its own background thread with i/o context. Automatically calls 
-     quorum.we_are () to ensure the quorum knows the reference to the server.
+     This constructor launches its own background thread with i/o context.
    */
    server (
       std::string const &               server,
@@ -82,11 +77,11 @@ public:
    
    /*!
      \brief Opens socket to listen on port
-     \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
-     \param endpoint    Endpoint where we're listening to new connections
-     \param callback    Callback used to process workload
-
-     Automatically calls quorum.we_are () to ensure the quorum knows the reference to the server.
+     \param io_service    Boost.Asio io_service object, which represents the link to the OS'es i/o services
+     \param server        Hostname we're listening at to new connections
+     \param port          Port we're listening at to new connections
+     \param callback      Callback used to process workload
+     \param configuration (Optional) Runtime configuration
    */
    server (
       boost::asio::io_service &         io_service,
@@ -122,7 +117,8 @@ public:
       std::initializer_list <std::pair <std::string, uint16_t> > const &        servers);
 
    /*!
-     \brief Stops listening for new connections, closes all existing connections and stops the background thread (if any)
+     \brief Stops listening for new connections, closes all existing connections and stops
+            the background thread (if any)
     */
    void
    stop ();

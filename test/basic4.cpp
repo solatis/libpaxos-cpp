@@ -48,7 +48,7 @@ int main ()
     */
    boost::this_thread::sleep (
       boost::posix_time::milliseconds (
-         paxos::configuration ().heartbeat_interval ()));
+         paxos::configuration ().timeout ()));
 
 
    do

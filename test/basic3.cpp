@@ -24,14 +24,10 @@ int main ()
          return workload;
       };
 
-   paxos::configuration configuration;
-   configuration.set_quorum_majority_factor (1.0);
-   configuration.set_timeout (30000);
-
-   paxos::server server1 ("127.0.0.1", 1337, callback, configuration);
-   paxos::server server2 ("127.0.0.1", 1338, callback, configuration);
-   paxos::server server3 ("127.0.0.1", 1339, callback, configuration);
-   paxos::client client (configuration);
+   paxos::server server1 ("127.0.0.1", 1337, callback);
+   paxos::server server2 ("127.0.0.1", 1338, callback);
+   paxos::server server3 ("127.0.0.1", 1339, callback);
+   paxos::client client;
 
    server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
    server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
