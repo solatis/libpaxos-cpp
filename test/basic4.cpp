@@ -21,20 +21,12 @@ int main ()
 
    paxos::server server1 ("127.0.0.1", 1337, callback);
    paxos::server server2 ("127.0.0.1", 1338, callback);
-
-   server1.add ("127.0.0.1", 1337);
-   server1.add ("127.0.0.1", 1338);
-   server1.add ("127.0.0.1", 1339);
-
-   server2.add ("127.0.0.1", 1337);
-   server2.add ("127.0.0.1", 1338);
-   server2.add ("127.0.0.1", 1339);
-
    paxos::client client;
-   client.add ("127.0.0.1", 1337);
-   client.add ("127.0.0.1", 1338);
-   client.add ("127.0.0.1", 1339);
 
+
+   server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   client.add  ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
@@ -49,11 +41,7 @@ int main ()
    response_count = 0;
 
    paxos::server server3 ("127.0.0.1", 1339, callback);
-
-   server3.add ("127.0.0.1", 1337);
-   server3.add ("127.0.0.1", 1338);
-   server3.add ("127.0.0.1", 1339);
-
+   server3.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
    /*!
      Let's wait a few seconds for 3 handshakes to occur

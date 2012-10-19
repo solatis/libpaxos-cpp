@@ -72,6 +72,17 @@ server::stop ()
 
 void
 server::add (
+   std::initializer_list <std::pair <std::string, uint16_t> > const &        servers)
+{
+   for (auto const & i : servers)
+   {
+      this->add (i.first,
+                 i.second);
+   }
+}
+
+void
+server::add (
    std::string const &  host,
    uint16_t             port)
 {

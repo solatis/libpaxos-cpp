@@ -48,12 +48,23 @@ client::~client ()
 
 void
 client::add (
-   std::string const &  server,
+   std::initializer_list <std::pair <std::string, uint16_t> > const &        servers)
+{
+   for (auto const & i : servers)
+   {
+      this->add (i.first,
+                 i.second);
+   }
+}
+
+void
+client::add (
+   std::string const &  host,
    uint16_t             port)
 {
    quorum_.add (
       boost::asio::ip::tcp::endpoint (
-         boost::asio::ip::address::from_string (server), port));
+         boost::asio::ip::address::from_string (host), port));
 }
 
 std::future <std::string>

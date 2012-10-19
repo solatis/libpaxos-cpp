@@ -172,6 +172,8 @@ strategy::prepare (
    }
    else if (command.proposal_id () > state.proposal_id ())
    {
+      PAXOS_DEBUG ("normal proposal, accepting, command = " << command.proposal_id () << ", state = " << state.proposal_id ());
+
       state.proposal_id () = command.proposal_id ();
       response.set_type (command::type_request_promise);
    }
@@ -225,12 +227,11 @@ strategy::receive_promise (
 
    PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
 
-   PAXOS_DEBUG ("step4 received command from follower " << follower_endpoint);
+   PAXOS_DEBUG ("step4 self = " << quorum.our_endpoint () << ", received command from follower " << follower_endpoint);
 
    switch (command.type ())
    {
          case command::type_request_promise:
-            PAXOS_ASSERT_EQ (command.proposal_id (), global_state.proposal_id ());
             state->accepted[follower_endpoint] = response_ack;
             break;
 

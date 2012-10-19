@@ -31,26 +31,12 @@ int main ()
    paxos::server server1 ("127.0.0.1", 1337, callback, configuration);
    paxos::server server2 ("127.0.0.1", 1338, callback, configuration);
    paxos::server server3 ("127.0.0.1", 1339, callback, configuration);
-
-   server1.add ("127.0.0.1", 1337);
-   server1.add ("127.0.0.1", 1338);
-   server1.add ("127.0.0.1", 1339);
-
-   server2.add ("127.0.0.1", 1337);
-   server2.add ("127.0.0.1", 1338);
-   server2.add ("127.0.0.1", 1339);
-
-   server3.add ("127.0.0.1", 1337);
-   server3.add ("127.0.0.1", 1338);
-   server3.add ("127.0.0.1", 1339);
-
-
-
-
    paxos::client client (configuration);
-   client.add ("127.0.0.1", 1337);
-   client.add ("127.0.0.1", 1338);
-   client.add ("127.0.0.1", 1339);
+
+   server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   server3.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   client.add  ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
    std::map <size_t, std::future <std::string> >     results;
    

@@ -114,6 +114,14 @@ public:
       uint16_t                                  port);
 
    /*!
+     \brief Helper function of add (), which adds a whole list at once
+     \param servers List of pairs of server/ports to connect to
+    */
+   void
+   add (
+      std::initializer_list <std::pair <std::string, uint16_t> > const &        servers);
+
+   /*!
      \brief Stops listening for new connections, closes all existing connections and stops the background thread (if any)
     */
    void

@@ -6,6 +6,7 @@
 #define LIBPAXOS_CPP_CLIENT_HPP
 
 #include <future>
+#include <initializer_list>
 #include <boost/function.hpp>
 
 #include "exception/exception.hpp"
@@ -89,8 +90,17 @@ public:
     */
    void
    add (
-      std::string const &                       server,
-      uint16_t                                  port);
+      std::string const &       server,
+      uint16_t                  port);
+
+   /*!
+     \brief Helper function of add (), which adds a whole list at once
+     \param servers List of pairs of server/ports to connect to
+    */
+   void
+   add (
+      std::initializer_list <std::pair <std::string, uint16_t> > const &        servers);
+
 
    /*!
      \brief Sends data to entire quorum and call callback with result
