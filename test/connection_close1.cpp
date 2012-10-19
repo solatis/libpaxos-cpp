@@ -77,67 +77,18 @@ int main ()
    paxos::server server1 ("127.0.0.1", 1337, callback);
    paxos::server server2 ("127.0.0.1", 1338, callback);
    paxos::server server3 ("127.0.0.1", 1339, callback, configuration);
-
-   server1.add ("127.0.0.1", 1337);
-   server1.add ("127.0.0.1", 1338);
-   server1.add ("127.0.0.1", 1339);
-
-   server2.add ("127.0.0.1", 1337);
-   server2.add ("127.0.0.1", 1338);
-   server2.add ("127.0.0.1", 1339);
-
-   server3.add ("127.0.0.1", 1337);
-   server3.add ("127.0.0.1", 1338);
-   server3.add ("127.0.0.1", 1339);
-
-   server1.start ();
-   server2.start ();
-   server3.start ();
-
    paxos::client client;
-   client.add ("127.0.0.1", 1337);
-   client.add ("127.0.0.1", 1338);
-   client.add ("127.0.0.1", 1339);
-   client.start ();   
-   client.wait_until_quorum_ready ();
+
+   server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   server3.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   client.add  ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
    /*!
-     This would fail because the connection closes mid-progress
+     This would be retried and shouldn't cause any troubles.
     */
-   PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::request_error);
-
-   if (bad_apple_is_leader == true)
-   {
-      /*!
-        This means the leader doesn't have a leader anymore, in which case we should get
-        more request errors.
-       */
-      PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::request_error);
-
-      /*!
-        And we will now officially stop the leader
-       */
-      server3.stop ();
-
-
-      /*!
-        Which means the client should now have marked the leader as dead
-       */
-      PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::not_ready);
-
-      /*!
-        And, after we wait until the quorum is ready again, things will work
-       */
-      client.wait_until_quorum_ready ();
-      PAXOS_ASSERT (client.send ("foo").get () == "bar");
-   }
-   else
-   {
-      /*!
-        This means a follower just died, in which case the next request should go well.
-       */
-      PAXOS_ASSERT (client.send ("foo").get () == "bar");
-   }
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (response_count, 2);
 
    PAXOS_INFO ("test succeeded");   
 }
