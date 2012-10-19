@@ -3,9 +3,6 @@ include_HEADERS = \
 	quorum/quorum.hpp \
 	quorum/quorum.inl \
 	quorum/server.hpp \
-	quorum/protocol/announce_leadership.hpp \
-	quorum/protocol/establish_connection.hpp \
-	quorum/protocol/handshake.hpp \
 	request_queue/queue.hpp \
 	request_queue/queue.inl \
 	strategy/request.hpp \
@@ -30,9 +27,6 @@ libpaxos_detail_la_SOURCES = \
 	client/protocol/initiate_request.cpp \
 	quorum/quorum.cpp \
 	quorum/server.cpp \
-	quorum/protocol/announce_leadership.cpp \
-	quorum/protocol/establish_connection.cpp \
-	quorum/protocol/handshake.cpp \
 	strategy/basic_paxos/factory.cpp \
 	strategy/basic_paxos/protocol/strategy.cpp \
 	command.cpp \

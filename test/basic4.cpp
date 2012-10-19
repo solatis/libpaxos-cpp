@@ -30,15 +30,10 @@ int main ()
    server2.add ("127.0.0.1", 1338);
    server2.add ("127.0.0.1", 1339);
 
-   server1.start ();
-   server2.start ();
-
    paxos::client client;
    client.add ("127.0.0.1", 1337);
    client.add ("127.0.0.1", 1338);
    client.add ("127.0.0.1", 1339);
-   client.start ();
-   client.wait_until_quorum_ready ();
 
 
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
@@ -58,7 +53,6 @@ int main ()
    server3.add ("127.0.0.1", 1337);
    server3.add ("127.0.0.1", 1338);
    server3.add ("127.0.0.1", 1339);
-   server3.start ();
 
 
    /*!
@@ -66,23 +60,14 @@ int main ()
     */
    boost::this_thread::sleep (
       boost::posix_time::milliseconds (
-         paxos::configuration ().heartbeat_interval () * 3));
+         paxos::configuration ().heartbeat_interval ()));
 
 
-   bool completed = false;
    do
    {
-      try
-      {
-         PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");   
-         PAXOS_ASSERT_EQ (response_count, 3);
-         completed = true;
-      }
-      catch (paxos::exception::request_error & e)
-      {
-         PAXOS_WARN ("leader failover, caught a request_error");
-      }
-   } while (completed == false);
+      response_count = 0;
+      PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");   
+   } while (response_count < 3);
 
    PAXOS_INFO ("test succeeded");
 }

@@ -114,16 +114,10 @@ public:
       uint16_t                                  port);
 
    /*!
-     \brief Bootstraps the quorum and starts connecting to other nodes
-    */
-   void
-   start ();
-
-   /*!
      \brief Stops listening for new connections, closes all existing connections and stops the background thread (if any)
     */
    void
-   close ();
+   stop ();
 
 private:
 

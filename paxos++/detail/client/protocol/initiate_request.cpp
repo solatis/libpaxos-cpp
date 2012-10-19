@@ -1,3 +1,5 @@
+#include <boost/uuid/uuid_io.hpp>
+
 #include "../../util/debug.hpp"
 #include "../../command.hpp"
 #include "../../parser.hpp"
@@ -15,20 +17,29 @@ initiate_request::step1 (
    callback_type             callback,
    queue_guard_type          guard) throw (exception::not_ready)
 {
-   /*!
-     If the quorum doesn't have a leader, we're not ready yet.
-   */
-   PAXOS_CHECK_THROW (quorum.we_have_a_leader_connection () == false, exception::not_ready ());
-   PAXOS_CHECK_THROW (quorum.has_majority (quorum.who_is_our_leader ()) == false, exception::not_ready ());
+   boost::optional <boost::asio::ip::tcp::endpoint> leader = quorum.who_is_our_leader (true);
+   if (leader.is_initialized () == false)
+   {
+      PAXOS_DEBUG ("leader.is_initialized () == false");
+      callback (paxos::error_no_leader, "");
+      return;
+   }
 
-   /*!
-     \bug There is a race condition here: quorum.our_leader_connection () assumes that
-          quorum.we_have_a_leader () == true, but another thread in the meantime may have
-          adjusted our quorum so that the previous check in the line above no longer holds
-          true, and would thus lead to an assertion.
-   */
-   detail::tcp_connection_ptr connection = 
-      quorum.lookup_server (quorum.who_is_our_leader ()).broadcast_connection ();
+   PAXOS_DEBUG ("leader.is_initialized () == true");
+
+   quorum::server & server = quorum.lookup_server (*leader);
+
+   if (server.has_connection () == false)
+   {
+      PAXOS_DEBUG ("server.has_connection () == false");
+      callback (paxos::error_no_leader, "");
+      return;
+   }
+
+   PAXOS_DEBUG ("server.has_connection () == true");
+   PAXOS_DEBUG ("sending request to host " << server.endpoint () << " with id = " << server.id ());
+
+   detail::tcp_connection_ptr connection = server.connection ();
  
    /*!
      Now that we have our leader's connection, let's send it our command to initiate
@@ -43,6 +54,8 @@ initiate_request::step1 (
 
    connection->read_command (
       [connection, 
+       & quorum,
+       & server,
        callback,
        guard] (
           boost::optional <enum paxos::error_code>      error,          
@@ -50,11 +63,15 @@ initiate_request::step1 (
       {
          if (error)
          {
-            callback (*error,
-                      "");
+            PAXOS_WARN ("client had problems communicating with leader: " << paxos::to_string (*error));
+            quorum.connection_died (server.endpoint ());
+
+            callback (*error, "");
          }
          else
          {
+            quorum.lookup_server (c.host_endpoint ()).set_id (c.host_id ());
+
             switch (c.type ())
             {
                   case command::type_request_accepted:

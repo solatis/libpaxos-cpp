@@ -1,3 +1,5 @@
+#include <boost/uuid/nil_generator.hpp>
+
 #include "../util/debug.hpp"
 
 #include "../tcp_connection.hpp"
@@ -5,43 +7,13 @@
 
 namespace paxos { namespace detail { namespace quorum {
 
-
-/*! static */ std::string 
-server::to_string (
-   enum state state)
-{
-   switch (state)
-   {
-         case state_unknown:
-            return "state_unknown";
-
-         case state_dead:
-            return "state_dead";
-
-         case state_non_participant:
-            return "state_non_participant";
-
-         case state_leader:
-            return "state_leader";
-
-         case state_follower:
-            return "state_follower";
-
-         case state_client:
-            return "state_client";
-   };
-
-   PAXOS_FATAL ("Unrecognized server state: " << state);
-   PAXOS_UNREACHABLE ();
-}
-
-
 server::server (
    boost::asio::io_service &                    io_service,
    boost::asio::ip::tcp::endpoint const &       endpoint)
-   : endpoint_ (endpoint),
-     state_ (state_unknown)
+   : io_service_ (io_service),
+     endpoint_ (endpoint)
 {
+   this->reset_id ();
 }
 
 server::~server ()
@@ -52,20 +24,6 @@ boost::asio::ip::tcp::endpoint const &
 server::endpoint () const
 {
    return endpoint_;
-}
-
-
-enum server::state
-server::state () const
-{
-   return state_;
-}
-
-void
-server::set_state (
-   enum state        state)
-{
-   state_ = state;
 }
 
 boost::uuids::uuid const &
@@ -81,67 +39,77 @@ server::set_id (
    id_ = id;
 }
 
+bool
+server::has_id () const
+{
+   return id_.is_nil () == false;
+}
+
 void
 server::reset_id ()
 {
-   id_ = boost::uuids::uuid ();
+   id_ = boost::uuids::nil_generator ()();
+}
+
+
+
+
+
+detail::tcp_connection_ptr
+server::connection ()
+{
+   return *connection_;
 }
 
 bool
 server::has_connection () const
 {
    return 
-      broadcast_connection_.is_initialized () == true &&
-      control_connection_.is_initialized () == true;
+      connection_.is_initialized () == true;
 }
-
-void
-server::set_broadcast_connection (
-   detail::tcp_connection_ptr   connection)
-{
-   broadcast_connection_ = connection;
-}
-
-void
-server::set_control_connection (
-   detail::tcp_connection_ptr   connection)
-{
-   control_connection_ = connection;
-}
-
 
 void
 server::reset_connection ()
 {
-   broadcast_connection_ = boost::none;
-   control_connection_   = boost::none;
+   connection_ = boost::none;
 }
-
-detail::tcp_connection_ptr
-server::broadcast_connection ()
-{
-   return *broadcast_connection_;
-}
-
-detail::tcp_connection_ptr
-server::control_connection ()
-{
-   return *control_connection_;
-}
-
-
-std::vector <boost::asio::ip::tcp::endpoint> const &
-server::live_servers () const
-{
-   return live_servers_;
-}
-
 
 void
-server::set_live_servers (
-   std::vector <boost::asio::ip::tcp::endpoint> const & servers)
+server::establish_connection ()
 {
-   live_servers_ = servers;
+   PAXOS_ASSERT (has_connection () == false);
+
+   if (most_recent_connection_attempt_.is_not_a_date_time () == false)
+   {
+      boost::posix_time::time_duration diff = 
+         boost::posix_time::second_clock::local_time () - most_recent_connection_attempt_;
+
+      if (diff <= boost::posix_time::seconds (3))
+      {
+         return;
+      }
+   }
+
+   most_recent_connection_attempt_ = boost::posix_time::second_clock::local_time ();
+
+   PAXOS_INFO ("attempting to establish connection with " << endpoint_);
+   tcp_connection_ptr connection = tcp_connection::create (io_service_);
+   connection->socket ().async_connect (
+      endpoint_,
+      [this, 
+       connection] 
+      (boost::system::error_code const & error)
+      {
+         if (error)
+         {
+            PAXOS_WARN ("Unable to connect to remote host: " << error.message ());
+            PAXOS_ASSERT (this->has_connection () == false);
+         }
+         else
+         {
+            this->connection_ = connection;
+         }
+      });
 }
 
 

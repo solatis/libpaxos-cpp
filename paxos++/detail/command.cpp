@@ -73,33 +73,6 @@ command::host_endpoint () const
                                           host_port_);
 }
 
-void
-command::set_live_servers (
-   std::vector <boost::asio::ip::tcp::endpoint> const & endpoints)
-{
-   for (boost::asio::ip::tcp::endpoint const & endpoint : endpoints)
-   {
-      live_servers_.push_back (
-         std::pair <std::string, uint16_t> (endpoint.address ().to_string (),
-                                            endpoint.port ()));
-   }
-}
-
-std::vector <boost::asio::ip::tcp::endpoint>
-command::live_servers () const
-{
-   std::vector <boost::asio::ip::tcp::endpoint> live_servers;
-
-   for (std::pair <std::string, uint16_t> const & server : live_servers_)
-   {
-      live_servers.push_back (
-         boost::asio::ip::tcp::endpoint (boost::asio::ip::address::from_string (server.first), 
-                                         server.second));
-   }
-
-   return live_servers;
-}
-
 
 
 

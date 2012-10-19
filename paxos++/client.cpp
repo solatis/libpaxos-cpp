@@ -47,12 +47,6 @@ client::~client ()
 }
 
 void
-client::start ()
-{
-   quorum_.bootstrap ();
-}
-
-void
 client::add (
    std::string const &  server,
    uint16_t             port)
@@ -62,49 +56,69 @@ client::add (
          boost::asio::ip::address::from_string (server), port));
 }
 
-void
-client::wait_until_quorum_ready (
-   uint16_t     attempts) const
-   throw (exception::not_ready)
-{
-   while (--attempts)
-   {
-      if (quorum_.we_have_a_leader_connection () == true
-          && quorum_.has_majority (quorum_.who_is_our_leader ()) == true)
-      {
-         return;
-      }
-
-      boost::asio::deadline_timer timer (io_service_);
-      timer.expires_from_now (
-         boost::posix_time::milliseconds (heartbeat_interval_));
-      timer.wait ();
-   }
-
-   PAXOS_THROW (exception::not_ready ());
-}
-
-
 std::future <std::string>
 client::send (
-   std::string const &  byte_array)
-   throw (exception::not_ready)
+   std::string const &  byte_array,
+   uint16_t             retries)
+   throw ()
 {
    boost::shared_ptr <std::promise <std::string> > promise (
       new std::promise <std::string> ());
 
+   this->do_request (promise,
+                     byte_array,
+                     retries);
+   
+   return promise->get_future ();
+}
+
+void
+client::do_request (
+   boost::shared_ptr <std::promise <std::string> >      promise,
+   std::string const &                                  byte_array,
+   uint16_t                                             retries)
+{
    /*!
      Throws exception if quorum is not ready yet
    */
    auto callback = 
-      [promise] (
+      [this,
+       promise,
+       byte_array,
+       retries] (
          boost::optional <enum error_code>        error,
          std::string const &                      response)
       {
          if (error)
          {
-            PAXOS_WARN ("Caught error in response to client request: " << paxos::to_string (*error));
-            promise->set_exception (std::make_exception_ptr (exception::request_error ()));
+            if (retries > 0)
+            {
+               boost::shared_ptr <boost::asio::deadline_timer> timer (
+                  new boost::asio::deadline_timer (this->io_service_));
+
+               timer->expires_from_now (
+                  boost::posix_time::milliseconds (500));
+               timer->async_wait (
+                  [this, 
+                   promise,
+                   byte_array,
+                   retries,
+                   timer]
+                  (boost::system::error_code const & error)
+               {
+                  if (!error)
+                  {
+                     this->do_request (promise,
+                                       byte_array,
+                                       retries - 1);
+                  }
+               });
+            }
+            else
+            {
+               PAXOS_WARN ("Caught error in response to client request: " << paxos::to_string (*error));
+               promise->set_exception (std::make_exception_ptr (exception::request_error ()));
+            }
          }
          else
          {
@@ -114,8 +128,6 @@ client::send (
 
    request_queue_.push (
       {byte_array, quorum_, callback});
-   
-   return promise->get_future ();
 }
 
 };

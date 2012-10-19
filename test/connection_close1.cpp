@@ -15,6 +15,12 @@
 
 
 /*!
+  This boolean will be set to true if the leader itself was the one closing the
+  connection.
+ */
+static bool bad_apple_is_leader = false;
+
+/*!
   This is our "bad apple" paxos strategy, which will close the connection whenever
   a prepare request is received. This should generate an error, cause the node to be
   marked as dead, and make the paxos call recover the next time it's made.
@@ -34,6 +40,7 @@ public:
       paxos::detail::paxos_context &    state) const 
 
       {
+         bad_apple_is_leader = quorum.who_is_our_leader () == quorum.our_endpoint ();
          leader_connection->socket ().close ();
       }
 
@@ -94,8 +101,43 @@ int main ()
    client.start ();   
    client.wait_until_quorum_ready ();
 
+   /*!
+     This would fail because the connection closes mid-progress
+    */
    PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::request_error);
-   PAXOS_ASSERT (client.send ("foo").get () == "bar");
+
+   if (bad_apple_is_leader == true)
+   {
+      /*!
+        This means the leader doesn't have a leader anymore, in which case we should get
+        more request errors.
+       */
+      PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::request_error);
+
+      /*!
+        And we will now officially stop the leader
+       */
+      server3.stop ();
+
+
+      /*!
+        Which means the client should now have marked the leader as dead
+       */
+      PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::not_ready);
+
+      /*!
+        And, after we wait until the quorum is ready again, things will work
+       */
+      client.wait_until_quorum_ready ();
+      PAXOS_ASSERT (client.send ("foo").get () == "bar");
+   }
+   else
+   {
+      /*!
+        This means a follower just died, in which case the next request should go well.
+       */
+      PAXOS_ASSERT (client.send ("foo").get () == "bar");
+   }
 
    PAXOS_INFO ("test succeeded");   
 }

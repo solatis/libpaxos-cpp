@@ -12,6 +12,12 @@ namespace paxos {
 enum error_code
 {
    /*!
+     This error is sent back when a specific node receives a request for a leader and is 
+     not a leader (or there is no leader yet).
+    */
+   error_no_leader,
+
+   /*!
      This error is sent back when not all nodes in the quorum can accept a request
      due to incorrect proposal id's. This happends when multiple nodes in the quorum
      think they are a leader, and usually resolves itself after the next heartbeat.

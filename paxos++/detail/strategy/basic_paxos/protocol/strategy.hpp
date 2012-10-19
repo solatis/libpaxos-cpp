@@ -80,7 +80,6 @@ protected:
    send_prepare (
       tcp_connection_ptr                        client_connection,
       detail::command const &                   client_command,
-      boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
       detail::quorum::quorum &                  quorum,
@@ -97,7 +96,6 @@ protected:
       boost::optional <enum paxos::error_code>  error,
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
-      boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
       detail::quorum::quorum &                  quorum,
@@ -113,7 +111,6 @@ protected:
    send_accept (
       tcp_connection_ptr                        client_connection,
       detail::command const &                   client_command,
-      boost::asio::ip::tcp::endpoint const &    leader_endpoint,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
       detail::quorum::quorum &                  quorum,
@@ -141,7 +138,29 @@ protected:
    virtual void
    handle_error (
       enum paxos::error_code    error,
+      quorum::quorum const &    quorum,
       tcp_connection_ptr        client_connection) const;
+
+
+   /*!
+     \brief Amends a command with information about our local host
+    */
+   virtual void
+   add_local_host_information (
+      quorum::quorum const &    quorum,
+      detail::command &         output) const;
+
+   /*!
+     \brief Processes most recent information from a remote host into quorum
+
+     This essentially reads the information added with add_local_host_information () from
+     a remote host and stores it inside our quorum.
+    */
+   virtual void
+   process_remote_host_information (
+      detail::command const &   command,
+      quorum::quorum &          output) const;
+
 
 private:
 

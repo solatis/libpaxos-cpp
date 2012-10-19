@@ -34,16 +34,10 @@ int main ()
    server3.add ("127.0.0.1", 1338);
    server3.add ("127.0.0.1", 1339);
 
-   server1.start ();
-   server2.start ();
-   server3.start ();
-
    paxos::client client;
    client.add ("127.0.0.1", 1337);
    client.add ("127.0.0.1", 1338);
    client.add ("127.0.0.1", 1339);
-   client.start ();
-   client.wait_until_quorum_ready ();
 
 
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");

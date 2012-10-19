@@ -1,8 +1,6 @@
 #include "../exception/exception.hpp"
 #include "util/debug.hpp"
 
-#include "quorum/protocol/handshake.hpp"
-#include "quorum/protocol/announce_leadership.hpp"
 #include "strategy/strategy.hpp"
 
 #include "tcp_connection.hpp"
@@ -28,19 +26,6 @@ command_dispatcher::dispatch_command (
 
    switch (command.type ())
    {
-         case command::type_handshake_start:
-            quorum::protocol::handshake::step2 (connection,
-                                                command,
-                                                quorum);
-            break;
-
-         case command::type_leader_claim:
-            quorum::protocol::announce_leadership::step2 (connection,
-                                                          command,
-                                                          quorum);
-            break;
-
-
          case command::type_request_initiate:
             state.request_queue ().push (
                {

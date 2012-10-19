@@ -1,5 +1,7 @@
 #include <functional>
 
+#include <boost/uuid/uuid_io.hpp>
+
 #include "../../../quorum/quorum.hpp"
 #include "../../../paxos_context.hpp"
 #include "../../../command.hpp"
@@ -19,9 +21,6 @@ strategy::initiate (
    detail::paxos_context &      global_state,
    queue_guard_type             queue_guard) const
 {
-   PAXOS_ASSERT_EQ (quorum.we_have_a_leader (), true);
-   PAXOS_ASSERT_EQ (quorum.who_is_our_leader (), quorum.our_endpoint ());
-
    /*!
      At the start of any request, we should, as defined in the Paxos protocol, increment
      our current proposal id.
@@ -39,20 +38,30 @@ strategy::initiate (
     */
    state->queue_guard = queue_guard;
 
+   std::vector <boost::asio::ip::tcp::endpoint> live_servers = quorum.live_servers ();
+   if (live_servers.empty () == true)
+   {
+      handle_error (paxos::error_no_leader,
+                    quorum,
+                    client_connection);
+      return;
+   }
+
    /*!
      Tell all nodes within this quorum to prepare this request.
     */
-   for (boost::asio::ip::tcp::endpoint const & endpoint : quorum.live_server_endpoints ())
+   for (boost::asio::ip::tcp::endpoint const & endpoint : live_servers)
    {
       detail::quorum::server & server = quorum.lookup_server (endpoint);
+
+      PAXOS_ASSERT (server.has_connection () == true);
 
       PAXOS_DEBUG ("sending paxos request to server " << endpoint);
 
       send_prepare (client_connection,
                     command,
-                    quorum.our_endpoint (),
                     server.endpoint (),
-                    server.broadcast_connection (),
+                    server.connection (),
                     quorum,
                     global_state,
                     command.workload (),
@@ -65,7 +74,6 @@ strategy::initiate (
 strategy::send_prepare (
    tcp_connection_ptr                           client_connection,
    detail::command const &                      client_command,
-   boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
    detail::quorum::quorum &                     quorum,
@@ -87,9 +95,11 @@ strategy::send_prepare (
      id at the other server's end.
     */
    command command;
+
    command.set_type (command::type_request_prepare);
    command.set_proposal_id (global_state.proposal_id ());
-   command.set_host_endpoint (leader_endpoint);
+
+   this->add_local_host_information (quorum, command);
 
 
    PAXOS_DEBUG ("step2 writing command");
@@ -107,7 +117,6 @@ strategy::send_prepare (
                  std::placeholders::_1,
                  client_connection,
                  client_command,
-                 leader_endpoint,
                  follower_endpoint,
                  follower_connection,
                  std::ref (quorum),
@@ -124,13 +133,37 @@ strategy::prepare (
    detail::quorum::quorum &     quorum,
    detail::paxos_context &      state) const
 {
+   this->process_remote_host_information (command,
+                                          quorum);
    detail::command response;
 
    PAXOS_DEBUG ("self = " << quorum.our_endpoint () << ", "
                 "state.proposal_id () = " << state.proposal_id () << ", "
                 "command.proposal_id () = " << command.proposal_id ());
 
-   if (command.host_endpoint () == quorum.our_endpoint ())
+
+
+   boost::optional <boost::asio::ip::tcp::endpoint> leader = quorum.who_is_our_leader ();
+
+   if (leader.is_initialized () == false)
+   {
+      /*!
+        We do not know who the leader is
+       */
+      PAXOS_WARN ("we do not know who the leader is!");
+      response.set_type (command::type_request_fail);
+      response.set_error_code (paxos::error_no_leader);
+   }
+   else if (*leader != command.host_endpoint ())
+   {
+      /*!
+        This request is coming from a host that is not the leader
+       */
+      PAXOS_WARN ("request coming from host that is not the leader: "  << *leader << " [" << quorum.lookup_server (*leader).id () << "] != " << command.host_endpoint () << " [" << quorum.lookup_server (command.host_endpoint ()).id () << "]");
+      response.set_type (command::type_request_fail);
+      response.set_error_code (paxos::error_no_leader);
+   }
+   else if (command.host_endpoint () == quorum.our_endpoint ())
    {
       /*!
         This is the leader sending the 'prepare' to itself, always ACK
@@ -144,10 +177,15 @@ strategy::prepare (
    }
    else
    {
+      PAXOS_WARN ("incorrect proposal id!");
       response.set_type (command::type_request_fail);
+      response.set_error_code (paxos::error_incorrect_proposal);
    }
 
    response.set_proposal_id (state.proposal_id ());
+
+   this->add_local_host_information (quorum, response);
+
 
    PAXOS_DEBUG ("step3 writing command");   
 
@@ -160,7 +198,6 @@ strategy::receive_promise (
    boost::optional <enum paxos::error_code>     error,
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
-   boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
    detail::quorum::quorum &                     quorum,
@@ -172,11 +209,19 @@ strategy::receive_promise (
    if (error)
    {
       PAXOS_WARN ("An error occured while receiving promise from " << follower_endpoint << ": " << paxos::to_string (*error));
-      quorum.mark_dead (follower_endpoint);
+
+      /*!
+        Todo only send this response once
+       */
+      quorum.connection_died (follower_endpoint);
       handle_error (*error,
+                    quorum,
                     client_connection);
       return;
    }
+
+   this->process_remote_host_information (command,
+                                          quorum);
 
    PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
 
@@ -231,6 +276,7 @@ strategy::receive_promise (
         We will send an error command to the client informing about the failed command.
        */
       handle_error (paxos::error_incorrect_proposal,
+                    quorum,
                     client_connection);
    }
    else if (everyone_responded == true && everyone_promised == true)
@@ -247,7 +293,6 @@ strategy::receive_promise (
       {
          send_accept (client_connection,
                       client_command,
-                      leader_endpoint,
                       i.first,
                       i.second,
                       quorum,
@@ -262,15 +307,13 @@ strategy::receive_promise (
 strategy::send_accept (
    tcp_connection_ptr                           client_connection,
    detail::command const &                      client_command,
-   boost::asio::ip::tcp::endpoint const &       leader_endpoint,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
    detail::quorum::quorum &                     quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state) const
-{
-   
+{  
    PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
    PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
 
@@ -278,8 +321,9 @@ strategy::send_accept (
    command command;
    command.set_type (command::type_request_accept);
    command.set_proposal_id (global_state.proposal_id ());
-   command.set_host_endpoint (leader_endpoint);
    command.set_workload (byte_array);
+
+   this->add_local_host_information (quorum, command);
 
    PAXOS_DEBUG ("step5 writing command");   
 
@@ -311,6 +355,9 @@ strategy::accept (
    detail::quorum::quorum &     quorum,
    detail::paxos_context &      state) const
 {
+   this->process_remote_host_information (command,
+                                          quorum);
+
    detail::command response;
    
    /*!
@@ -332,6 +379,8 @@ strategy::accept (
 
    PAXOS_DEBUG ("step6 writing command");   
 
+   this->add_local_host_information (quorum, response);
+
    leader_connection->write_command (response);
 }
 
@@ -350,11 +399,15 @@ strategy::receive_accepted (
    {
       PAXOS_WARN ("An error occured while receiving accepted from " << follower_endpoint << ": " << paxos::to_string (*error));
 
-      quorum.mark_dead (follower_endpoint);
+      quorum.connection_died (follower_endpoint);
       handle_error (*error,
+                    quorum,
                     client_connection);
       return;
    }
+
+   this->process_remote_host_information (command,
+                                          quorum);
 
    PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
    PAXOS_ASSERT (state->responses.find (follower_endpoint) == state->responses.end ());
@@ -423,11 +476,13 @@ strategy::receive_accepted (
          if (everyone_promised == false)
          {
             handle_error (paxos::error_incorrect_proposal,
+                          quorum,
                           client_connection);
          }
          else if (all_same_response == false)
          {
             handle_error (paxos::error_inconsistent_response,
+                          quorum,
                           client_connection);
          }
       }
@@ -438,14 +493,39 @@ strategy::receive_accepted (
 /*! virtual */ void
 strategy::handle_error (
    enum paxos::error_code       error,
+   quorum::quorum const &       quorum,
    tcp_connection_ptr           client_connection) const
 {
    detail::command response;
    response.set_type (command::type_request_error);
    response.set_error_code (error);
+   
+   this->add_local_host_information (quorum,
+                                     response);
 
    client_connection->write_command (response);   
 }
+
+
+
+/*! virtual */ void
+strategy::add_local_host_information (
+   quorum::quorum const &    quorum,
+   detail::command &         output) const
+{
+   detail::quorum::server const & server = quorum.lookup_server (quorum.our_endpoint ());
+   output.set_host_id (server.id ());
+   output.set_host_endpoint (server.endpoint ());
+}
+
+/*! virtual */ void
+strategy::process_remote_host_information (
+   detail::command const &   command,
+   quorum::quorum &          output) const
+{
+   output.lookup_server (command.host_endpoint ()).set_id (command.host_id ());
+}
+
 
 
 }; }; }; }; };

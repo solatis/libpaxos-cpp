@@ -31,49 +31,30 @@ public:
 
    enum type
    {
-      type_invalid = -1,
-
-      //! Sent by a host to initiate a handshake
-      type_handshake_start = 1,
-      
-      //! Sent as a response to a handshake request
-      type_handshake_response = 2,
-
-      //! Sent when a node in the quorum claims leadership
-      type_leader_claim = 3,
-
-      //! Sent when a node acknowledges a new leader
-      type_leader_claim_ack = 4,
-
-      //! Sent when a node rejects a new leader
-      type_leader_claim_reject = 5,
+      type_invalid,
 
 
       //! Sent by a client to the leader when it wants to initiate a new request
-      type_request_initiate = 6,
+      type_request_initiate,
 
       //! Sent by a leader to all the followers when they must all prepare a request
-      type_request_prepare = 7,
+      type_request_prepare,
 
       //! Sent by all followers as a response to the prepare command
-      type_request_promise = 8,
+      type_request_promise,
 
       //! Sent by followers to leader if an inconsistency in the proposal ids has been detected
-      type_request_fail = 9,
+      type_request_fail,
 
       //! Sent by leader to all followers after they have sent a promise
-      type_request_accept = 10,
+      type_request_accept,
 
       //! Sent by followers to leader after they have accepted and processed a request
-      type_request_accepted = 11,
-
-
-
-
+      type_request_accepted,
 
 
       //! Sent back to client when an error has occured. This will mean that error_code is also set
-      type_request_error = 12
+      type_request_error
    };
 
 
@@ -92,20 +73,6 @@ public:
    to_string (
       command const &                   command);
 
-
-   void
-   set_id (
-      uint64_t  id);
-
-   uint64_t
-   id () const;
-
-   void
-   set_response_id (
-      uint64_t  id);
-
-   uint64_t
-   response_id () const;
 
    void
    set_type (
@@ -136,21 +103,6 @@ public:
    host_endpoint () const;
 
    void
-   set_host_state (
-      enum quorum::server::state state);
-
-   enum quorum::server::state
-   host_state () const;
-
-
-   void
-   set_live_servers (
-      std::vector <boost::asio::ip::tcp::endpoint> const &      endpoints);
-
-   std::vector <boost::asio::ip::tcp::endpoint>
-   live_servers () const;
-
-   void
    set_proposal_id (
       uint64_t                  proposal_id);
 
@@ -173,18 +125,12 @@ private:
    
 private:
 
-   uint64_t                                             id_;
-   uint64_t                                             response_id_;
-
    enum type                                            type_;
    enum paxos::error_code                               error_code_;
 
    std::string                                          host_id_;
    std::string                                          host_address_;
    uint16_t                                             host_port_;
-   enum quorum::server::state                           host_state_;
-
-   std::vector <std::pair <std::string, uint16_t> >     live_servers_;
 
    uint64_t                                             proposal_id_;
    std::string                                          workload_;

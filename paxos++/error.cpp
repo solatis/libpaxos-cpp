@@ -11,6 +11,10 @@ to_string (
 {
    switch (error_code)
    {
+         case error_no_leader:
+            return "No leader";
+            break;
+
          case error_incorrect_proposal:
             return "Incorrect proposal id";
             break;

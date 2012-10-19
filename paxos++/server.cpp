@@ -58,18 +58,12 @@ server::server (
 
 server::~server ()
 {
-   close ();
-}
-
-void
-server::start ()
-{
-   quorum_.bootstrap ();
+   stop ();
 }
 
 
 void
-server::close ()
+server::stop ()
 {
    acceptor_.close ();
    io_thread_.stop ();

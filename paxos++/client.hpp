@@ -93,34 +93,26 @@ public:
       uint16_t                                  port);
 
    /*!
-     \brief Bootstraps the quorum and starts connecting to other nodes
-    */
-   void
-   start ();
-
-   /*!
-     \brief Blocks until the client is connected to a full quorum
-     \param attempts Amount of times to try polling the quorum before bailing out
-     \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
-             after \c attemps attempts
-    */
-   void
-   wait_until_quorum_ready (
-      uint16_t  attempts = 10) const
-      throw (exception::not_ready);
-
-   /*!
      \brief Sends data to entire quorum and call callback with result
      \param byte_array  Data to sent. Binary-safe.
      \returns Returns a future to the result
-     \throws Can throw a 'not_ready' exception when the quorum is in an inconsistent state
     */
    std::future <std::string>
    send (
-      std::string const &       byte_array)
-      throw (exception::not_ready);
+      std::string const &       byte_array,
+      uint16_t                  retries = 10) 
+      throw ();
 
 private:
+
+   void
+   do_request (
+      boost::shared_ptr <std::promise <std::string> >   promise,
+      std::string const &                               byte_array,
+      uint16_t                                          retries);
+
+private:
+
 
    detail::io_thread                                                    io_thread_;
    boost::asio::io_service &                                            io_service_;

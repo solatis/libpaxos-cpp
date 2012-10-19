@@ -15,15 +15,9 @@ int main ()
                             return "bar";
                          });
    server.add ("127.0.0.1", 1337);
-   server.start ();
-
-
-
 
    paxos::client client;
    client.add ("127.0.0.1", 1337);
-   client.start ();
-   client.wait_until_quorum_ready ();
 
    std::future <std::string> future = client.send ("foo");
    PAXOS_ASSERT_EQ (future.get (), "bar");
