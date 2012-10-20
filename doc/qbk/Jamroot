@@ -5,31 +5,23 @@ using boostbook
   ;
 
 using quickbook : quickbook ;
-using doxygen : doxygen ;
 
-using xsltproc : /usr/bin/xsltproc ;
-using doxygen  : /usr/bin/doxygen ;
+using xsltproc : xsltproc ;
 
 
 xml libpaxos-cpp :
     libpaxos-cpp.qbk ;
 
 boostbook standalone :
-          libpaxos-cpp : 
-          <dependency>autodoc ;
-
-
-doxygen autodoc :
-        [ glob ../../paxos++/*.hpp ] : 
-
-   <doxygen:param>HIDE_UNDOC_MEMBERS=YES
-   <doxygen:param>HIDE_UNDOC_MEMBERS=YES
-   <doxygen:param>HIDE_UNDOC_CLASSES=YES
-   <doxygen:param>EXTRACT_PRIVATE=NO
-   <doxygen:param>ENABLE_PREPROCESSING=NO
-   <doxygen:param>MACRO_EXPANSION=NO
+          libpaxos-cpp :
+    <xsl:param>html.stylesheet=boostbook.css          
+    <xsl:param>chapter.autolabel=0
+    <xsl:param>chunk.section.depth=3
+    <xsl:param>chunk.first.sections=1
+    <xsl:param>toc.section.depth=2
+    <xsl:param>toc.max.depth=1
+    <xsl:param>generate.section.toc.level=0
 ;
-        
 
 install css :
     boostbook.css :

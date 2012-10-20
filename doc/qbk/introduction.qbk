@@ -1,4 +1,4 @@
-[section Introduction]
+[section:introduction Introduction]
 
 libpaxos-cpp is a C++ implementation of the Paxos distributed consensus protocol, and is distributed under the 3-clause BSD license. It aims to provide the simplest interface possible and hides much of the "gnarly stuff". As such, it currently provides the following functionality:
 

@@ -32,7 +32,14 @@ core
 *.lo
 *.so
 
-test/test1
-test/test2
-test/test3
-test/test4
+doc/paxos++/
+doc/qbk/autodoc.xml
+doc/qbk/bin/
+doc/qbk/html/
+
+test/basic1
+test/basic2
+test/basic3
+test/basic4
+test/connection_close1
+test/connection_close2

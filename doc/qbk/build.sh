@@ -1,7 +1,11 @@
 #!/bin/bash
 
+./doxy2qbk.pl
 bjam
-find html/ -type f -exec sed -i 's/\/home\/lmergen\/git\/libpaxos-cpp\///g' {} \;
 rm -rf ../paxos++/
 mkdir ../paxos++/
-cp ../../paxos++/*.hpp ../paxos++/
+mkdir ../paxos++/exception/
+cp ../../paxos++/client.hpp ../paxos++/
+cp ../../paxos++/configuration.hpp ../paxos++/
+cp ../../paxos++/server.hpp ../paxos++/
+cp ../../paxos++/exception/exception.hpp ../paxos++/exception/

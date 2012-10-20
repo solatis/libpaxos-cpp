@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN" "boostbook.dtd">
+
+<!--
+  Copyright (c) 2003-2012 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+
+  Distributed under the Boost Software License, Version 1.0. (See accompanying
+  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+-->
+
+<informaltable frame="all">
+  <tgroup cols="2">
+    <colspec colname="a"/>
+    <colspec colname="b"/>
+    <thead>
+      <row>
+        <entry valign="center" namest="a" nameend="b">
+          <bridgehead renderas="sect2">Paxos</bridgehead>
+        </entry>
+      </row>
+    </thead>
+    <tbody>
+      <row>
+        <entry valign="top">
+          <bridgehead renderas="sect3">Classes</bridgehead>
+          <simplelist type="vert" columns="1">
+            <member><link linkend="libpaxos_cpp.reference.client">client</link></member>
+            <member><link linkend="libpaxos_cpp.reference.configuration">configuration</link></member>
+            <member><link linkend="libpaxos_cpp.reference.server">server</link></member>
+          </simplelist>
+        </entry>
+        <entry valign="top">
+          <bridgehead renderas="sect3">Exceptions</bridgehead>
+          <simplelist type="vert" columns="1">
+            <member><link linkend="libpaxos_cpp.reference.exception__not_ready">not_ready</link></member>
+            <member><link linkend="libpaxos_cpp.reference.exception__protocol_error">protocol_error</link></member>
+            <member><link linkend="libpaxos_cpp.reference.exception__request_error">request_error</link></member>
+          </simplelist>
+        </entry>
+      </row>
+    </tbody>
+  </tgroup>
+</informaltable>

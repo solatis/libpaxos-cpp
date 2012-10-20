@@ -1,9 +1,765 @@
-[section Reference]
+[/
+ /]
 
-[section Server]
+[section:reference Reference]
+
+[xinclude quickref.xml]
+
+
+[section:client client]
+
+
+Represents a paxos client. 
+
+
+  class client
+
+
+[heading Member Functions]
+[table
+  [[Name][Description]]
+
+  [
+    [[link libpaxos_cpp.reference.client.add [*add]]]
+    [Adds server to quorum registered within the client. 
+
+     Helper function of add (), which adds a whole list at once. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.client.client [*client]]]
+    [Opens client. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.client.send [*send]]]
+    [Sends data to entire quorum and call callback with result. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.client._client [*~client]]]
+    [Destructor. ]
+  ]
+  
+]
+
+Clients that want to talk to the Paxos quorum should use this class. It is very similar to server, in that it needs the same quorum and periodically handshakes with all servers inside the quorum to determine their state.
+
+Example usage: 
+
+  paxos::client client;
+  client.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+
+  std::future <std::string> future = client.send ("foo");
+  std::string result = future.get ();
+
+
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/client.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+[section:add client::add]
+
+
+Adds server to quorum registered within the client. 
+
+
+  void ``[link libpaxos_cpp.reference.client.add.overload1 add]``(
+      std::string const & server,
+      uint16_t port);
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.client.add.overload1 more...]]``
+
+
+Helper function of add (), which adds a whole list at once. 
+
+
+  void ``[link libpaxos_cpp.reference.client.add.overload2 add]``(
+      std::initializer_list< std::pair< std::string, uint16_t > > const & servers);
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.client.add.overload2 more...]]``
+
+
+[section:overload1 client::add (1 of 2 overloads)]
+
+
+Adds server to quorum registered within the client. 
+
+
+  void add(
+      std::string const & server,
+      uint16_t port);
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[server][Hostname of server to connect to ]]
+
+[[port][Port of server to connect to ]]
+
+]
+
+
+
+
 [endsect]
 
-[section Client]
+
+
+[section:overload2 client::add (2 of 2 overloads)]
+
+
+Helper function of add (), which adds a whole list at once. 
+
+
+  void add(
+      std::initializer_list< std::pair< std::string, uint16_t > > const & servers);
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[servers][List of pairs of server/ports to connect to ]]
+
+]
+
+
+
+
+[endsect]
+
+
+[endsect]
+
+[section:client client::client]
+
+
+Opens client. 
+
+
+  ``[link libpaxos_cpp.reference.client.client.overload1 client]``(
+      paxos::configuration configuration = paxos::configuration());
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.client.client.overload1 more...]]``
+
+  ``[link libpaxos_cpp.reference.client.client.overload2 client]``(
+      boost::asio::io_service & io_service,
+      paxos::configuration configuration = paxos::configuration());
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.client.client.overload2 more...]]``
+
+
+[section:overload1 client::client (1 of 2 overloads)]
+
+
+Opens client. 
+
+
+  client(
+      paxos::configuration configuration = paxos::configuration());
+
+
+This constructor launches its own background thread with i/o context 
+
+
+[endsect]
+
+
+
+[section:overload2 client::client (2 of 2 overloads)]
+
+
+Opens client. 
+
+
+  client(
+      boost::asio::io_service & io_service,
+      paxos::configuration configuration = paxos::configuration());
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[io_service][Boost.Asio io\_service object, which represents the link to the OS'es i/o services ]]
+
+]
+
+
+
+
+[endsect]
+
+
+[endsect]
+
+
+[section:send client::send]
+
+[indexterm2 send..client] 
+Sends data to entire quorum and call callback with result. 
+
+
+  std::future< std::string > send(
+      std::string const & byte_array,
+      uint16_t retries = 10);
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[byte_array][Data to sent. Binary-safe. ]]
+
+]
+
+
+[heading Return Value]
+      
+Returns a future to the result 
+
+
+
+
+[endsect]
+
+
+
+[section:_client client::~client]
+
+[indexterm2 ~client..client] 
+Destructor. 
+
+
+  ~client();
+
+
+Gracefully closes the background io thread, if any. 
+
+
+[endsect]
+
+
+
+[endsect]
+
+[section:configuration configuration]
+
+
+Runtime configurable parameters. 
+
+
+  class configuration
+
+
+[heading Member Functions]
+[table
+  [[Name][Description]]
+
+  [
+    [[link libpaxos_cpp.reference.configuration.configuration [*configuration]]]
+    [Default constructor. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.configuration.set_strategy_factory [*set_strategy_factory]]]
+    [Adjusts the strategy used for internal paxos protocol. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.configuration.set_timeout [*set_timeout]]]
+    [Adjusts timeout (in milliseconds) before marking a host as dead. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.configuration.strategy_factory [*strategy_factory]]]
+    [Access to strategy used for internal paxos protocol. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.configuration.timeout [*timeout]]]
+    [Access to timeout. ]
+  ]
+  
+]
+
+[heading Requirements]
+
+[*Header: ][^paxos++/configuration.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+
+[section:configuration configuration::configuration]
+
+[indexterm2 configuration..configuration] 
+Default constructor. 
+
+
+  configuration();
+
+
+
+[endsect]
+
+
+
+[section:set_strategy_factory configuration::set_strategy_factory]
+
+[indexterm2 set_strategy_factory..configuration] 
+Adjusts the strategy used for internal paxos protocol. 
+
+
+  void set_strategy_factory(
+      detail::strategy::factory * factory);
+
+
+
+[heading Remarks]
+      
+Takes over ownership of `factory` 
+
+
+
+
+[endsect]
+
+
+
+[section:set_timeout configuration::set_timeout]
+
+[indexterm2 set_timeout..configuration] 
+Adjusts timeout (in milliseconds) before marking a host as dead. 
+
+
+  void set_timeout(
+      uint32_t timeout);
+
+
+Default is 3000 (3 seconds) 
+
+
+[endsect]
+
+
+
+[section:strategy_factory configuration::strategy_factory]
+
+[indexterm2 strategy_factory..configuration] 
+Access to strategy used for internal paxos protocol. 
+
+
+  detail::strategy::factory const & strategy_factory() const;
+
+
+
+[endsect]
+
+
+
+[section:timeout configuration::timeout]
+
+[indexterm2 timeout..configuration] 
+Access to timeout. 
+
+
+  uint32_t timeout() const;
+
+
+
+[endsect]
+
+
+
+[endsect]
+
+[section:exception__exception exception::exception]
+
+
+Base class for all our exceptions. 
+
+
+  class exception
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/exception/exception.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+
+[endsect]
+
+[section:exception__not_ready exception::not_ready]
+
+
+Thrown when the quorum is in an inconsistent state. 
+
+
+  class not_ready :
+    public exception::exception
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/exception/exception.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+
+[endsect]
+
+[section:exception__protocol_error exception::protocol_error]
+
+
+Thrown when an unexpected command arrives. 
+
+
+  class protocol_error :
+    public exception::exception
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/exception/exception.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+
+[endsect]
+
+[section:exception__request_error exception::request_error]
+
+
+Thrown when a request could not be completed. 
+
+
+  class request_error :
+    public exception::exception
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/exception/exception.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+
+[endsect]
+
+[section:server server]
+
+
+Represents the local paxos server. 
+
+
+  class server
+
+
+[heading Types]
+[table
+  [[Name][Description]]
+
+  [
+
+    [[link libpaxos_cpp.reference.server.callback_type [*callback_type]]]
+    []
+  
+  ]
+
+]
+
+[heading Member Functions]
+[table
+  [[Name][Description]]
+
+  [
+    [[link libpaxos_cpp.reference.server.add [*add]]]
+    [Adds server to quorum registered the server is part of. 
+
+     Helper function of add (), which adds a whole list at once. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.server.server [*server]]]
+    [Opens socket to listen on port. ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.server.stop [*stop]]]
+    [Stops listening for new connections, closes all existing connections and stops the background thread (if any) ]
+  ]
+  
+  [
+    [[link libpaxos_cpp.reference.server._server [*~server]]]
+    [Destructor. ]
+  ]
+  
+]
+
+This is the main entry point which communications within the paxos quorum take place. It hooks itself onto the io\_service, and will start accepting connections as soon as io\_service.handle\_events () is called by an outside thread. This thread can, however, be created by the server itself.
+
+Example usage: 
+
+  paxos::server::callback_type callback = 
+     [& response_count](std::string const & byte_array) -> std::string
+     {
+        return byte_array;
+     };  
+
+  paxos::server server1 ("127.0.0.1", 1337, callback);
+  paxos::server server2 ("127.0.0.1", 1338, callback);
+
+  server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}});
+  server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}});
+
+
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/server.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+[section:add server::add]
+
+
+Adds server to quorum registered the server is part of. 
+
+
+  void ``[link libpaxos_cpp.reference.server.add.overload1 add]``(
+      std::string const & server,
+      uint16_t port);
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.server.add.overload1 more...]]``
+
+
+Helper function of add (), which adds a whole list at once. 
+
+
+  void ``[link libpaxos_cpp.reference.server.add.overload2 add]``(
+      std::initializer_list< std::pair< std::string, uint16_t > > const & servers);
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.server.add.overload2 more...]]``
+
+
+[section:overload1 server::add (1 of 2 overloads)]
+
+
+Adds server to quorum registered the server is part of. 
+
+
+  void add(
+      std::string const & server,
+      uint16_t port);
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[server][Hostname of server to connect to ]]
+
+[[port][Port of server to connect to ]]
+
+]
+
+
+
+
+[endsect]
+
+
+
+[section:overload2 server::add (2 of 2 overloads)]
+
+
+Helper function of add (), which adds a whole list at once. 
+
+
+  void add(
+      std::initializer_list< std::pair< std::string, uint16_t > > const & servers);
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[servers][List of pairs of server/ports to connect to ]]
+
+]
+
+
+
+
+[endsect]
+
+
+[endsect]
+
+
+[section:callback_type server::callback_type]
+
+[indexterm2 callback_type..server] 
+
+  typedef detail::paxos_context::processor_type callback_type;
+
+
+
+[heading Requirements]
+
+[*Header: ][^paxos++/server.hpp]
+
+[*Convenience header: ][^paxos++/all.hpp]
+
+
+[endsect]
+
+
+[section:server server::server]
+
+
+Opens socket to listen on port. 
+
+
+  ``[link libpaxos_cpp.reference.server.server.overload1 server]``(
+      std::string const & server,
+      uint16_t port,
+      callback_type const & callback,
+      paxos::configuration configuration = paxos::configuration());
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.server.server.overload1 more...]]``
+
+  ``[link libpaxos_cpp.reference.server.server.overload2 server]``(
+      boost::asio::io_service & io_service,
+      std::string const & server,
+      uint16_t port,
+      callback_type const & callback,
+      paxos::configuration configuration = paxos::configuration());
+  ``  [''''&raquo;''' [link libpaxos_cpp.reference.server.server.overload2 more...]]``
+
+
+[section:overload1 server::server (1 of 2 overloads)]
+
+
+Opens socket to listen on port. 
+
+
+  server(
+      std::string const & server,
+      uint16_t port,
+      callback_type const & callback,
+      paxos::configuration configuration = paxos::configuration());
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[server][Hostname we're listening at to new connections ]]
+
+[[port][Port we're listening at to new connections ]]
+
+[[callback][Callback used to process workload ]]
+
+[[configuration][(Optional) Runtime configuration]]
+
+]
+
+This constructor launches its own background thread with i/o context. 
+
+
+[endsect]
+
+
+
+[section:overload2 server::server (2 of 2 overloads)]
+
+
+Opens socket to listen on port. 
+
+
+  server(
+      boost::asio::io_service & io_service,
+      std::string const & server,
+      uint16_t port,
+      callback_type const & callback,
+      paxos::configuration configuration = paxos::configuration());
+
+
+
+[heading Parameters]
+    
+
+[variablelist
+  
+[[io_service][Boost.Asio io\_service object, which represents the link to the OS'es i/o services ]]
+
+[[server][Hostname we're listening at to new connections ]]
+
+[[port][Port we're listening at to new connections ]]
+
+[[callback][Callback used to process workload ]]
+
+[[configuration][(Optional) Runtime configuration ]]
+
+]
+
+
+
+
+[endsect]
+
+
+[endsect]
+
+
+[section:stop server::stop]
+
+[indexterm2 stop..server] 
+Stops listening for new connections, closes all existing connections and stops the background thread (if any) 
+
+
+  void stop();
+
+
+
+[endsect]
+
+
+
+[section:_server server::~server]
+
+[indexterm2 ~server..server] 
+Destructor. 
+
+
+  ~server();
+
+
+Gracefully closes the background io thread, if any. 
+
+
+[endsect]
+
+
+
 [endsect]
 
 [endsect]

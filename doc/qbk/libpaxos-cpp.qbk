@@ -2,7 +2,7 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
 ]
 
-[article libpaxos-cpp
+[library libpaxos-cpp
     [quickbook 1.5]
     [authors [Mergen, Leon]]
     [copyright 2012 Leon Mergen]
@@ -14,7 +14,6 @@
     [version 0.5]
 ]
 
-
 [include introduction.qbk]
 [include what_s_new.qbk]
 [include getting_the_source.qbk]
@@ -22,5 +21,4 @@
 [include installation.qbk]
 [include tutorial.qbk]
 [include support.qbk]
-
-[xinclude autodoc.xml]
+[include reference.qbk]
