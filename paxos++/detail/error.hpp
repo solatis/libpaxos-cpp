@@ -2,12 +2,12 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
  */
 
-#ifndef LIBPAXOS_CPP_ERROR_HPP
-#define LIBPAXOS_CPP_ERROR_HPP
+#ifndef LIBPAXOS_CPP_DETAIL_ERROR_HPP
+#define LIBPAXOS_CPP_DETAIL_ERROR_HPP
 
 #include <string>
 
-namespace paxos { 
+namespace paxos { namespace detail {
 
 enum error_code
 {
@@ -39,6 +39,7 @@ enum error_code
      This error is sent back when a timeout occured on one of the followers.
     */
    error_connection_timeout
+
 };
 
 
@@ -46,6 +47,6 @@ std::string
 to_string (
    enum error_code);
 
-};
+}; };
 
-#endif //! LIBPAXOS_CPP_QUORUM_HPP
+#endif //! LIBPAXOS_CPP_DETAIL_ERROR_HPP

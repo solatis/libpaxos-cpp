@@ -7,6 +7,7 @@
 
 #include <boost/shared_array.hpp>
 
+#include "error.hpp"
 #include "tcp_connection_fwd.hpp"
 #include "command.hpp"
 
@@ -19,7 +20,7 @@ class parser
 {
 public:
 
-   typedef boost::function <void (boost::optional <enum paxos::error_code>, command const &)> callback_function;
+   typedef boost::function <void (boost::optional <enum error_code>, command const &)>  callback_function;
 
    /*!
      \brief Writes command to connection

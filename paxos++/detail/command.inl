@@ -23,12 +23,12 @@ command::type () const
 
 inline void
 command::set_error_code (
-   enum paxos::error_code       error_code)
+   enum detail::error_code      error_code)
 {
    error_code_ = error_code;
 }
 
-inline enum paxos::error_code
+inline enum detail::error_code
 command::error_code () const
 {
    return error_code_;

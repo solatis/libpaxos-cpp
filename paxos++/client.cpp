@@ -98,8 +98,8 @@ client::do_request (
              promise,
              byte_array,
              retries] (
-                boost::optional <enum error_code>        error,
-                std::string const &                      response)
+                boost::optional <enum detail::error_code>       error,
+                std::string const &                             response)
             {
                if (error)
                {
@@ -153,7 +153,7 @@ client::do_request (
                      /*!
                        We do not have any retries left, let's set the exception.
                       */
-                     PAXOS_WARN ("Caught error in response to client request: " << paxos::to_string (*error));
+                     PAXOS_WARN ("Caught error in response to client request: " << detail::to_string (*error));
                      promise->set_exception (std::make_exception_ptr (exception::request_error ()));
                   }
                }

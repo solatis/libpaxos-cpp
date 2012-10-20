@@ -7,7 +7,7 @@
 
 #include <boost/optional.hpp>
 
-#include "../error.hpp"
+#include "error.hpp"
 #include "tcp_connection_fwd.hpp"
 
 namespace paxos { namespace detail {
@@ -44,11 +44,11 @@ public:
     */
    static void
    dispatch_command (
-      boost::optional <enum paxos::error_code>  error,
-      tcp_connection_ptr                        connection,
-      detail::command const &                   command,
-      detail::quorum::quorum &                  quorum,
-      detail::paxos_context &                   state);
+      boost::optional <enum error_code> error,
+      tcp_connection_ptr                connection,
+      detail::command const &           command,
+      detail::quorum::quorum &          quorum,
+      detail::paxos_context &           state);
 
 private:
 };

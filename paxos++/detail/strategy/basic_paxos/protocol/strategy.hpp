@@ -7,6 +7,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
+#include "../../../error.hpp"
 #include "../../strategy.hpp"
 
 namespace paxos { namespace detail { namespace strategy { namespace basic_paxos { namespace protocol {
@@ -93,7 +94,7 @@ protected:
     */
    virtual void
    receive_promise (
-      boost::optional <enum paxos::error_code>  error,
+      boost::optional <enum detail::error_code> error,
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
@@ -124,7 +125,7 @@ protected:
     */
    virtual void
    receive_accepted (
-      boost::optional <enum paxos::error_code>  error,
+      boost::optional <enum detail::error_code> error,
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
@@ -137,7 +138,7 @@ protected:
     */
    virtual void
    handle_error (
-      enum paxos::error_code    error,
+      enum detail::error_code   error,
       quorum::quorum const &    quorum,
       tcp_connection_ptr        client_connection) const;
 

@@ -21,7 +21,7 @@ initiate_request::step1 (
    if (leader.is_initialized () == false)
    {
       PAXOS_DEBUG ("leader.is_initialized () == false");
-      callback (paxos::error_no_leader, "");
+      callback (detail::error_no_leader, "");
       return;
    }
 
@@ -32,7 +32,7 @@ initiate_request::step1 (
    if (server.has_connection () == false)
    {
       PAXOS_DEBUG ("server.has_connection () == false");
-      callback (paxos::error_no_leader, "");
+      callback (detail::error_no_leader, "");
       return;
    }
 
@@ -58,12 +58,12 @@ initiate_request::step1 (
        & server,
        callback,
        guard] (
-          boost::optional <enum paxos::error_code>      error,          
+          boost::optional <enum detail::error_code>     error,
           detail::command const &                       c)
       {
          if (error)
          {
-            PAXOS_WARN ("client had problems communicating with leader: " << paxos::to_string (*error));
+            PAXOS_WARN ("client had problems communicating with leader: " << detail::to_string (*error));
             quorum.connection_died (server.endpoint ());
 
             callback (*error, "");

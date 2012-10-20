@@ -10,8 +10,8 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
-#include "../../../error.hpp"
 #include "../../../exception/exception.hpp"
+#include "../../error.hpp"
 #include "../../request_queue/queue.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
@@ -29,7 +29,7 @@ public:
 
    typedef detail::request_queue::queue <struct request>::guard::pointer queue_guard_type;
 
-   typedef boost::function <void (boost::optional <enum paxos::error_code>,
+   typedef boost::function <void (boost::optional <enum detail::error_code>,
                                   std::string const &)>                         callback_type;
 
    /*!

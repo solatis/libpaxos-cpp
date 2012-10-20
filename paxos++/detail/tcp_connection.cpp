@@ -76,8 +76,8 @@ tcp_connection::read_command_loop (
 {
    read_command (
       [this,
-       callback] (boost::optional <enum paxos::error_code>      error,
-                  command const &                               command)
+       callback] (boost::optional <enum error_code>     error,
+                  command const &                       command)
       {
          callback (error,
                    command);

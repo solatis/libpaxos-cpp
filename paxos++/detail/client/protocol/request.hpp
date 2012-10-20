@@ -10,7 +10,7 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
-#include "../../../error.hpp"
+#include "../../error.hpp"
 
 namespace paxos { namespace detail { namespace quorum {
 class quorum;
@@ -25,7 +25,7 @@ struct request
 {
    std::string                                                                                  byte_array_;
    detail::quorum::quorum &                                                                     quorum_;
-   boost::function <void (boost::optional <enum paxos::error_code>, std::string const &)>       callback_;
+   boost::function <void (boost::optional <enum detail::error_code>, std::string const &)>      callback_;
 
 };
 

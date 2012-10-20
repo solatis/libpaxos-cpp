@@ -11,15 +11,15 @@ namespace paxos { namespace detail {
 
 /*! static */ void
 command_dispatcher::dispatch_command (
-   boost::optional <enum paxos::error_code>     error,
-   tcp_connection_ptr                           connection,
-   detail::command const &                      command,
-   detail::quorum::quorum &                     quorum,
-   detail::paxos_context &                      state)
+   boost::optional <enum error_code>    error,
+   tcp_connection_ptr                   connection,
+   detail::command const &              command,
+   detail::quorum::quorum &             quorum,
+   detail::paxos_context &              state)
 {
    if (error)
    {
-      PAXOS_WARN ("an error occured while reading stateless commands: " << paxos::to_string (*error));
+      PAXOS_WARN ("an error occured while reading stateless commands: " << to_string (*error));
       connection->close ();
       return;
    }

@@ -7,18 +7,13 @@
 
 #include <future>
 #include <initializer_list>
-#include <boost/function.hpp>
-
-#include "exception/exception.hpp"
 
 #include "detail/io_thread.hpp"
 #include "detail/quorum/quorum.hpp"
 #include "detail/request_queue/queue.hpp"
 #include "detail/client/protocol/request.hpp"
-#include "detail/client/protocol/initiate_request.hpp"
 
 #include "configuration.hpp"
-#include "error.hpp"
 
 namespace paxos {
 
@@ -44,11 +39,6 @@ namespace paxos {
 class client
 {
 public:
-
-   /*!
-     \brief Callback type for async_send ()
-    */
-   typedef detail::client::protocol::initiate_request::callback_type    callback_type;
 
    /*!
      \brief Opens client
@@ -90,7 +80,6 @@ public:
    void
    add (
       std::initializer_list <std::pair <std::string, uint16_t> > const &        servers);
-
 
    /*!
      \brief Sends data to entire quorum and call callback with result

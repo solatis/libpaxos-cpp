@@ -58,7 +58,7 @@ parser::read_command_parse_size (
 {
    if (error)
    {
-      callback (paxos::error_connection_close,
+      callback (detail::error_connection_close,
                 command ());
    }
    else
@@ -95,7 +95,7 @@ parser::read_command_parse_command (
 {
    if (error)
    {
-      callback (paxos::error_connection_close,
+      callback (detail::error_connection_close,
                 command ());
    }
    else

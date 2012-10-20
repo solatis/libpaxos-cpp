@@ -41,7 +41,7 @@ strategy::initiate (
    std::vector <boost::asio::ip::tcp::endpoint> live_servers = quorum.live_servers ();
    if (live_servers.empty () == true)
    {
-      handle_error (paxos::error_no_leader,
+      handle_error (detail::error_no_leader,
                     quorum,
                     client_connection);
       return;
@@ -154,7 +154,7 @@ strategy::prepare (
        */
       PAXOS_WARN ("we do not know who the leader is!");
       response.set_type (command::type_request_fail);
-      response.set_error_code (paxos::error_no_leader);
+      response.set_error_code (detail::error_no_leader);
    }
    else if (*leader != command.host_endpoint ())
    {
@@ -163,7 +163,7 @@ strategy::prepare (
        */
       PAXOS_WARN ("request coming from host that is not the leader: "  << *leader << " [" << quorum.lookup_server (*leader).id () << "] != " << command.host_endpoint () << " [" << quorum.lookup_server (command.host_endpoint ()).id () << "]");
       response.set_type (command::type_request_fail);
-      response.set_error_code (paxos::error_no_leader);
+      response.set_error_code (detail::error_no_leader);
    }
    else if (command.host_endpoint () == quorum.our_endpoint ())
    {
@@ -183,7 +183,7 @@ strategy::prepare (
    {
       PAXOS_WARN ("incorrect proposal id!");
       response.set_type (command::type_request_fail);
-      response.set_error_code (paxos::error_incorrect_proposal);
+      response.set_error_code (detail::error_incorrect_proposal);
    }
 
    response.set_proposal_id (state.proposal_id ());
@@ -199,7 +199,7 @@ strategy::prepare (
 
 /*! virtual */ void
 strategy::receive_promise (
-   boost::optional <enum paxos::error_code>     error,
+   boost::optional <enum detail::error_code>    error,
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
@@ -212,7 +212,7 @@ strategy::receive_promise (
 {
    if (error)
    {
-      PAXOS_WARN ("An error occured while receiving promise from " << follower_endpoint << ": " << paxos::to_string (*error));
+      PAXOS_WARN ("An error occured while receiving promise from " << follower_endpoint << ": " << detail::to_string (*error));
 
       /*!
         Todo only send this response once
@@ -278,7 +278,7 @@ strategy::receive_promise (
 
         We will send an error command to the client informing about the failed command.
        */
-      handle_error (paxos::error_incorrect_proposal,
+      handle_error (detail::error_incorrect_proposal,
                     quorum,
                     client_connection);
    }
@@ -390,7 +390,7 @@ strategy::accept (
 
 /*! virtual */ void
 strategy::receive_accepted (
-   boost::optional <enum paxos::error_code>     error,
+   boost::optional <enum detail::error_code>    error,
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
@@ -400,7 +400,7 @@ strategy::receive_accepted (
 {
    if (error)
    {
-      PAXOS_WARN ("An error occured while receiving accepted from " << follower_endpoint << ": " << paxos::to_string (*error));
+      PAXOS_WARN ("An error occured while receiving accepted from " << follower_endpoint << ": " << detail::to_string (*error));
 
       quorum.connection_died (follower_endpoint);
       handle_error (*error,
@@ -478,13 +478,13 @@ strategy::receive_accepted (
 
          if (everyone_promised == false)
          {
-            handle_error (paxos::error_incorrect_proposal,
+            handle_error (detail::error_incorrect_proposal,
                           quorum,
                           client_connection);
          }
          else if (all_same_response == false)
          {
-            handle_error (paxos::error_inconsistent_response,
+            handle_error (detail::error_inconsistent_response,
                           quorum,
                           client_connection);
          }
@@ -495,7 +495,7 @@ strategy::receive_accepted (
 
 /*! virtual */ void
 strategy::handle_error (
-   enum paxos::error_code       error,
+   enum detail::error_code      error,
    quorum::quorum const &       quorum,
    tcp_connection_ptr           client_connection) const
 {

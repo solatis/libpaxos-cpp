@@ -1,9 +1,7 @@
-#include "detail/util/debug.hpp"
+#include "util/debug.hpp"
 #include "error.hpp"
 
-namespace paxos {
-
-
+namespace paxos { namespace detail {
 
 std::string
 to_string (
@@ -36,5 +34,4 @@ to_string (
 
 }
 
-
-};
+}; };

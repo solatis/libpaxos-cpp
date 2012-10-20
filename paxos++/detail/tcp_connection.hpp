@@ -14,7 +14,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread/mutex.hpp>
 
-#include "../error.hpp"
+#include "error.hpp"
 #include "tcp_connection_fwd.hpp"
 
 namespace paxos { 
@@ -48,8 +48,8 @@ public:
 
    friend detail::parser;
 
-   typedef boost::function <void (boost::optional <enum paxos::error_code>,
-                                  command const &)>                             read_callback;
+   typedef boost::function <void (boost::optional <enum error_code>,
+                                  command const &)>                     read_callback;
 
 public:
    ~tcp_connection ();

@@ -16,7 +16,7 @@
 
 #include "quorum/server.hpp"
 
-#include "../error.hpp"
+#include "error.hpp"
 
 namespace paxos { namespace detail { 
 
@@ -83,9 +83,9 @@ public:
 
    void
    set_error_code (
-      enum paxos::error_code            error_code);
+      enum detail::error_code           error_code);
 
-   enum paxos::error_code
+   enum detail::error_code
    error_code () const;
 
    void
@@ -126,7 +126,7 @@ private:
 private:
 
    enum type                                            type_;
-   enum paxos::error_code                               error_code_;
+   enum detail::error_code                              error_code_;
 
    std::string                                          host_id_;
    std::string                                          host_address_;
