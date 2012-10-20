@@ -19,10 +19,6 @@
 
 #include "configuration.hpp"
 
-namespace boost { namespace asio { namespace ip {
-class address;
-}; }; };
-
 namespace paxos {
 
 /*!

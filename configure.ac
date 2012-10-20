@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libpaxos-cpp], [0.3.0], http://wwww.leonmergen.com/libpaxos-cpp/)
+AC_INIT([libpaxos-cpp], [0.5.0], http://wwww.leonmergen.com/libpaxos-cpp/)
 AC_CONFIG_SRCDIR([paxos++/server.hpp])
 AC_CONFIG_HEADER([config.h])
 

@@ -1,12 +1,17 @@
 include_HEADERS = \
+	detail/client/protocol/request.hpp \
 	detail/client/protocol/initiate_request.hpp \
 	detail/quorum/quorum.hpp \
 	detail/quorum/quorum.inl \
 	detail/quorum/server.hpp \
 	detail/request_queue/queue.hpp \
 	detail/request_queue/queue.inl \
+	detail/strategy/factory.hpp \
+	detail/strategy/factory.inl \
 	detail/strategy/request.hpp \
 	detail/strategy/request.inl \
+	detail/strategy/strategy.hpp \
+	detail/strategy/strategy.inl \
 	detail/strategy/basic_paxos/factory.hpp \
 	detail/strategy/basic_paxos/protocol/strategy.hpp \
 	detail/util/conversion.hpp \
@@ -20,6 +25,7 @@ include_HEADERS = \
 	detail/paxos_context.hpp \
 	detail/paxos_context.inl \
 	detail/tcp_connection.hpp \
+	detail/tcp_connection_fwd.hpp \
 	exception/exception.hpp \
 	client.hpp \
 	configuration.hpp \

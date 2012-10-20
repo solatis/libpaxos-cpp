@@ -11,7 +11,7 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/map.hpp> //! For std::pair
+#include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
 
 #include "quorum/server.hpp"

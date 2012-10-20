@@ -1,0 +1,50 @@
+import os ;
+
+using boostbook
+  : /usr/share/sgml/docbook/stylesheet/xsl/docbook-xsl
+  ;
+
+using quickbook : quickbook ;
+using doxygen : doxygen ;
+
+using xsltproc : /usr/bin/xsltproc ;
+using doxygen  : /usr/bin/doxygen ;
+
+
+xml libpaxos-cpp :
+    libpaxos-cpp.qbk ;
+
+boostbook standalone :
+          libpaxos-cpp : 
+          <dependency>autodoc ;
+
+
+doxygen autodoc :
+        [ glob ../../paxos++/*.hpp ] : 
+
+   <doxygen:param>HIDE_UNDOC_MEMBERS=YES
+   <doxygen:param>HIDE_UNDOC_MEMBERS=YES
+   <doxygen:param>HIDE_UNDOC_CLASSES=YES
+   <doxygen:param>EXTRACT_PRIVATE=NO
+   <doxygen:param>ENABLE_PREPROCESSING=NO
+   <doxygen:param>MACRO_EXPANSION=NO
+;
+        
+
+install css :
+    boostbook.css :
+        <location>html
+    ;
+
+install png :
+    [ glob images/*.png ] :
+        <location>html/images
+    ;
+
+install svg :
+    [ glob images/*.svg ] :
+        <location>html/images
+    ;
+
+
+
