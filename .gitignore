@@ -32,10 +32,13 @@ core
 *.lo
 *.so
 
-doc/paxos++/
-doc/qbk/autodoc.xml
-doc/qbk/bin/
-doc/qbk/html/
+doc/autodoc.xml
+doc/bin/
+doc/html/
+doc/images/
+doc/xml/
+doc/reference.tags
+doc/reference.qbk
 
 test/basic1
 test/basic2
