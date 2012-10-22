@@ -3,6 +3,7 @@ namespace paxos { namespace detail {
 
 inline command::command ()
    : type_ (type_invalid),
+     error_code_ (no_error),
      proposal_id_ (0)
 {
 }

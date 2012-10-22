@@ -12,6 +12,11 @@ namespace paxos { namespace detail {
 enum error_code
 {
    /*!
+     This is a placeholder for unknown/invalid errors
+    */
+   no_error,
+
+   /*!
      This error is sent back when a specific node receives a request for a leader and is 
      not a leader (or there is no leader yet).
     */

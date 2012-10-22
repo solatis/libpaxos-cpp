@@ -29,6 +29,7 @@ private:
    {
       std::map <boost::asio::ip::tcp::endpoint, enum response>                  accepted;
       std::map <boost::asio::ip::tcp::endpoint, std::string>                    responses;
+      std::map <boost::asio::ip::tcp::endpoint, enum detail::error_code>        error_codes;
       std::map <boost::asio::ip::tcp::endpoint, detail::tcp_connection_ptr>     connections;
       queue_guard_type                                                          queue_guard;
    };

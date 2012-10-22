@@ -9,6 +9,10 @@ to_string (
 {
    switch (error_code)
    {
+         case no_error:
+            return "No error";
+            break;
+
          case error_no_leader:
             return "No leader";
             break;

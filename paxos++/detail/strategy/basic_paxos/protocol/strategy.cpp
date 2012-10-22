@@ -214,94 +214,102 @@ strategy::receive_promise (
    {
       PAXOS_WARN ("An error occured while receiving promise from " << follower_endpoint << ": " << detail::to_string (*error));
 
-      /*!
-        Todo only send this response once
-       */
       quorum.connection_died (follower_endpoint);
-      handle_error (*error,
-                    quorum,
-                    client_connection);
-      return;
+      state->accepted[follower_endpoint]    = response_reject;
+      state->error_codes[follower_endpoint] = *error;
    }
-
-   this->process_remote_host_information (command,
-                                          quorum);
-
-   PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
-
-   PAXOS_DEBUG ("step4 self = " << quorum.our_endpoint () << ", received command from follower " << follower_endpoint);
-
-   switch (command.type ())
+   else
    {
-         case command::type_request_promise:
-            state->accepted[follower_endpoint] = response_ack;
-            break;
+      this->process_remote_host_information (command,
+                                             quorum);
 
-         case command::type_request_fail:
-            state->accepted[follower_endpoint] = response_reject;
-            
-            /*!
-              Since our follower has rejected this based on our proposal id, it makes
-              sense to ensure that the next proposal id we will use it as least higher
-              than this follower's proposal id.
-             */
-            global_state.proposal_id () = std::max (global_state.proposal_id (),
-                                                    command.proposal_id ());
+      PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
 
-            break;
+      PAXOS_DEBUG ("step4 self = " << quorum.our_endpoint () << ", received command from follower " << follower_endpoint);
 
-         default:
-            /*!
-              Protocol error!
-            */
-            PAXOS_UNREACHABLE ();
-   };
-
-
-
-   bool everyone_responded = (state->connections.size () == state->accepted.size ());
-
-   bool everyone_promised  = true;
-   for (auto const & i : state->accepted)
-   {
-      everyone_promised  = everyone_promised && i.second == response_ack;
-   }
-
-   PAXOS_DEBUG ("step4 everyone_responsed = " << everyone_responded << ", everyone_promised = " << everyone_promised);
-
-
-   if (everyone_responded == true && everyone_promised == false)
-   {
-      /*!
-        This means that every host has given a response, yet not everyone has actually
-        accepted our proposal id. 
-
-        We will send an error command to the client informing about the failed command.
-       */
-      handle_error (detail::error_incorrect_proposal,
-                    quorum,
-                    client_connection);
-   }
-   else if (everyone_responded == true && everyone_promised == true)
-   {
-      /*!
-        This means that all nodes in the quorum have responded, and they all agree with
-        the proposal id, yay!
-
-        Now that all these nodes have promised to accept any request with the specified
-        proposal id, let's send them an accept command.
-       */
-
-      for (auto & i : state->connections)
+      switch (command.type ())
       {
-         send_accept (client_connection,
-                      client_command,
-                      i.first,
-                      i.second,
-                      quorum,
-                      std::ref (global_state),
-                      byte_array,
-                      state);
+            case command::type_request_promise:
+               state->accepted[follower_endpoint] = response_ack;
+               break;
+
+            case command::type_request_fail:
+               state->accepted[follower_endpoint] = response_reject;
+               state->error_codes[follower_endpoint] = command.error_code ();
+           
+               /*!
+                 Since our follower has rejected this based on our proposal id, it makes
+                 sense to ensure that the next proposal id we will use it as least higher
+                 than this follower's proposal id.
+               */
+               global_state.proposal_id () = std::max (global_state.proposal_id (),
+                                                       command.proposal_id ());
+
+               break;
+
+            default:
+               /*!
+                 Protocol error!
+               */
+               PAXOS_UNREACHABLE ();
+      };
+   }
+
+   if (state->connections.size () == state->accepted.size ())
+   {
+   
+      boost::optional <enum error_code> last_error;
+
+      for (auto const & i : state->accepted)
+      {
+         if (i.second == response_reject)
+         {
+            PAXOS_ASSERT (state->error_codes.find (i.first) != state->error_codes.end ());
+            last_error = state->error_codes.find (i.first)->second;
+
+            PAXOS_ASSERT_NE (*last_error, detail::no_error);
+         }
+      }
+
+      if (last_error.is_initialized () == false)
+      {
+         /*!
+           We shouldn't have any errors if everyone promised. This check is handy since
+           it verifies we do not have any error codes floating around.
+         */
+         PAXOS_ASSERT_EQ (state->error_codes.empty (), true);
+         
+         /*!
+           This means that all nodes in the quorum have responded, and they all agree with
+           the proposal id, yay!
+
+           Now that all these nodes have promised to accept any request with the specified
+           proposal id, let's send them an accept command.
+         */
+         
+         for (auto & i : state->connections)
+         {
+            send_accept (client_connection,
+                         client_command,
+                         i.first,
+                         i.second,
+                         quorum,
+                         std::ref (global_state),
+                         byte_array,
+                         state);
+         }
+      }
+      else
+      {
+         /*!
+           This means that every host has given a response, but some errors have occured
+           that prevented everyone from sending a promise.
+           
+           We will send an error command to the client informing about the failed command.
+         */
+         handle_error (*last_error,
+                       quorum,
+                       client_connection);
       }
    }
 }
@@ -370,6 +378,7 @@ strategy::accept (
    if (command.proposal_id () != state.proposal_id ())
    {
       response.set_type (command::type_request_fail);
+      response.set_error_code (detail::error_incorrect_proposal);
    }
    else
    {
@@ -403,62 +412,91 @@ strategy::receive_accepted (
       PAXOS_WARN ("An error occured while receiving accepted from " << follower_endpoint << ": " << detail::to_string (*error));
 
       quorum.connection_died (follower_endpoint);
-      handle_error (*error,
-                    quorum,
-                    client_connection);
-      return;
+
+      state->accepted[follower_endpoint]    = response_reject;
+      state->error_codes[follower_endpoint] = *error;
+   }
+   else
+   {
+      this->process_remote_host_information (command,
+                                             quorum);
+
+      /*!
+        The state is set to 'accepted' in the previous promise phase, otherwise we
+        shouldn't have reached this step at all.
+       */
+      PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
+      PAXOS_ASSERT (state->responses.find (follower_endpoint) == state->responses.end ());
+      PAXOS_ASSERT (state->error_codes.find (follower_endpoint) == state->error_codes.end ());
+
+      switch (command.type ())
+      {
+            case command::type_request_accepted:
+               state->accepted[follower_endpoint]    = response_ack;
+               break;
+
+            case command::type_request_fail:
+               state->accepted[follower_endpoint]    = response_reject;
+               state->error_codes[follower_endpoint] = command.error_code ();
+               break;
+
+            default:
+               /*!
+                 Protocol error!
+               */
+               PAXOS_UNREACHABLE ();
+      };
    }
 
-   this->process_remote_host_information (command,
-                                          quorum);
-
-   PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
-   PAXOS_ASSERT (state->responses.find (follower_endpoint) == state->responses.end ());
 
    /*!
-     Let's store the response we received!
+     Always store the response we received, since we also use that entry to see
+     whether all hosts have already replied. Note that we will also store the
+     workload in case an error occured, in which case the response of course
+     is empty (but that doesn't matter).
    */
-   state->responses[follower_endpoint] = command.workload ();
-
-   if (command.type () == command::type_request_fail)
-   {
-      state->accepted[follower_endpoint] = response_reject;
-   }
+   state->responses[follower_endpoint]   = command.workload ();
 
    std::string workload;
 
-   PAXOS_ASSERT_EQ (state->connections.size (), state->accepted.size ());
    if (state->connections.size () == state->responses.size ())
    {
-      bool all_same_response = true;
-      bool everyone_promised = true;
+      boost::optional <enum error_code> last_error;
 
       for (auto const & i : state->accepted)
       {
-         everyone_promised  = everyone_promised && i.second == response_ack;
+         if (i.second == response_reject)
+         {
+            /*!
+              We always have recorded an error code in case something fails.
+             */
+            PAXOS_ASSERT (state->error_codes.find (i.first) != state->error_codes.end ());
+            last_error = state->error_codes.find (i.first)->second;
+
+            PAXOS_ASSERT_NE (*last_error, detail::no_error);
+         }
       }
       
+      /*!
+        One of the requirements of our protocol is that if one node N1 replies
+        to proposal P with response R, node N2 must have the exact same response
+        for the same proposal.
+        
+        The code below validates this requirement.
+      */
       for (auto const & i : state->responses)
       {
-         /*!
-           One of the requirements of our protocol is that if one node N1 replies
-           to proposal P with response R, node N2 must have the exact same response
-           for the same proposal.
-
-           The code below validates this requirement.
-         */
          if (workload.empty () == true)
          {
             workload = i.second;
          }
          else if (workload != i.second)
          {
-            all_same_response = false;
+            last_error = detail::error_inconsistent_response;
          }
       }
 
-      if (everyone_promised == true
-          && all_same_response == true)
+      if (last_error.is_initialized () == false)
       {
          /*!
            Send a copy of the last command to the client, since the workload should be the
@@ -471,23 +509,17 @@ strategy::receive_accepted (
       else
       {
          /*!
-           We're going to inform the client about an inconsistent response here. Perhaps
-           he can recover from there.
-         */
+           Ok, so, at this point we know that an error has occured. Now, there could be
+           multiple errors at stake, but we only get the chance to report one error to
+           the client.
+
+           What we will do is simply with the last error we have seen.
+          */
          PAXOS_DEBUG ("step7 writing error command");
 
-         if (everyone_promised == false)
-         {
-            handle_error (detail::error_incorrect_proposal,
-                          quorum,
-                          client_connection);
-         }
-         else if (all_same_response == false)
-         {
-            handle_error (detail::error_inconsistent_response,
-                          quorum,
-                          client_connection);
-         }
+         handle_error (*last_error,
+                       quorum,
+                       client_connection);
       }
    }
 }
