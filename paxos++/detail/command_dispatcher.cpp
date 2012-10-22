@@ -1,4 +1,3 @@
-#include "../exception/exception.hpp"
 #include "util/debug.hpp"
 
 #include "strategy/strategy.hpp"
@@ -54,7 +53,7 @@ command_dispatcher::dispatch_command (
             /*!
               This means an unexpected command was received!
              */
-            PAXOS_THROW (paxos::exception::protocol_error ());
+            PAXOS_UNREACHABLE ();
    };
 };
 

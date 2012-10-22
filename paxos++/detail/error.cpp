@@ -25,10 +25,6 @@ to_string (
             return "Inconsistent response";
             break;
 
-         case error_connection_timeout:
-            return "Connection timeout";
-            break;
-
          case error_connection_close:
             return "Connection closed";
             break;

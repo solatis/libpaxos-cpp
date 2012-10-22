@@ -10,7 +10,6 @@
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
 
-#include "../../../exception/exception.hpp"
 #include "../../error.hpp"
 #include "../../request_queue/queue.hpp"
 
@@ -44,7 +43,7 @@ public:
       std::string const &       byte_array,
       detail::quorum::quorum &  quorum,
       callback_type             callback,
-      queue_guard_type          guard) throw (exception::not_ready);
+      queue_guard_type          guard);
 
 private:   
 

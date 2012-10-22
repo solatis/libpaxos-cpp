@@ -5,9 +5,12 @@
 #ifndef LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_QUEUE_HPP
 #define LIBPAXOS_CPP_DETAIL_PAXOS_REQUEST_QUEUE_HPP
 
-#include <boost/function.hpp>
-
 #include <queue>
+
+#include <boost/function.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+
+#include "../util/debug.hpp"
 
 namespace paxos { namespace detail { namespace request_queue {
 
@@ -55,19 +58,41 @@ public:
 
    void
    push (
-      
       Type &&  request);
 
-   bool &
-   request_being_processed ();
-
+   void
+   pop ();
 
 private:
 
-   callback             callback_;
-   bool                 request_being_processed_;
-   std::queue <Type>    queue_;
+   void
+   push_locked (
+      Type &&  request);
+
+   void
+   pop_locked ();
+
+   void
+   start_request_locked (
+      Type &    request);
+
    
+
+private:
+
+   callback                     callback_;
+
+   /*!
+     \brief Synchronizes access to request_being_processed_ and queue_
+
+     We need a recursive_mutex since the callback is executed within a locked environment,
+     but can in turn generate a push () request within that callback. When that occurs, if
+     we would use regular mutexes, a deadlock would occur.
+    */
+   boost::recursive_mutex       mutex_;
+
+   bool                         request_being_processed_;
+   std::queue <Type>            queue_;
 };
 
 }; }; };

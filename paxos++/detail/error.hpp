@@ -39,12 +39,6 @@ enum error_code
      This error is sent back when a connection unexpectedly closed.
     */
    error_connection_close,
-
-   /*!
-     This error is sent back when a timeout occured on one of the followers.
-    */
-   error_connection_timeout
-
 };
 
 

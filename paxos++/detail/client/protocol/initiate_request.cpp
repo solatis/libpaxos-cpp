@@ -15,7 +15,7 @@ initiate_request::step1 (
    std::string const &       byte_array,
    detail::quorum::quorum &  quorum,
    callback_type             callback,
-   queue_guard_type          guard) throw (exception::not_ready)
+   queue_guard_type          guard)
 {
    boost::optional <boost::asio::ip::tcp::endpoint> leader = quorum.who_is_our_leader (true);
    if (leader.is_initialized () == false)

@@ -103,6 +103,8 @@ client::do_request (
             {
                if (error)
                {
+                  PAXOS_WARN ("Caught error in response to client request: " << detail::to_string (*error));
+
                   if (retries > 0)
                   {
                      /*!
@@ -153,8 +155,36 @@ client::do_request (
                      /*!
                        We do not have any retries left, let's set the exception.
                       */
-                     PAXOS_WARN ("Caught error in response to client request: " << detail::to_string (*error));
-                     promise->set_exception (std::make_exception_ptr (exception::request_error ()));
+
+                     switch (*error)
+                     {
+                           case detail::error_no_leader:
+                              promise->set_exception (
+                                 std::make_exception_ptr (
+                                    exception::no_leader ()));
+                              break;
+
+                           case detail::error_incorrect_proposal:
+                              promise->set_exception (
+                                 std::make_exception_ptr (
+                                    exception::incorrect_proposal ()));
+                              break;
+
+                           case detail::error_inconsistent_response:
+                              promise->set_exception (
+                                 std::make_exception_ptr (
+                                    exception::inconsistent_response ()));
+                              break;
+
+                           case detail::error_connection_close:
+                              promise->set_exception (
+                                 std::make_exception_ptr (
+                                    exception::connection_close ()));
+                              break;
+                              
+                           default:
+                              PAXOS_UNREACHABLE ();
+                     };
                   }
                }
                else

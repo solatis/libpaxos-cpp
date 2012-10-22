@@ -17,24 +17,27 @@ class exception : virtual public std::exception,
                   virtual public boost::exception {};
 
 /*!
-  \brief Thrown when the quorum is in an inconsistent state
- */
-class not_ready : virtual public exception {};
-
-/*!
-  \brief Thrown when an unexpected command arrives
- */
-class protocol_error : virtual public exception {};
-
-/*!
-  \brief Thrown when a request could not be completed
- */
-class request_error : virtual public exception {};
-
-/*!
   \brief Thrown when the callback function of multiple paxos::server instances  do not reply with the same output for the same input
  */
 class inconsistent_response : virtual public exception {};
+
+
+/*!
+  \brief Thrown when there is no known leader in the quorum
+ */
+class no_leader : virtual public exception {};
+
+/*!
+  \brief Thrown when a follower does not agree with the proposal id being sent by a leader
+
+  Usually occurs in leader failover or at the end of a netsplit.
+ */
+class incorrect_proposal : virtual public exception {};
+
+/*!
+  \brief Thrown when a follower/client connection has unexpectedly closed
+ */
+class connection_close : virtual public exception {};
 
 } };
 
