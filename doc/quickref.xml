@@ -32,6 +32,7 @@
         <entry valign="top">
           <bridgehead renderas="sect3">Exceptions</bridgehead>
           <simplelist type="vert" columns="1">
+            <member><link linkend="libpaxos_cpp.reference.exception__inconsistent_response">inconsistent_response</link></member>
             <member><link linkend="libpaxos_cpp.reference.exception__not_ready">not_ready</link></member>
             <member><link linkend="libpaxos_cpp.reference.exception__protocol_error">protocol_error</link></member>
             <member><link linkend="libpaxos_cpp.reference.exception__request_error">request_error</link></member>

@@ -1,0 +1,59 @@
+[section Basic server]
+
+From the high-level library's point of view, a Paxos server is responsible for processing an input message received from a client and returning an output message. We will start by including the necessary header and defining our main function.
+
+  #include <paxos++/server.hpp>
+  
+  int main ()
+  {
+
+
+First, we will define a callback for our server. The callback is essentially the way the paxos library interface communicates with your backend: it will provide you with the input message received from the client, you process the message and generate an output message which is sent back to the client.
+
+In our example, we are going to keep it simple and define a callback function which only replies with "bar". Note that this uses the C++11 lambda interface to define the callback, but any function that accepts a string and responds with a string can be used.
+
+     paxos::server::callback_type callback = 
+         [](std::string const &) -> std::string
+         {
+             return "bar";
+         });
+
+Now we are ready to setup our server. In this example, we will setup a server which listens to localhost port 1337; note that, while we use an IPv4 address here, IPv6 addresses are also supported.
+
+Creating a server object using this interface will launch a background thread which handles all network communications required for the paxos server. 
+
+     paxos::server server ("127.0.0.1", 1337, callback);
+
+Now, in this example of a server of one quorum this might look a bit redundant, but it is important for the server to know the quorum it is in. We are going to tell the server that he's in a quorum of itself here; normally, you would add the other servers to the quorum below.
+  
+     server.add ("127.0.0.1", 1337);
+
+And now call .join () on the server to ensure our application does not exit until the server is stopped.
+
+    server.join ();  
+  }
+
+See the [link libpaxos_cpp.tutorial.basic_server.a00001 full source listing]
+
+For more in-depth information and complex examples on how to setup a server in different ways, [link libpaxos_cpp.reference.server see the reference].
+
+
+[section:a00001 Source listing for Basic server]
+
+  #include <paxos++/server.hpp>
+  
+  int main ()
+  {
+     paxos::server server ("127.0.0.1", 1337,                           
+                           [](std::string const &) -> std::string
+                           {
+                              return "bar";
+                           });
+  
+     server.add ("127.0.0.1", 1337);
+     server.join ()
+  }
+
+[endsect]
+
+[endsect]

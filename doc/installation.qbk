@@ -2,7 +2,7 @@
 
 libpaxos-cpp follows the normal autotools flow of installing libraries:
 
-  wget http://www.leonmergen.com/libpaxos-cpp/download/libpaxos-cpp-VERSION.tar.gz
+  wget http://www.leonmergen.com/download/libpaxos-cpp-VERSION.tar.gz
   tar -xzf libpaxos-cpp-VERSION.tar.gz
   cd libpaxos-cpp-VERSION
   ./configure

@@ -583,10 +583,6 @@
   <xsl:value-of select="substring-after($file, 'paxos++/')"/>
   <xsl:text>]</xsl:text>
   <xsl:value-of select="$newline"/>
-  <xsl:value-of select="$newline"/>
-  <xsl:text>[*Convenience header: ]</xsl:text>
-  <xsl:text>[^paxos++/all.hpp]</xsl:text>
-  <xsl:value-of select="$newline"/>
 </xsl:template>
 
 

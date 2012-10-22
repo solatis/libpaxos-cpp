@@ -16,7 +16,7 @@ class factory;
 namespace paxos {
 
 /*!
-  \brief Runtime configurable parameters
+  \brief Provides runtime configurable parameters to paxos::client and paxos::server
  */
 class configuration
 {

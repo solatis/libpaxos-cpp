@@ -31,6 +31,11 @@ class protocol_error : virtual public exception {};
  */
 class request_error : virtual public exception {};
 
+/*!
+  \brief Thrown when the callback function of multiple paxos::server instances  do not reply with the same output for the same input
+ */
+class inconsistent_response : virtual public exception {};
+
 } };
 
 #endif  //! LIBPAXOS_CPP_EXCEPTION_EXCEPTION_HPP

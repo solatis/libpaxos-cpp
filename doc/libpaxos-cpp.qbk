@@ -14,6 +14,9 @@
     [version 0.5]
 ]
 
+[template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
+[template indexterm2[term1 term2] '''<indexterm><primary>'''[term1]'''</primary><secondary>'''[term2]'''</secondary></indexterm>''']
+
 [include introduction.qbk]
 [include what_s_new.qbk]
 [include getting_the_source.qbk]

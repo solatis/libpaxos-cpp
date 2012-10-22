@@ -1,11 +1,21 @@
 [section:getting_the_source Getting the source]
 
+[heading Prepackaged distributions]
+
+You can get the latest prepackaged distribution online:
+
+* [@http://www.leonmergen.com/downloads/libpaxos-cpp-0.5.0.tar.gz]
+
+Alternatively, you can [@http:/www.leonmergen.com/downloads/ browse older releases].
+
+For more information on how to build the source, see the [link libpaxos_cpp.installation installation manual].
+
+[heading Github]
+
 You can obtain the source directly from the [@http://github.com/solatis/libpaxos-cpp github repository]:
 
   git clone git@github.com:solatis/libpaxos-cpp.git
 
-However, this will require you to have autoconf, automake and libtool installed on your server. Alternatively, you can get the prepackaged distributions online:
-
-[@http://www.leonmergen.com/downloads/libpaxos-cpp-0.5.0.tar.gz]
+Keep in mind that building directly from the source repository requires you to have the autotools environment ready on your server.
 
 [endsect]

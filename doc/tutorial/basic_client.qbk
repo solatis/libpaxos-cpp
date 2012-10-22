@@ -1,0 +1,48 @@
+[section Basic client]
+
+From the high-level library's point of view, a Paxos client will send a message to a quorum of servers and will wait for all the servers to process this message and generate a response. We will start by including the necessary header and defining our main function
+
+  #include <paxos++/client.hpp>
+
+  int main ()
+  {
+
+Now, we are ready to setup our client. In this example, we will setup a basic client that launches a new background worker thread that will handle the client's I/O.
+
+     paxos::client client;
+
+Just like with the server, the client needs to know the quorum it should connect to. In this case, we will simply add the server we created in the example above to the quorum.
+
+     client.add ("127.0.0.1", 1337);
+
+
+Now, we will send a command "foo" to all nodes inside the quorum. Take special note that this function returns a std::future <std::string> object here, and as such makes use of C++11's future/promise architecture. This function will return immediately and the client will start communicating to the quorum in the background. 
+
+     std::future <std::string> future = client.send ("foo");
+
+And finally, since our previously defined server will always return "bar", we will read the future's result (and thus block until the client has received data from all servers) and validate its output.
+
+     assert (future.get () == "bar");
+  }
+
+See the [link libpaxos_cpp.tutorial.basic_client.a00002 full source listing]
+
+For more in-depth information and complex examples on how to setup a client in different ways, [link libpaxos_cpp.reference.client see the reference].
+
+[section:a00002 Source listing for Basic client]
+
+  #include <paxos++/client.hpp>
+
+  int main ()
+  {
+     paxos::client client;
+     client.add ("127.0.0.1", 1337);
+
+     std::future <std::string> future = client.send ("foo");
+     assert (future.get () == "bar");
+  }
+
+
+[endsect]
+
+[endsect]
