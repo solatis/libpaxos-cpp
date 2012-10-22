@@ -28,9 +28,9 @@ Now, in this example of a server of one quorum this might look a bit redundant, 
   
      server.add ("127.0.0.1", 1337);
 
-And now call .join () on the server to ensure our application does not exit until the server is stopped.
+And now call .wait () on the server to ensure our application does not exit until the internal worker thread has stopped (which should never happen).
 
-    server.join ();  
+    server.wait ();  
   }
 
 See the [link libpaxos_cpp.tutorial.basic_server.a00001 full source listing]
@@ -51,7 +51,7 @@ For more in-depth information and complex examples on how to setup a server in d
                            });
   
      server.add ("127.0.0.1", 1337);
-     server.join ()
+     server.wait ()
   }
 
 [endsect]

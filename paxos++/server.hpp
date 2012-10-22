@@ -180,6 +180,18 @@ public:
       std::initializer_list <std::pair <std::string, uint16_t> > const &        servers);
 
    /*!
+     \brief Blocks until internal worker thread has stoppped
+
+     This function blocks until the internal worker thread stops, which should never occur. It
+     is useful to let the main () thread block forever.
+
+     \note This function will return immediately when  an external worker thread is used 
+           to control the boost::asio::io_service object
+    */
+   void
+   wait ();
+
+   /*!
      \brief Stops listening for new connections, closes all existing connections and stops
             the background thread (if any)
     */

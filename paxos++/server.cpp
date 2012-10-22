@@ -63,6 +63,12 @@ server::~server ()
 
 
 void
+server::wait ()
+{
+   io_thread_.join ();
+}
+
+void
 server::stop ()
 {
    acceptor_.close ();

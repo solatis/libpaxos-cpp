@@ -1,4 +1,4 @@
-[section:what_s_new What's new?]
+[section Revision history]
 
 [heading libpaxos-cpp 0.5]
 Releasing version 0.5.0 of libpaxos-cpp. As you might have noticed, I skipped the 0.4 release, but only because there has been a huge overhaul of the backend. Essentially we're now using a leader election protocol embedded within the paxos protocol itself, resulting in far more increased reliability and quicker recovery.

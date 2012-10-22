@@ -27,6 +27,12 @@ io_thread::run ()
 
 
 void
+io_thread::join ()
+{
+   thread_.join ();
+}
+
+void
 io_thread::stop ()
 {
    io_service_.stop ();

@@ -1,0 +1,44 @@
+[section Getting started]
+
+[heading Getting the source]
+
+[h5 Prepackaged distributions]
+
+You can get the latest prepackaged distribution online:
+
+* [@http://www.leonmergen.com/downloads/libpaxos-cpp-0.5.0.tar.gz]
+
+Alternatively, you can [@http:/www.leonmergen.com/downloads/ browse older releases].
+
+[h5 Github]
+
+You can obtain the source directly from the [@http://github.com/solatis/libpaxos-cpp github repository]:
+
+  git clone git@github.com:solatis/libpaxos-cpp.git
+
+Keep in mind that building directly from the source repository requires you to have the autotools environment ready on your server.
+
+[heading Dependencies]
+
+All of this applies only to a Unix-like environment. Windows with cygwin will perhaps work, but is not tested. Libpaxos-cpp depends upon the following tools:
+
+* [@http://www.boost.org/ Boost.org] libraries, version 1.49 or higher;
+* GCC version 4.5 or higher (C++11 support is required).
+
+[note GCC version 4.4 is known to generate internal compiler errors and therefore at least version 4.5 is recommended.]
+
+[note clang++ version 3.0 is known to generate internal compiler errors due to very limited lambda support. Version 3.1 might work but is untested.]
+
+[heading Building libpaxos-cpp]
+
+libpaxos-cpp follows the normal autotools flow of installing libraries:
+
+  wget http://www.leonmergen.com/download/libpaxos-cpp-VERSION.tar.gz
+  tar -xzf libpaxos-cpp-VERSION.tar.gz
+  cd libpaxos-cpp-VERSION
+  ./configure
+  make
+  make check
+  make install
+
+[endsect]

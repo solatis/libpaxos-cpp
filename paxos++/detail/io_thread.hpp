@@ -39,6 +39,12 @@ public:
    run ();
 
    /*!
+     \brief Blocks until thread_ has exited
+    */
+   void
+   join ();
+
+   /*!
      \brief Stops thread, if any
     */
    void
