@@ -21,6 +21,7 @@ boostbook standalone :
     <xsl:param>toc.section.depth=2
     <xsl:param>toc.max.depth=1
     <xsl:param>generate.section.toc.level=0
+    <xsl:param>nav.layout=none    
 ;
 
 install css :

@@ -44,5 +44,6 @@ test/basic1
 test/basic2
 test/basic3
 test/basic4
+test/basic5
 test/connection_close1
 test/connection_close2

@@ -22,6 +22,20 @@ strategy::initiate (
    queue_guard_type             queue_guard) const
 {
    /*!
+     If we do not have a the majority of servers alive, it is likely we are having a netsplit 
+     and we should never make any progress, to prevent the situation where there are multiple
+     representations of the truth in multiple datacenters.
+    */
+   if (quorum.has_majority () == false)
+   {
+      this->handle_error (detail::error_no_majority,
+                          quorum,
+                          client_connection);
+      return;
+   }
+
+
+   /*!
      At the start of any request, we should, as defined in the Paxos protocol, increment
      our current proposal id.
     */

@@ -60,6 +60,14 @@ quorum::add (
                                                             endpoint)));
 }
 
+bool
+quorum::has_majority ()
+{
+ return 
+    static_cast <double> (this->live_servers ().size ()) 
+    >= (static_cast <double> (servers_.size ()) * configuration_.majority_factor ());
+}
+
 detail::quorum::server &
 quorum::lookup_server (
    boost::asio::ip::tcp::endpoint const &       endpoint)

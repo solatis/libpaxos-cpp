@@ -28,6 +28,10 @@ to_string (
          case error_connection_close:
             return "Connection closed";
             break;
+
+         case error_no_majority:
+            return "No majority";
+            break;
    };
 
    PAXOS_UNREACHABLE ();

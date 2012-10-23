@@ -2,16 +2,16 @@
   Copyright (c) 2012, Leon Mergen, all rights reserved.
 ]
 
-[library libpaxos-cpp
+[article libpaxos-cpp
     [quickbook 1.5]
     [authors [Mergen, Leon]]
     [copyright 2012 Leon Mergen]
     [license
-        Distributed under the BSD 3-Clause License.
+        Distributed under the 3-Clause BSD License.
         (See accompanying file COPYING or copy at
             [@http://opensource.org/licenses/BSD-3-Clause])
     ]
-    [version 0.5]
+    [version 0.5.0]
 ]
 
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']

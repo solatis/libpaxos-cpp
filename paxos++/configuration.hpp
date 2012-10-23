@@ -44,6 +44,24 @@ public:
    timeout () const;
 
    /*!
+     \brief Controls the percentage of servers that must be reachable before progress is made
+     \param factor The factor of servers that need to be alive
+     \pre 0.0 < factor && factor <= 1.0
+
+     Defaults to 0.5
+    */
+   void
+   set_majority_factor (
+      double    factor);
+
+   /*!
+     \brief Acess to the percentage of servers that must be reachable before progress is made
+    */
+   double
+   majority_factor () const;
+
+
+   /*!
      \brief Adjusts the strategy used for internal paxos protocol
      \note Takes over ownership of \c factory
     */
@@ -60,6 +78,7 @@ public:
 private:
 
    uint32_t                                             timeout_;
+   double                                               majority_factor_;
 
    boost::shared_ptr <detail::strategy::factory>        strategy_factory_;
 };

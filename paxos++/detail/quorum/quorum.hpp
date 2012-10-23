@@ -66,6 +66,13 @@ public:
       boost::asio::ip::tcp::endpoint const &    endpoint);
 
    /*!
+     \brief Determines whether a majority of servers is currently alive
+     \returns Returns true if the majority of servers is currently alive
+    */
+   bool
+   has_majority ();
+
+   /*!
      \brief Retrieves server from quorum
      \returns Returns reference to server
     */

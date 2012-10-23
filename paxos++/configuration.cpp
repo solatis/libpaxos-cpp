@@ -5,6 +5,7 @@ namespace paxos {
 
 configuration::configuration ()
    : timeout_ (3000),
+     majority_factor_ (0.5),
      strategy_factory_ (new detail::strategy::basic_paxos::factory ())
 {
 }
@@ -23,6 +24,18 @@ configuration::timeout () const
    return timeout_;
 }
 
+void
+configuration::set_majority_factor (
+   double    factor)
+{
+   majority_factor_ = factor;
+}
+
+double
+configuration::majority_factor () const
+{
+   return majority_factor_;
+}
 
 void
 configuration::set_strategy_factory (

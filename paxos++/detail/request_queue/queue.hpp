@@ -8,7 +8,8 @@
 #include <queue>
 
 #include <boost/function.hpp>
-#include <boost/thread/recursive_mutex.hpp>
+#include <boost/optional.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include "../util/debug.hpp"
 
@@ -49,7 +50,7 @@ public:
       queue <Type> &       queue_;
    };
 
-   typedef boost::function <void (Type, typename guard::pointer)>       callback;
+   typedef boost::function <void (Type const &, typename guard::pointer)>       callback;
 
 public:
 
@@ -65,11 +66,17 @@ public:
 
 private:
 
-   void
+   /*!
+     \returns Returns request that callback should be executed on, if any
+    */
+   boost::optional <Type const &>
    push_locked (
       Type &&  request);
 
-   void
+   /*!
+     \returns Returns request that callback should be executed on, if any
+    */
+   boost::optional <Type const &>
    pop_locked ();
 
    void
@@ -80,7 +87,7 @@ private:
 
 private:
 
-   callback                     callback_;
+   callback             callback_;
 
    /*!
      \brief Synchronizes access to request_being_processed_ and queue_
@@ -89,10 +96,10 @@ private:
      but can in turn generate a push () request within that callback. When that occurs, if
      we would use regular mutexes, a deadlock would occur.
     */
-   boost::recursive_mutex       mutex_;
+   boost::mutex         mutex_;
 
-   bool                         request_being_processed_;
-   std::queue <Type>            queue_;
+   bool                 request_being_processed_;
+   std::queue <Type>    queue_;
 };
 
 }; }; };

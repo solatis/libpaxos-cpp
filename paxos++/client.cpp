@@ -181,6 +181,12 @@ client::do_request (
                                  std::make_exception_ptr (
                                     exception::connection_close ()));
                               break;
+
+                           case detail::error_no_majority:
+                              promise->set_exception (
+                                 std::make_exception_ptr (
+                                    exception::no_majority ()));
+                              break;
                               
                            default:
                               PAXOS_UNREACHABLE ();

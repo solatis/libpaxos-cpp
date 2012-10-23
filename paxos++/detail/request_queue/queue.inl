@@ -35,17 +35,27 @@ inline queue <Type>::queue (
 template <typename Type>
 inline void
 queue <Type>::push (
-   Type &&      request)
+   Type &&      input)
 {
-   PAXOS_DEBUG ("push acquiring lock");
-   boost::recursive_mutex::scoped_lock lock (mutex_);
-   push_locked (std::move (request));
-   PAXOS_DEBUG ("push releasing lock");
+   boost::optional <Type const &> request;
+
+   {
+      PAXOS_DEBUG ("push acquiring lock");
+      boost::mutex::scoped_lock lock (mutex_);
+      request = push_locked (std::forward <Type &&> (input));
+      PAXOS_DEBUG ("push releasing lock");
+   }
+
+   if (request)
+   {
+      callback_ (*request,
+                 guard::create (*this));
+   }
 }
 
 
 template <typename Type>
-inline void
+inline boost::optional <Type const &>
 queue <Type>::push_locked (
    Type &&      request)
 {
@@ -54,7 +64,10 @@ queue <Type>::push_locked (
    if (request_being_processed_ == false)
    {
       this->start_request_locked (request);
+      return request;
    }
+
+   return boost::none;
 }
 
 
@@ -63,14 +76,23 @@ template <typename Type>
 inline void
 queue <Type>::pop ()
 {
-   PAXOS_DEBUG ("pop acquiring lock");
-   boost::recursive_mutex::scoped_lock lock (mutex_);
-   pop_locked ();
-   PAXOS_DEBUG ("pop releasing lock");
+   boost::optional <Type const &> request;
+   {
+      PAXOS_DEBUG ("pop acquiring lock");
+      boost::mutex::scoped_lock lock (mutex_);
+      request = pop_locked ();
+      PAXOS_DEBUG ("pop releasing lock");
+   }
+
+   if (request)
+   {
+      callback_ (*request,
+                 guard::create (*this));
+   }
 }
 
 template <typename Type>
-inline void
+inline boost::optional <Type const &>
 queue <Type>::pop_locked ()
 {
    PAXOS_ASSERT (queue_.empty () == false);
@@ -87,7 +109,11 @@ queue <Type>::pop_locked ()
       Type & request = queue_.front ();
 
       this->start_request_locked (request);
+
+      return request;
    }
+
+   return boost::none;
 }
 template <typename Type>
 inline void
@@ -96,10 +122,7 @@ queue <Type>::start_request_locked (
 {
    PAXOS_ASSERT (request_being_processed_ == false);
 
-   request_being_processed_ = true;
-   callback_ (request,
-              guard::create (*this));
-      
+   request_being_processed_ = true;     
 }
 
 }; }; };

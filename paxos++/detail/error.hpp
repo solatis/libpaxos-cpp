@@ -39,6 +39,12 @@ enum error_code
      This error is sent back when a connection unexpectedly closed.
     */
    error_connection_close,
+
+   /*!
+     This error is sent back when there is no majority of servers arelive; for more information
+     on why this error is sent, see the description of paxos::exception::no_majority
+    */
+   error_no_majority
 };
 
 
