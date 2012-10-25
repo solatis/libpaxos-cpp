@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libpaxos-cpp], [0.5.0], http://wwww.leonmergen.com/libpaxos-cpp/)
+AC_INIT([libpaxos-cpp], [0.5.1], http://wwww.leonmergen.com/libpaxos-cpp/)
 AC_CONFIG_SRCDIR([paxos++/server.hpp])
 AC_CONFIG_HEADER([config.h])
 
@@ -17,6 +17,9 @@ AC_ARG_ENABLE([debug],
 
 AC_ARG_ENABLE([log4cxx],
         AS_HELP_STRING([--enable-log4cxx], [Enable debugging output via log4cxx]))
+
+AC_ARG_ENABLE([sqlite],
+        AS_HELP_STRING([--enable-sqlite], [Enable sqlite durable backend]))
 
 AC_ARG_WITH([includes],
         [AS_HELP_STRING([--with-includes], [look for additional header files in DIRS])],
@@ -39,11 +42,12 @@ do
         INCLUDEDIRS="$INCLUDEDIRS -I$dir"
 done
 
-BOOST_LOG=""
 AS_IF([test "x$enable_log4cxx" == "xyes"], [
             AC_DEFINE([HAVE_LOG4CXX], [1], [Define if log4cxx is enabled])
             AC_SUBST(LINK_LOG4CXX, [-llog4cxx])
 ])
+
+AM_CONDITIONAL(HAVE_SQLITE, test "x$enable_sqlite" = "xyes")
 
 DEBUG=""
 AS_IF([test "x$enable_debug" == "xyes"], [

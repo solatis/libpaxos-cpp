@@ -1,5 +1,11 @@
 [section Revision history]
 
+[heading libpaxos-cpp 0.5.1]
+Bugfix release which fixes two important bugs:
+
+* a race condition in the client when sending requests with high throughput has been fixed;
+* an corner case error that could occur when multiple followers disconnected with the leader at the exact same time could corrupt the connection between the leader and the client.
+
 [heading libpaxos-cpp 0.5.0]
 Releasing version 0.5.0 of libpaxos-cpp. As you might have noticed, I skipped the 0.4 release, but only because there has been a huge overhaul of the backend. Essentially we're now using a leader election protocol embedded within the paxos protocol itself, resulting in far more increased reliability and quicker recovery.
 

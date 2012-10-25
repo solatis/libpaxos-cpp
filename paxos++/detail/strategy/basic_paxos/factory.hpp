@@ -7,6 +7,10 @@
 
 #include "../factory.hpp"
 
+namespace paxos { namespace durable {
+class storage;
+}; };
+
 namespace paxos { namespace detail { namespace strategy { namespace basic_paxos {
 
 /*!
@@ -16,8 +20,15 @@ class factory : public detail::strategy::factory
 {
 public:
 
+   factory (
+      durable::storage &        storage);
+
    virtual strategy *
    create () const;
+
+private:
+
+   durable::storage &   storage_;
 
 };
 

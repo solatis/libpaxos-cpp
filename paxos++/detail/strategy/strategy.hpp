@@ -43,7 +43,7 @@ public:
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
       detail::paxos_context &   global_state,
-      queue_guard_type          queue_guard) const = 0;
+      queue_guard_type          queue_guard) = 0;
 
 
    /*!
@@ -54,7 +54,7 @@ public:
       tcp_connection_ptr        leader_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
-      detail::paxos_context &   global_state) const = 0;
+      detail::paxos_context &   global_state) = 0;
 
 
    /*!
@@ -69,7 +69,7 @@ public:
       tcp_connection_ptr        leader_connection,
       detail::command const &   command,
       detail::quorum::quorum &  quorum,
-      detail::paxos_context &   global_state) const = 0;
+      detail::paxos_context &   global_state) = 0;
 
 private:
 

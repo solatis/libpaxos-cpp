@@ -27,6 +27,8 @@ include_HEADERS = \
 	detail/paxos_context.inl \
 	detail/tcp_connection.hpp \
 	detail/tcp_connection_fwd.hpp \
+	durable/sqlite.hpp \
+	durable/storage.hpp \
 	exception/exception.hpp \
 	client.hpp \
 	configuration.hpp \
@@ -46,7 +48,12 @@ libpaxos_la_SOURCES = \
 	detail/parser.cpp \
 	detail/paxos_context.cpp \
 	detail/tcp_connection.cpp \
+	durable/storage.cpp \
 	client.cpp \
 	configuration.cpp \
 	server.cpp
+
+if HAVE_SQLITE
+libpaxos_la_SOURCES += durable/sqlite.cpp
+endif
 

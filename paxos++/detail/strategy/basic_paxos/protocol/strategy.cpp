@@ -2,6 +2,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 
+#include "../../../../durable/storage.hpp"
 #include "../../../quorum/quorum.hpp"
 #include "../../../paxos_context.hpp"
 #include "../../../command.hpp"
@@ -13,13 +14,20 @@
 
 namespace paxos { namespace detail { namespace strategy { namespace basic_paxos { namespace protocol {
 
+
+strategy::strategy (
+   durable::storage &   storage)
+   : storage_ (storage)
+{
+}
+
 /*! virtual */ void
 strategy::initiate (      
    tcp_connection_ptr           client_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
    detail::paxos_context &      global_state,
-   queue_guard_type             queue_guard) const
+   queue_guard_type             queue_guard)
 {
    /*!
      If we do not have a the majority of servers alive, it is likely we are having a netsplit 
@@ -93,7 +101,7 @@ strategy::send_prepare (
    detail::quorum::quorum &                     quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
-   boost::shared_ptr <struct state>             state) const
+   boost::shared_ptr <struct state>             state)
 {
 
    /*!
@@ -145,7 +153,7 @@ strategy::prepare (
    tcp_connection_ptr           leader_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_context &      state) const
+   detail::paxos_context &      state)
 {
    this->process_remote_host_information (command,
                                           quorum);
@@ -222,7 +230,7 @@ strategy::receive_promise (
    detail::paxos_context &                      global_state,
    std::string                                  byte_array,
    detail::command const &                      command,
-   boost::shared_ptr <struct state>             state) const
+   boost::shared_ptr <struct state>             state)
 {
    if (error)
    {
@@ -337,7 +345,7 @@ strategy::send_accept (
    detail::quorum::quorum &                     quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
-   boost::shared_ptr <struct state>             state) const
+   boost::shared_ptr <struct state>             state)
 {  
    PAXOS_ASSERT_EQ (state->connections[follower_endpoint], follower_connection);
    PAXOS_ASSERT_EQ (state->accepted[follower_endpoint], response_ack);
@@ -378,19 +386,19 @@ strategy::accept (
    tcp_connection_ptr           leader_connection,
    detail::command const &      command,
    detail::quorum::quorum &     quorum,
-   detail::paxos_context &      state) const
+   detail::paxos_context &      state)
 {
    this->process_remote_host_information (command,
                                           quorum);
 
    detail::command response;
    
-   /*!
-     If the proposal id's do not match, something went terribly wrong! Most likely a switch
-     of leaders during the operation.
-    */
    if (command.proposal_id () != state.proposal_id ())
    {
+      /*!
+        If the proposal id's do not match, something went terribly wrong! Most likely 
+        a switch of leaders during the operation.
+      */
       response.set_type (command::type_request_fail);
       response.set_error_code (detail::error_incorrect_proposal);
    }
@@ -399,8 +407,20 @@ strategy::accept (
       PAXOS_DEBUG ("server " << quorum.our_endpoint () << " calling processor "
                    "with workload = '" << command.workload () << "'");
       response.set_type (command::type_request_accepted);
+
+      /*! 
+        First, process the workload and set it as output of the response
+      */
       response.set_workload (
          state.processor () (command.workload ()));
+
+      /*!
+        Now that the workload has been processed, store the currently accepted 
+        proposal/value in our durable storage backend so other nodes can catch up 
+        if they're disconnected for a short timespan.
+      */
+      storage_.store (command.proposal_id (),
+                      command.workload ());
    }
 
    PAXOS_DEBUG ("step6 writing command");   
@@ -419,7 +439,7 @@ strategy::receive_accepted (
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    detail::quorum::quorum &                     quorum,
    detail::command const &                      command,
-   boost::shared_ptr <struct state>             state) const
+   boost::shared_ptr <struct state>             state)
 {
    if (error)
    {
@@ -543,7 +563,7 @@ strategy::receive_accepted (
 strategy::handle_error (
    enum detail::error_code      error,
    quorum::quorum const &       quorum,
-   tcp_connection_ptr           client_connection) const
+   tcp_connection_ptr           client_connection)
 {
    detail::command response;
    response.set_type (command::type_request_error);
@@ -560,7 +580,7 @@ strategy::handle_error (
 /*! virtual */ void
 strategy::add_local_host_information (
    quorum::quorum const &    quorum,
-   detail::command &         output) const
+   detail::command &         output)
 {
    detail::quorum::server const & server = quorum.lookup_server (quorum.our_endpoint ());
    output.set_host_id (server.id ());
@@ -570,7 +590,7 @@ strategy::add_local_host_information (
 /*! virtual */ void
 strategy::process_remote_host_information (
    detail::command const &   command,
-   quorum::quorum &          output) const
+   quorum::quorum &          output)
 {
    output.lookup_server (command.host_endpoint ()).set_id (command.host_id ());
 }

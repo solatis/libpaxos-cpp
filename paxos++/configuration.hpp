@@ -9,6 +9,10 @@
 
 #include <boost/shared_ptr.hpp>
 
+namespace paxos { namespace durable {
+class storage;
+}; };
+
 namespace paxos { namespace detail { namespace strategy {
 class factory;
 }; }; };
@@ -75,11 +79,19 @@ public:
    detail::strategy::factory const &
    strategy_factory () const;
 
+
+   /*!
+     \brief Access to the storage component used for a durable history
+    */
+   durable::storage &
+   durable_storage ();
+
 private:
 
    uint32_t                                             timeout_;
    double                                               majority_factor_;
 
+   boost::shared_ptr <durable::storage>                 durable_storage_;
    boost::shared_ptr <detail::strategy::factory>        strategy_factory_;
 };
 

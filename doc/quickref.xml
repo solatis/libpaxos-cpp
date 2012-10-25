@@ -36,6 +36,7 @@
             <member><link linkend="libpaxos_cpp.reference.exception__inconsistent_response">inconsistent_response</link></member>
             <member><link linkend="libpaxos_cpp.reference.exception__incorrect_proposal">incorrect_proposal</link></member>
             <member><link linkend="libpaxos_cpp.reference.exception__no_leader">no_leader</link></member>
+            <member><link linkend="libpaxos_cpp.reference.exception__no_majority">no_majority</link></member>
           </simplelist>
         </entry>
       </row>

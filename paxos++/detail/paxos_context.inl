@@ -18,8 +18,8 @@ paxos_context::processor () const
    return processor_;
 }
 
-inline detail::strategy::strategy const &
-paxos_context::strategy () const
+inline detail::strategy::strategy &
+paxos_context::strategy ()
 {
    return *strategy_;
 }

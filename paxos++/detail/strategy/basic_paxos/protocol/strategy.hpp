@@ -10,6 +10,10 @@
 #include "../../../error.hpp"
 #include "../../strategy.hpp"
 
+namespace paxos { namespace durable {
+class storage;
+}; };
+
 namespace paxos { namespace detail { namespace strategy { namespace basic_paxos { namespace protocol {
 
 /*!
@@ -36,6 +40,9 @@ private:
    
 public:
 
+   strategy (
+      durable::storage &        storage);
+
    /*!
      \brief Received by leader from client that initiates a request
     */
@@ -45,7 +52,7 @@ public:
       detail::command const &                   command,
       detail::quorum::quorum &                  quorum,
       detail::paxos_context &                   global_state,
-      queue_guard_type                          queue_guard) const;
+      queue_guard_type                          queue_guard);
 
 
    /*!
@@ -56,7 +63,7 @@ public:
       tcp_connection_ptr                        leader_connection,
       detail::command const &                   command,
       detail::quorum::quorum &                  quorum,
-      detail::paxos_context &                   global_state) const;
+      detail::paxos_context &                   global_state);
 
 
    /*!
@@ -71,7 +78,7 @@ public:
       tcp_connection_ptr                        leader_connection,
       detail::command const &                   command,
       detail::quorum::quorum &                  quorum,
-      detail::paxos_context &                   global_state) const;
+      detail::paxos_context &                   global_state);
 
 protected:
 
@@ -87,7 +94,7 @@ protected:
       detail::quorum::quorum &                  quorum,
       detail::paxos_context &                   global_state,
       std::string const &                       byte_array,
-      boost::shared_ptr <struct state>          state) const;
+      boost::shared_ptr <struct state>          state);
 
 
    /*!
@@ -104,7 +111,7 @@ protected:
       detail::paxos_context &                   global_state,
       std::string                               byte_array,
       detail::command const &                   command,
-      boost::shared_ptr <struct state>          state) const;
+      boost::shared_ptr <struct state>          state);
 
    /*!
      \brief Sends a 'accept' from leader to a specific follower
@@ -118,7 +125,7 @@ protected:
       detail::quorum::quorum &                  quorum,
       detail::paxos_context &                   global_state,
       std::string const &                       byte_array,
-      boost::shared_ptr <struct state>          state) const;
+      boost::shared_ptr <struct state>          state);
 
 
    /*!
@@ -132,7 +139,7 @@ protected:
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       detail::quorum::quorum &                  quorum,
       detail::command const &                   command,
-      boost::shared_ptr <struct state>          state) const;
+      boost::shared_ptr <struct state>          state);
 
    /*!
      \brief Sends error command back to client
@@ -141,7 +148,7 @@ protected:
    handle_error (
       enum detail::error_code   error,
       quorum::quorum const &    quorum,
-      tcp_connection_ptr        client_connection) const;
+      tcp_connection_ptr        client_connection);
 
 
    /*!
@@ -150,7 +157,7 @@ protected:
    virtual void
    add_local_host_information (
       quorum::quorum const &    quorum,
-      detail::command &         output) const;
+      detail::command &         output);
 
    /*!
      \brief Processes most recent information from a remote host into quorum
@@ -161,10 +168,12 @@ protected:
    virtual void
    process_remote_host_information (
       detail::command const &   command,
-      quorum::quorum &          output) const;
+      quorum::quorum &          output);
 
 
 private:
+
+   durable::storage &   storage_;
 
 };
 

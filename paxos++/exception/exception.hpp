@@ -77,6 +77,11 @@ class incorrect_proposal : virtual public exception {};
  */
 class connection_close : virtual public exception {};
 
+/*!
+  \brief Thrown when an error occured with a durable storage component
+ */
+class storage_error : virtual public exception {};
+
 } };
 
 #endif  //! LIBPAXOS_CPP_EXCEPTION_EXCEPTION_HPP

@@ -50,8 +50,8 @@ public:
    processor_type const &
    processor () const;
 
-   detail::strategy::strategy const &
-   strategy () const;
+   detail::strategy::strategy &
+   strategy ();
 
    /*!
      \brief This is our request queue where pending Paxos requests are queued
