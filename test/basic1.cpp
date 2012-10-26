@@ -2,7 +2,6 @@
   This test validates basic paxos operation with a quorum with a single node.
  */
 
-
 #include <paxos++/client.hpp>
 #include <paxos++/server.hpp>
 #include <paxos++/detail/util/debug.hpp>
@@ -10,7 +9,7 @@
 int main ()
 {
    paxos::server server ("127.0.0.1", 1337,
-                         [](std::string const &) -> std::string
+                         [](int64_t, std::string const &) -> std::string
                          {
                             return "wombat";
                          });

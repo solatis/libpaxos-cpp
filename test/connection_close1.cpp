@@ -70,7 +70,7 @@ int main ()
    std::atomic <uint16_t> response_count (0);
 
    paxos::server::callback_type callback =
-      [& response_count](std::string const & workload) -> std::string
+      [& response_count](int64_t, std::string const & workload) -> std::string
       {
          ++response_count;
 

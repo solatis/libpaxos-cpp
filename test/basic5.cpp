@@ -10,7 +10,7 @@
 int main ()
 {
    paxos::server::callback_type callback = 
-      [](std::string const &) -> std::string
+      [](int64_t, std::string const &) -> std::string
       {
          return "bar";
       };
