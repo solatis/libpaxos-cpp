@@ -31,7 +31,7 @@ class paxos_context : private boost::noncopyable
 {
 public:
 
-   typedef boost::function <std::string (std::string const &)>  processor_type;
+   typedef boost::function <std::string (int64_t, std::string const &)>  processor_type;
 
 public:
 

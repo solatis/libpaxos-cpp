@@ -47,3 +47,4 @@ test/basic4
 test/basic5
 test/connection_close1
 test/connection_close2
+test/durability1

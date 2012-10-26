@@ -13,6 +13,7 @@ sqlite::sqlite (
    : filename_ (filename),
      db_ (NULL)
 {
+   PAXOS_INFO (this << " sqlite constructor");
    PAXOS_ASSERT_EQ (sqlite3_open (filename.c_str (), &db_), SQLITE_OK);
    PAXOS_ASSERT (db_ != NULL);
 
@@ -24,6 +25,7 @@ sqlite::sqlite (
 
 /*! virtual */ sqlite::~sqlite ()
 {
+   PAXOS_INFO ("shutting down sqlite backend");
    PAXOS_ASSERT_EQ (sqlite3_close (db_), SQLITE_OK);
 }
 
@@ -119,6 +121,8 @@ sqlite::highest_proposal_id ()
       "  MAX (id) "
       "FROM "
       "  history";
+
+   PAXOS_DEBUG ("executing query: " << query);
 
    sqlite3_stmt * prepared_statement = 0;
    PAXOS_ASSERT_EQ (sqlite3_prepare (db_,

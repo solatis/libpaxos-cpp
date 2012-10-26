@@ -420,7 +420,8 @@ strategy::accept (
       */
       PAXOS_DEBUG ("follower " << quorum.our_endpoint () << " storing proposed workload for id = " << i.first);
       response.add_proposed_workload (i.first,
-                                      state.processor () (i.second));
+                                      state.processor () (i.first,
+                                                          i.second));
 
       PAXOS_ASSERT_EQ (response.proposed_workload ().rbegin ()->second.empty (), false);
       
@@ -645,6 +646,7 @@ strategy::process_remote_host_information (
 /*! virtual */ int64_t
 strategy::proposal_id ()
 {
+   PAXOS_DEBUG ("storage = " << &storage_);
    return storage_.highest_proposal_id ();
 }
 

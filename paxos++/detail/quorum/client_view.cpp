@@ -71,6 +71,11 @@ client_view::advance_leader (
       return;
    }
 
+   for (auto const & i : live_servers)
+   {
+      PAXOS_DEBUG (i);
+   }
+
    /*!
      If the server was is found, this returns an iterator to the server, otherwise
      it returns the iterator *before* the last server.
@@ -83,9 +88,18 @@ client_view::advance_leader (
    }
    else
    {
-      pos = std::lower_bound (live_servers.begin (),
-                              live_servers.end (),
-                              *next_leader_);
+      pos = std::find (live_servers.begin (),
+                       live_servers.end (),
+                       *next_leader_);
+
+      if (pos == live_servers.end ())
+      {
+         /*!
+           Server we determined to be the next leader was not in live_servers array anymore, 
+           the best thing to do is to just return to the beginning of the array.
+          */
+         pos = live_servers.begin ();
+      }      
    }
 
    PAXOS_ASSERT (pos != live_servers.end ());

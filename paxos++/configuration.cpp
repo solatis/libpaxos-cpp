@@ -3,13 +3,15 @@
 #include "detail/strategy/basic_paxos/factory.hpp"
 #include "configuration.hpp"
 
+#include "detail/util/debug.hpp"
+
 namespace paxos {
 
 configuration::configuration ()
    : timeout_ (3000),
      majority_factor_ (0.5),
      durable_storage_ (new durable::heap ()),
-     strategy_factory_ (new detail::strategy::basic_paxos::factory (*durable_storage_))
+     strategy_factory_ (new detail::strategy::basic_paxos::factory (*this))
 {
 }
 
@@ -43,13 +45,21 @@ void
 configuration::set_strategy_factory (
    detail::strategy::factory *  factory)
 {
-   strategy_factory_ .reset (factory);
+   strategy_factory_.reset (factory);
 }
 
 detail::strategy::factory const &
 configuration::strategy_factory () const
 {
    return *strategy_factory_;
+}
+
+
+void
+configuration::set_durable_storage (
+   durable::storage *   storage)
+{
+   durable_storage_.reset (storage);
 }
 
 durable::storage &
