@@ -44,6 +44,7 @@ int main ()
    
    for (auto & i : results)
    {
+      PAXOS_DEBUG ("validating result " << i.first);
       PAXOS_ASSERT_EQ (i.second.get (), boost::lexical_cast <std::string> (i.first));
    }
 

@@ -12,7 +12,6 @@
 
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/map.hpp>
-#include <boost/serialization/vector.hpp>
 
 #include "quorum/server.hpp"
 
@@ -103,18 +102,63 @@ public:
    host_endpoint () const;
 
    void
-   set_proposal_id (
-      uint64_t                  proposal_id);
+   set_next_proposal_id (
+      int64_t                   proposal_id);
 
-   uint64_t
-   proposal_id () const;
+   int64_t
+   next_proposal_id () const;
 
+   /*!
+     \brief Sets the highest proposal id currently known by a host
+    */
+   void
+   set_highest_proposal_id (
+      int64_t                   proposal_id);
+
+   /*!
+     \brief The highest proposal id currently known by a host
+    */
+   int64_t
+   highest_proposal_id () const;
+
+
+   /*!
+     \brief Sets a single workload entry
+
+     This is sent from client to leader.
+    */
    void
    set_workload (
       std::string const &       byte_array);
 
+   /*!
+     \brief Access to single workload entry.
+   */
    std::string const &
    workload () const;
+
+   /*!
+     \brief Sets multiple workload entries, associated by proposal id
+     
+     This is sent from leader to follower.
+    */
+   void
+   set_proposed_workload (
+      std::map <int64_t, std::string> const &   proposed_workload);
+
+   /*!
+     \brief Adds a single proposed workload entry, associated by proposal id
+    */
+   void
+   add_proposed_workload (
+      int64_t                   proposal_id,
+      std::string const &       byte_array);
+
+   /*!
+     \brief Access to multiple workload entries, associated by proposal id
+    */
+   std::map <int64_t, std::string> const &
+   proposed_workload () const;
 
 private:
 
@@ -132,8 +176,11 @@ private:
    std::string                                          host_address_;
    uint16_t                                             host_port_;
 
-   uint64_t                                             proposal_id_;
+   int64_t                                              next_proposal_id_;
+   int64_t                                              highest_proposal_id_;
+
    std::string                                          workload_;
+   std::map <int64_t, std::string>                      proposed_workload_;
 };
 
 }; };

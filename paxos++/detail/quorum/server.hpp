@@ -62,6 +62,20 @@ public:
    void
    reset_id ();
 
+
+   /*!
+     \brief Adjusts the highest proposal id currently known by this server
+    */
+   void
+   set_highest_proposal_id (
+      int64_t                   proposal_id);
+
+   /*!
+     \brief The highest proposal id currently known by this server
+    */
+   int64_t
+   highest_proposal_id () const;
+
    /*!
      \brief Establishes connection with remote host
     */
@@ -94,6 +108,8 @@ private:
 
    boost::asio::ip::tcp::endpoint                       endpoint_;
    boost::uuids::uuid                                   id_;
+
+   int64_t                                              highest_proposal_id_;
 
    boost::posix_time::ptime                             most_recent_connection_attempt_;
    boost::optional <detail::tcp_connection_ptr>         connection_;

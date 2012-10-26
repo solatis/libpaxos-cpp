@@ -55,8 +55,6 @@ command::host_id () const
    return gen (host_id_);
 }
 
-
-
 void
 command::set_host_endpoint (
    boost::asio::ip::tcp::endpoint const &       endpoint)
@@ -71,6 +69,16 @@ command::host_endpoint () const
 {
    return boost::asio::ip::tcp::endpoint (boost::asio::ip::address::from_string (host_address_), 
                                           host_port_);
+}
+
+void
+command::add_proposed_workload (
+   int64_t              proposal_id,
+   std::string const &  byte_array)
+{
+   PAXOS_ASSERT (proposed_workload_.find (proposal_id) == proposed_workload_.end ());
+
+   proposed_workload_[proposal_id] = byte_array;
 }
 
 

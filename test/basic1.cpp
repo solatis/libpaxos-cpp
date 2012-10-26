@@ -12,15 +12,15 @@ int main ()
    paxos::server server ("127.0.0.1", 1337,
                          [](std::string const &) -> std::string
                          {
-                            return "bar";
+                            return "wombat";
                          });
    server.add ("127.0.0.1", 1337);
 
    paxos::client client;
    client.add ("127.0.0.1", 1337);
 
-   std::future <std::string> future = client.send ("foo");
-   PAXOS_ASSERT_EQ (future.get (), "bar");
+   std::future <std::string> future = client.send ("foobar");
+   PAXOS_ASSERT_EQ (future.get (), "wombat");
 
    PAXOS_INFO ("test succeeded");
 }

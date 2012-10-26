@@ -16,7 +16,7 @@ class paxos_context;
 }; };
 
 namespace paxos { namespace detail { namespace quorum {
-class quorum;
+class server_view;
 }; }; };
 
 namespace paxos { namespace detail {
@@ -47,7 +47,7 @@ public:
       boost::optional <enum error_code> error,
       tcp_connection_ptr                connection,
       detail::command const &           command,
-      detail::quorum::quorum &          quorum,
+      detail::quorum::server_view &     quorum,
       detail::paxos_context &           state);
 
 private:

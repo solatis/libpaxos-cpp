@@ -9,7 +9,7 @@
 #include <initializer_list>
 
 #include "detail/io_thread.hpp"
-#include "detail/quorum/quorum.hpp"
+#include "detail/quorum/client_view.hpp"
 #include "detail/request_queue/queue.hpp"
 #include "detail/client/protocol/request.hpp"
 
@@ -96,21 +96,17 @@ public:
 
    /*!
      \brief Opens client
-     \param configuration       Runtime configuration parameters
 
      This constructor launches its own background thread with i/o context
     */
-   client (
-      paxos::configuration              configuration = paxos::configuration ());
+   client ();
 
    /*!
      \brief Opens client
      \param io_service  Boost.Asio io_service object, which represents the link to the OS'es i/o services
-     \param configuration       Runtime configuration parameters
    */
    client (
-      boost::asio::io_service &         io_service,
-      paxos::configuration              configuration = paxos::configuration ());
+      boost::asio::io_service &         io_service);
 
    /*!
      \brief Destructor
@@ -174,7 +170,7 @@ private:
 
    detail::io_thread                                                    io_thread_;
    boost::asio::io_service &                                            io_service_;
-   detail::quorum::quorum                                               quorum_;
+   detail::quorum::client_view                                          quorum_;
    detail::request_queue::queue <detail::client::protocol::request>     request_queue_;
 
 };

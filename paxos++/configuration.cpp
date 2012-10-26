@@ -1,5 +1,5 @@
 #include "durable/storage.hpp"
-#include "durable/sqlite.hpp"
+#include "durable/heap.hpp"
 #include "detail/strategy/basic_paxos/factory.hpp"
 #include "configuration.hpp"
 
@@ -8,11 +8,10 @@ namespace paxos {
 configuration::configuration ()
    : timeout_ (3000),
      majority_factor_ (0.5),
-     durable_storage_ (new durable::sqlite ("/home/lmergen/tmp.sqlite")),
+     durable_storage_ (new durable::heap ()),
      strategy_factory_ (new detail::strategy::basic_paxos::factory (*durable_storage_))
 {
 }
-
 
 void
 configuration::set_timeout (
@@ -46,7 +45,6 @@ configuration::set_strategy_factory (
 {
    strategy_factory_ .reset (factory);
 }
-
 
 detail::strategy::factory const &
 configuration::strategy_factory () const

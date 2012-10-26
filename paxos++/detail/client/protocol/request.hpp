@@ -13,7 +13,7 @@
 #include "../../error.hpp"
 
 namespace paxos { namespace detail { namespace quorum {
-class quorum;
+class client_view;
 }; }; };
 
 namespace paxos { namespace detail { namespace client { namespace protocol {
@@ -24,7 +24,7 @@ namespace paxos { namespace detail { namespace client { namespace protocol {
 struct request
 {
    std::string                                                                                  byte_array_;
-   detail::quorum::quorum &                                                                     quorum_;
+   detail::quorum::client_view &                                                                quorum_;
    boost::function <void (boost::optional <enum detail::error_code>, std::string const &)>      callback_;
 
 };

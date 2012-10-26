@@ -3,7 +3,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "../../../../durable/storage.hpp"
-#include "../../../quorum/quorum.hpp"
+#include "../../../quorum/server_view.hpp"
 #include "../../../paxos_context.hpp"
 #include "../../../command.hpp"
 #include "../../../parser.hpp"
@@ -23,11 +23,11 @@ strategy::strategy (
 
 /*! virtual */ void
 strategy::initiate (      
-   tcp_connection_ptr           client_connection,
-   detail::command const &      command,
-   detail::quorum::quorum &     quorum,
-   detail::paxos_context &      global_state,
-   queue_guard_type             queue_guard)
+   tcp_connection_ptr                   client_connection,
+   detail::command const &              command,
+   detail::quorum::server_view &        quorum,
+   detail::paxos_context &              global_state,
+   queue_guard_type                     queue_guard)
 {
    /*!
      If we do not have a the majority of servers alive, it is likely we are having a netsplit 
@@ -41,13 +41,6 @@ strategy::initiate (
                           client_connection);
       return;
    }
-
-
-   /*!
-     At the start of any request, we should, as defined in the Paxos protocol, increment
-     our current proposal id.
-    */
-   ++(global_state.proposal_id ());
 
    /*!
      Keeps track of the current state / which servers have responded, etc.
@@ -98,7 +91,7 @@ strategy::send_prepare (
    detail::command const &                      client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
-   detail::quorum::quorum &                     quorum,
+   detail::quorum::server_view &                quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state)
@@ -119,7 +112,7 @@ strategy::send_prepare (
    command command;
 
    command.set_type (command::type_request_prepare);
-   command.set_proposal_id (global_state.proposal_id ());
+   command.set_next_proposal_id (this->proposal_id () + 1);
 
    this->add_local_host_information (quorum, command);
 
@@ -150,18 +143,18 @@ strategy::send_prepare (
 
 /*! virtual */ void
 strategy::prepare (      
-   tcp_connection_ptr           leader_connection,
-   detail::command const &      command,
-   detail::quorum::quorum &     quorum,
-   detail::paxos_context &      state)
+   tcp_connection_ptr                   leader_connection,
+   detail::command const &              command,
+   detail::quorum::server_view &        quorum,
+   detail::paxos_context &              state)
 {
    this->process_remote_host_information (command,
                                           quorum);
    detail::command response;
 
    PAXOS_DEBUG ("self = " << quorum.our_endpoint () << ", "
-                "state.proposal_id () = " << state.proposal_id () << ", "
-                "command.proposal_id () = " << command.proposal_id ());
+                "state.proposal_id () = " << this->proposal_id () << ", "
+                "command.proposal_id () = " << command.next_proposal_id ());
 
 
 
@@ -183,22 +176,14 @@ strategy::prepare (
       /*!
         This request is coming from a host that is not the leader
        */
-      PAXOS_WARN ("request coming from host that is not the leader: "  << *leader << " [" << quorum.lookup_server (*leader).id () << "] != " << command.host_endpoint () << " [" << quorum.lookup_server (command.host_endpoint ()).id () << "]");
+      PAXOS_WARN ("request coming from host that is not the leader: "  << *leader << " [" << quorum.lookup_server (*leader).id () << "," << quorum.lookup_server (*leader).highest_proposal_id () << "] != " << command.host_endpoint () << " [" << quorum.lookup_server (command.host_endpoint ()).id () << "," << quorum.lookup_server (command.host_endpoint ()).highest_proposal_id () << "]");
       response.set_type (command::type_request_fail);
       response.set_error_code (detail::error_no_leader);
    }
-   else if (command.host_endpoint () == quorum.our_endpoint ())
+   else if (command.next_proposal_id () > this->proposal_id ())
    {
-      /*!
-        This is the leader sending the 'prepare' to itself, always ACK
-       */
-      response.set_type (command::type_request_promise);
-   }
-   else if (command.proposal_id () > state.proposal_id ())
-   {
-      PAXOS_DEBUG ("normal proposal, accepting, command = " << command.proposal_id () << ", state = " << state.proposal_id ());
+      PAXOS_DEBUG ("normal proposal, accepting, command = " << command.next_proposal_id () << ", state = " << this->proposal_id ());
 
-      state.proposal_id () = command.proposal_id ();
       response.set_type (command::type_request_promise);
    }
    else
@@ -208,7 +193,7 @@ strategy::prepare (
       response.set_error_code (detail::error_incorrect_proposal);
    }
 
-   response.set_proposal_id (state.proposal_id ());
+   response.set_next_proposal_id (this->proposal_id ());
 
    this->add_local_host_information (quorum, response);
 
@@ -226,7 +211,7 @@ strategy::receive_promise (
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
-   detail::quorum::quorum &                     quorum,
+   detail::quorum::server_view &                quorum,
    detail::paxos_context &                      global_state,
    std::string                                  byte_array,
    detail::command const &                      command,
@@ -256,17 +241,16 @@ strategy::receive_promise (
                break;
 
             case command::type_request_fail:
-               state->accepted[follower_endpoint] = response_reject;
-               state->error_codes[follower_endpoint] = command.error_code ();
-           
                /*!
-                 Since our follower has rejected this based on our proposal id, it makes
-                 sense to ensure that the next proposal id we will use it as least higher
-                 than this follower's proposal id.
-               */
-               global_state.proposal_id () = std::max (global_state.proposal_id (),
-                                                       command.proposal_id ());
+                 This is a corner case, that means a follower has rejected our proposal. This
+                 likely means that the other follower has a more recent proposal id, and thus
+                 thinks we are not the leader.
 
+                 Since we have just processed the other host's information, it is likely that
+                 we will not consider ourselves a leader anymore after this request.
+                */
+               state->accepted[follower_endpoint]    = response_reject;
+               state->error_codes[follower_endpoint] = command.error_code ();
                break;
 
             default:
@@ -342,7 +326,7 @@ strategy::send_accept (
    detail::command const &                      client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
    tcp_connection_ptr                           follower_connection,
-   detail::quorum::quorum &                     quorum,
+   detail::quorum::server_view &                quorum,
    detail::paxos_context &                      global_state,
    std::string const &                          byte_array,
    boost::shared_ptr <struct state>             state)
@@ -353,8 +337,35 @@ strategy::send_accept (
 
    command command;
    command.set_type (command::type_request_accept);
-   command.set_proposal_id (global_state.proposal_id ());
-   command.set_workload (byte_array);
+
+   /*!
+     It is possible that the follower lags behind. If this is the case, let's
+     send it the history too.
+    */
+   int64_t follower_highest_proposal_id = 
+      quorum.lookup_server (follower_endpoint).highest_proposal_id ();
+
+   /*!
+     Note that the storage mechanism is *not* required to retrieve all data, it
+     can just retrieve a portion. This prevents the whole quorum from locking up
+     if we need to transfer lots of data to a single follower.
+    */
+   command.set_proposed_workload (
+      storage_.retrieve (follower_highest_proposal_id));
+
+   if (command.proposed_workload ().empty () == true
+       || command.proposed_workload ().rbegin ()->first == this->proposal_id ())
+   {
+      /*!
+        This means that either there was no historical data available for the 
+        follower (the most likely case, because that means the follower is up-to-date),
+        or it just means the next request will catch him up completely.
+
+        Either way, let's store our currently proposed value too!
+       */
+      command.add_proposed_workload (this->proposal_id () + 1,
+                                     byte_array);
+   }   
 
    this->add_local_host_information (quorum, command);
 
@@ -383,45 +394,58 @@ strategy::send_accept (
 
 /*! virtual */ void
 strategy::accept (      
-   tcp_connection_ptr           leader_connection,
-   detail::command const &      command,
-   detail::quorum::quorum &     quorum,
-   detail::paxos_context &      state)
+   tcp_connection_ptr                   leader_connection,
+   detail::command const &              command,
+   detail::quorum::server_view &        quorum,
+   detail::paxos_context &              state)
 {
    this->process_remote_host_information (command,
                                           quorum);
 
    detail::command response;
    
-   if (command.proposal_id () != state.proposal_id ())
+   /*!
+     Default to an 'accepted' response
+   */
+   response.set_type (command::type_request_accepted);
+
+   PAXOS_ASSERT_EQ (command.proposed_workload ().empty (), false);
+
+   for (auto const & i : command.proposed_workload ())
    {
-      /*!
-        If the proposal id's do not match, something went terribly wrong! Most likely 
-        a switch of leaders during the operation.
-      */
-      response.set_type (command::type_request_fail);
-      response.set_error_code (detail::error_incorrect_proposal);
-   }
-   else
-   {
-      PAXOS_DEBUG ("server " << quorum.our_endpoint () << " calling processor "
-                   "with workload = '" << command.workload () << "'");
-      response.set_type (command::type_request_accepted);
+      PAXOS_ASSERT (i.first == this->proposal_id () + 1);
 
       /*! 
         First, process the workload and set it as output of the response
       */
-      response.set_workload (
-         state.processor () (command.workload ()));
+      PAXOS_DEBUG ("follower " << quorum.our_endpoint () << " storing proposed workload for id = " << i.first);
+      response.add_proposed_workload (i.first,
+                                      state.processor () (i.second));
 
+      PAXOS_ASSERT_EQ (response.proposed_workload ().rbegin ()->second.empty (), false);
+      
       /*!
         Now that the workload has been processed, store the currently accepted 
         proposal/value in our durable storage backend so other nodes can catch up 
         if they're disconnected for a short timespan.
       */
-      storage_.store (command.proposal_id (),
-                      command.workload ());
+      storage_.store (i.first,
+                      i.second);
+
+      /*!
+        This is a bit of a hack, but we need to let the quorum know that our own
+        proposal id has also increased, otherwise its leader election algorithm
+        will not have all data required to determine the proper leader.
+      */
+      quorum.lookup_server (quorum.our_endpoint ()).set_highest_proposal_id (this->proposal_id ());
+
+      /*!
+        At this point, the proposal id should've been incremented by 1, since the
+        proposal id is derived from storage_.
+       */
+      PAXOS_ASSERT_EQ (i.first, this->proposal_id ());
    }
+   
 
    PAXOS_DEBUG ("step6 writing command");   
 
@@ -437,7 +461,7 @@ strategy::receive_accepted (
    tcp_connection_ptr                           client_connection,
    detail::command                              client_command,
    boost::asio::ip::tcp::endpoint const &       follower_endpoint,
-   detail::quorum::quorum &                     quorum,
+   detail::quorum::server_view &                quorum,
    detail::command const &                      command,
    boost::shared_ptr <struct state>             state)
 {
@@ -449,6 +473,7 @@ strategy::receive_accepted (
 
       state->accepted[follower_endpoint]    = response_reject;
       state->error_codes[follower_endpoint] = *error;
+      state->responses[follower_endpoint]   = std::string ();
    }
    else
    {
@@ -467,11 +492,24 @@ strategy::receive_accepted (
       {
             case command::type_request_accepted:
                state->accepted[follower_endpoint]    = response_ack;
+
+               PAXOS_ASSERT_EQ (command.proposed_workload ().empty (), false);
+
+               /*!
+                 Always store the response we received, since we also use that entry to see
+                 whether all hosts have already replied. 
+               */
+               state->responses[follower_endpoint]   = 
+                  command.proposed_workload ().rbegin ()->second;
+
+               PAXOS_ASSERT_EQ (state->responses[follower_endpoint].empty (), false);
+
                break;
 
             case command::type_request_fail:
                state->accepted[follower_endpoint]    = response_reject;
                state->error_codes[follower_endpoint] = command.error_code ();
+               state->responses[follower_endpoint]   = std::string ();
                break;
 
             default:
@@ -483,13 +521,9 @@ strategy::receive_accepted (
    }
 
 
-   /*!
-     Always store the response we received, since we also use that entry to see
-     whether all hosts have already replied. Note that we will also store the
-     workload in case an error occured, in which case the response of course
-     is empty (but that doesn't matter).
-   */
-   state->responses[follower_endpoint]   = command.workload ();
+   PAXOS_DEBUG ("leader got response = " << state->responses[follower_endpoint] << ", follower = " << follower_endpoint);
+
+
 
    std::string workload;
 
@@ -511,34 +545,41 @@ strategy::receive_accepted (
          }
       }
       
-      /*!
-        One of the requirements of our protocol is that if one node N1 replies
-        to proposal P with response R, node N2 must have the exact same response
-        for the same proposal.
-        
-        The code below validates this requirement.
-      */
-      for (auto const & i : state->responses)
+      if (last_error.is_initialized () == false)
       {
-         if (workload.empty () == true)
+         /*!
+           One of the requirements of our protocol is that if one node N1 replies
+           to proposal P with response R, node N2 must have the exact same response
+           for the same proposal.
+           
+           The code below validates this requirement.
+         */
+         for (auto const & i : state->responses)
          {
-            workload = i.second;
-         }
-         else if (workload != i.second)
-         {
-            last_error = detail::error_inconsistent_response;
+            if (workload.empty () == true)
+            {
+               workload = i.second;
+               PAXOS_ASSERT (workload.empty () == false);
+            }
+            else if (workload != i.second)
+            {
+               last_error = detail::error_inconsistent_response;
+            }
+
          }
       }
 
       if (last_error.is_initialized () == false)
       {
-         /*!
-           Send a copy of the last command to the client, since the workload should be the
-           same for all responses.
-         */
          PAXOS_DEBUG ("step7 writing command");   
+         detail::command response;
+         response.set_type (command::type_request_accepted);
+         response.set_workload (workload);
 
-         client_connection->write_command (command);
+         this->add_local_host_information (quorum,
+                                           response);
+
+         client_connection->write_command (response);
       }
       else
       {
@@ -562,7 +603,7 @@ strategy::receive_accepted (
 /*! virtual */ void
 strategy::handle_error (
    enum detail::error_code      error,
-   quorum::quorum const &       quorum,
+   quorum::server_view const &  quorum,
    tcp_connection_ptr           client_connection)
 {
    detail::command response;
@@ -579,22 +620,32 @@ strategy::handle_error (
 
 /*! virtual */ void
 strategy::add_local_host_information (
-   quorum::quorum const &    quorum,
-   detail::command &         output)
+   quorum::server_view const &  quorum,
+   detail::command &            output)
 {
    detail::quorum::server const & server = quorum.lookup_server (quorum.our_endpoint ());
    output.set_host_id (server.id ());
    output.set_host_endpoint (server.endpoint ());
+   output.set_highest_proposal_id (this->proposal_id ());
 }
 
 /*! virtual */ void
 strategy::process_remote_host_information (
-   detail::command const &   command,
-   quorum::quorum &          output)
+   detail::command const &      command,
+   quorum::server_view &        output)
 {
-   output.lookup_server (command.host_endpoint ()).set_id (command.host_id ());
+   detail::quorum::server & server = 
+      output.lookup_server (command.host_endpoint ());
+
+   server.set_id (command.host_id ());
+   server.set_highest_proposal_id (command.highest_proposal_id ());
 }
 
 
+/*! virtual */ int64_t
+strategy::proposal_id ()
+{
+   return storage_.highest_proposal_id ();
+}
 
 }; }; }; }; };

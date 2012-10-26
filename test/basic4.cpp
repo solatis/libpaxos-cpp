@@ -1,5 +1,6 @@
 /*!
-  Tests whether the quorum will properly handle a dead node and it coming alive in a later stadium
+  Tests whether the quorum will properly handle a dead node and it coming alive in a later stadium,
+  including a proper catch up.
  */
 
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
@@ -11,6 +12,7 @@
 
 int main ()
 {
+   uint16_t calls = 0;
    uint16_t response_count = 0;
    paxos::server::callback_type callback = 
       [& response_count](std::string const &) -> std::string
@@ -36,9 +38,9 @@ int main ()
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
    PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
    PAXOS_DEBUG ("response_count = " << response_count);
+   calls = 7;
 
-   PAXOS_ASSERT_EQ (response_count, 14);
-   response_count = 0;
+   PAXOS_ASSERT_EQ (response_count, 2 * calls);
 
    paxos::server server3 ("127.0.0.1", 1339, callback);
    server3.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
@@ -50,12 +52,14 @@ int main ()
       boost::posix_time::milliseconds (
          paxos::configuration ().timeout ()));
 
-
    do
    {
-      response_count = 0;
       PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");   
-   } while (response_count < 3);
+      ++calls;
+      
+   } while (response_count != 3 * calls && calls < 50);
+
+   PAXOS_ASSERT_EQ (response_count, 3 * calls);
 
    PAXOS_INFO ("test succeeded");
 }

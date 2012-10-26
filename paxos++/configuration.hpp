@@ -79,6 +79,13 @@ public:
    detail::strategy::factory const &
    strategy_factory () const;
 
+   /*!
+     \brief Adjusts the storage component used for durable history
+     \note Takes over ownership of \c storage
+    */
+   void
+   set_durable_storage (
+      durable::storage *        storage);
 
    /*!
      \brief Access to the storage component used for a durable history

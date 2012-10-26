@@ -35,14 +35,19 @@ public:
       std::string const &       byte_array) = 0;
 
    /*!
-     \brief Looks up all recently accepted values starting with \c proposal_id
-    */
+     \brief Looks up all recently accepted values higher than with \c proposal_id
+
+     This function does not necessarily need to return all values. In fact, it is preferred if
+     a large catch-up is retrieved in small batches, so that a catch-up can occur gradually 
+     instead of in a single paxos round.
+   */
    virtual std::map <int64_t, std::string>
    retrieve (
       int64_t                   proposal_id) = 0;
 
    /*!
      \brief Looks up the highest proposal id currently stored
+     \returns Returns highest proposal id in history, or 0 if no previous proposals are stored
     */
    virtual int64_t
    highest_proposal_id () = 0;

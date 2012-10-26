@@ -2,6 +2,7 @@
 #include "strategy/strategy.hpp"
 
 #include "../configuration.hpp"
+#include "../durable/storage.hpp"
 #include "paxos_context.hpp"
 
 namespace paxos { namespace detail {
@@ -9,9 +10,8 @@ namespace paxos { namespace detail {
 
 paxos_context::paxos_context (
    processor_type const &               processor,
-   paxos::configuration const &         configuration)
-   : proposal_id_ (0),
-     processor_ (processor),
+   paxos::configuration &               configuration)
+   : processor_ (processor),
      strategy_ (configuration.strategy_factory ().create ()),
      request_queue_ (
         []

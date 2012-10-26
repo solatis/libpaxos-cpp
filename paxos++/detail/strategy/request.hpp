@@ -13,7 +13,7 @@ class paxos_context;
 }; };
 
 namespace paxos { namespace detail { namespace quorum {
-class quorum;
+class server_view;
 }; }; };
 
 namespace paxos { namespace detail { namespace strategy {
@@ -23,10 +23,10 @@ namespace paxos { namespace detail { namespace strategy {
  */
 struct request
 {
-   detail::tcp_connection_ptr   connection_;
-   detail::command              command_;
-   detail::quorum::quorum &     quorum_;
-   detail::paxos_context &      global_state_;
+   detail::tcp_connection_ptr    connection_;
+   detail::command               command_;
+   detail::quorum::server_view & quorum_;
+   detail::paxos_context &       global_state_;
 };
 
 }; }; };

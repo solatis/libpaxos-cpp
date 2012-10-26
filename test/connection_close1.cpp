@@ -22,6 +22,10 @@
 class test_strategy : public paxos::detail::strategy::basic_paxos::protocol::strategy
 {
 public:
+   test_strategy (
+      paxos::durable::storage & storage)
+      : paxos::detail::strategy::basic_paxos::protocol::strategy::strategy (storage) {}
+
    /*!
      \brief Overloaded from parent
     */
@@ -30,7 +34,7 @@ public:
       paxos::detail::tcp_connection_ptr leader_connection,
       paxos::detail::command const &    command,
       paxos::detail::quorum::quorum &   quorum,
-      paxos::detail::paxos_context &    state) const 
+      paxos::detail::paxos_context &    state) 
 
       {
          leader_connection->socket ().close ();
@@ -42,11 +46,21 @@ class test_strategy_factory : public paxos::detail::strategy::factory
 {
 public:
 
+   test_strategy_factory (
+      paxos::durable::storage & storage)
+      : storage_ (storage)
+      {
+      }
+
+
    virtual paxos::detail::strategy::strategy *
    create () const   
       {
-         return new test_strategy ();
+         return new test_strategy (storage_);
       }
+
+private:
+   paxos::durable::storage &    storage_;
 
 };
 
@@ -64,7 +78,7 @@ int main ()
       };
 
    paxos::configuration configuration;
-   configuration.set_strategy_factory (new test_strategy_factory ());
+   configuration.set_strategy_factory (new test_strategy_factory (configuration.durable_storage ()));
 
    paxos::server server1 ("127.0.0.1", 1337, callback);
    paxos::server server2 ("127.0.0.1", 1338, callback);

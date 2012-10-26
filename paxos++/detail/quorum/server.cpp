@@ -11,7 +11,8 @@ server::server (
    boost::asio::io_service &                    io_service,
    boost::asio::ip::tcp::endpoint const &       endpoint)
    : io_service_ (io_service),
-     endpoint_ (endpoint)
+     endpoint_ (endpoint),
+     highest_proposal_id_ (-1)
 {
    this->reset_id ();
 }
@@ -51,8 +52,18 @@ server::reset_id ()
    id_ = boost::uuids::nil_generator ()();
 }
 
+void
+server::set_highest_proposal_id (
+   int64_t     proposal_id)
+{
+   highest_proposal_id_ = proposal_id;
+}
 
-
+int64_t
+server::highest_proposal_id () const
+{
+   return highest_proposal_id_;
+}
 
 
 detail::tcp_connection_ptr

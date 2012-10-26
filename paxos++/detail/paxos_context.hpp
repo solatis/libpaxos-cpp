@@ -36,16 +36,10 @@ public:
 public:
 
    paxos_context (
-      processor_type const &            processor,
-      paxos::configuration const &      configuration);
+      processor_type const &    processor,
+      paxos::configuration &    configuration);
 
    ~paxos_context ();
-
-   uint64_t &
-   proposal_id ();
-
-   uint64_t
-   proposal_id () const;
 
    processor_type const &
    processor () const;
@@ -64,8 +58,6 @@ public:
    request_queue ();
 
 private:
-
-   uint64_t                                     proposal_id_;
 
    processor_type                               processor_;
    detail::strategy::strategy *                 strategy_;

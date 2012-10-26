@@ -46,8 +46,12 @@ public:
 
 private:
 
+   bool
+   has_table ();
+
    void
    create_table ();
+
 
 private:
 

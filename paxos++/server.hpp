@@ -14,7 +14,7 @@
 
 #include "detail/io_thread.hpp"
 #include "detail/paxos_context.hpp"
-#include "detail/quorum/quorum.hpp"
+#include "detail/quorum/server_view.hpp"
 #include "detail/tcp_connection_fwd.hpp"
 
 #include "configuration.hpp"
@@ -212,7 +212,7 @@ private:
    
    detail::io_thread                    io_thread_;
    boost::asio::ip::tcp::acceptor       acceptor_;
-   detail::quorum::quorum               quorum_;
+   detail::quorum::server_view          quorum_;
    detail::paxos_context                state_;
 };
 

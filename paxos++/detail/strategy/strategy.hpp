@@ -11,7 +11,7 @@
 #include "request.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
-class quorum;
+class server_view;
 }; }; };
 
 namespace paxos { namespace detail { 
@@ -39,11 +39,11 @@ public:
     */
    virtual void
    initiate (      
-      tcp_connection_ptr        client_connection,
-      detail::command const &   command,
-      detail::quorum::quorum &  quorum,
-      detail::paxos_context &   global_state,
-      queue_guard_type          queue_guard) = 0;
+      tcp_connection_ptr                client_connection,
+      detail::command const &           command,
+      detail::quorum::server_view &     quorum,
+      detail::paxos_context &           global_state,
+      queue_guard_type                  queue_guard) = 0;
 
 
    /*!
@@ -51,10 +51,10 @@ public:
     */
    virtual void
    prepare (      
-      tcp_connection_ptr        leader_connection,
-      detail::command const &   command,
-      detail::quorum::quorum &  quorum,
-      detail::paxos_context &   global_state) = 0;
+      tcp_connection_ptr                leader_connection,
+      detail::command const &           command,
+      detail::quorum::server_view &     quorum,
+      detail::paxos_context &           global_state) = 0;
 
 
    /*!
@@ -66,10 +66,10 @@ public:
     */
    virtual void
    accept (      
-      tcp_connection_ptr        leader_connection,
-      detail::command const &   command,
-      detail::quorum::quorum &  quorum,
-      detail::paxos_context &   global_state) = 0;
+      tcp_connection_ptr                leader_connection,
+      detail::command const &           command,
+      detail::quorum::server_view &     quorum,
+      detail::paxos_context &           global_state) = 0;
 
 private:
 

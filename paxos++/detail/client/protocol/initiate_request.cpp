@@ -3,7 +3,7 @@
 #include "../../util/debug.hpp"
 #include "../../command.hpp"
 #include "../../parser.hpp"
-#include "../../quorum/quorum.hpp"
+#include "../../quorum/client_view.hpp"
 #include "../../tcp_connection.hpp"
 
 #include "initiate_request.hpp"
@@ -12,16 +12,17 @@ namespace paxos { namespace detail { namespace client { namespace protocol {
 
 /*! static */ void
 initiate_request::step1 (      
-   std::string const &       byte_array,
-   detail::quorum::quorum &  quorum,
-   callback_type             callback,
-   queue_guard_type          guard)
+   std::string const &                  byte_array,
+   detail::quorum::client_view &        quorum,
+   callback_type                        callback,
+   queue_guard_type                     guard)
 {
-   boost::optional <boost::asio::ip::tcp::endpoint> leader = quorum.who_is_our_leader (true);
+   boost::optional <boost::asio::ip::tcp::endpoint> leader = quorum.select_leader ();
    if (leader.is_initialized () == false)
    {
       PAXOS_DEBUG ("leader.is_initialized () == false");
       callback (detail::error_no_leader, "");
+      quorum.advance_leader ();
       return;
    }
 
@@ -33,6 +34,7 @@ initiate_request::step1 (
    {
       PAXOS_DEBUG ("server.has_connection () == false");
       callback (detail::error_no_leader, "");
+      quorum.advance_leader ();
       return;
    }
 
@@ -65,12 +67,14 @@ initiate_request::step1 (
          {
             PAXOS_WARN ("client had problems communicating with leader: " << detail::to_string (*error));
             quorum.connection_died (server.endpoint ());
+            quorum.advance_leader ();
 
             callback (*error, "");
          }
          else
          {
             quorum.lookup_server (c.host_endpoint ()).set_id (c.host_id ());
+            quorum.lookup_server (c.host_endpoint ()).set_highest_proposal_id (c.highest_proposal_id ());
 
             switch (c.type ())
             {
@@ -81,6 +85,11 @@ initiate_request::step1 (
                      break;
                   
                   case command::type_request_error:
+                     if (c.error_code () == detail::error_no_leader)
+                     {
+                        quorum.advance_leader ();
+                     }
+
                      PAXOS_WARN ("request error occured");
                      callback (c.error_code (), c.workload ());
                      break;

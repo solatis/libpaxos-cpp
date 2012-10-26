@@ -50,7 +50,7 @@ public:
    initiate (      
       tcp_connection_ptr                        client_connection,
       detail::command const &                   command,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::paxos_context &                   global_state,
       queue_guard_type                          queue_guard);
 
@@ -62,7 +62,7 @@ public:
    prepare (      
       tcp_connection_ptr                        leader_connection,
       detail::command const &                   command,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::paxos_context &                   global_state);
 
 
@@ -77,7 +77,7 @@ public:
    accept (      
       tcp_connection_ptr                        leader_connection,
       detail::command const &                   command,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::paxos_context &                   global_state);
 
 protected:
@@ -91,7 +91,7 @@ protected:
       detail::command const &                   client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::paxos_context &                   global_state,
       std::string const &                       byte_array,
       boost::shared_ptr <struct state>          state);
@@ -107,7 +107,7 @@ protected:
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::paxos_context &                   global_state,
       std::string                               byte_array,
       detail::command const &                   command,
@@ -122,7 +122,7 @@ protected:
       detail::command const &                   client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
       tcp_connection_ptr                        follower_connection,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::paxos_context &                   global_state,
       std::string const &                       byte_array,
       boost::shared_ptr <struct state>          state);
@@ -137,7 +137,7 @@ protected:
       tcp_connection_ptr                        client_connection,
       detail::command                           client_command,
       boost::asio::ip::tcp::endpoint const &    follower_endpoint,
-      detail::quorum::quorum &                  quorum,
+      detail::quorum::server_view &             quorum,
       detail::command const &                   command,
       boost::shared_ptr <struct state>          state);
 
@@ -147,7 +147,7 @@ protected:
    virtual void
    handle_error (
       enum detail::error_code   error,
-      quorum::quorum const &    quorum,
+      quorum::server_view const &    quorum,
       tcp_connection_ptr        client_connection);
 
 
@@ -156,8 +156,8 @@ protected:
     */
    virtual void
    add_local_host_information (
-      quorum::quorum const &    quorum,
-      detail::command &         output);
+      quorum::server_view const &       quorum,
+      detail::command &                 output);
 
    /*!
      \brief Processes most recent information from a remote host into quorum
@@ -168,7 +168,14 @@ protected:
    virtual void
    process_remote_host_information (
       detail::command const &   command,
-      quorum::quorum &          output);
+      quorum::server_view &     output);
+
+
+   /*!
+     \brief Looks up the state's current proposal id
+    */
+   virtual int64_t
+   proposal_id ();
 
 
 private:

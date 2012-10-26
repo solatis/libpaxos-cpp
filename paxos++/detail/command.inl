@@ -4,7 +4,8 @@ namespace paxos { namespace detail {
 inline command::command ()
    : type_ (type_invalid),
      error_code_ (no_error),
-     proposal_id_ (0)
+     next_proposal_id_ (-1),
+     highest_proposal_id_ (-1)
 {
 }
 
@@ -37,16 +38,29 @@ command::error_code () const
 
 
 inline void
-command::set_proposal_id (
-   uint64_t     proposal_id)
+command::set_next_proposal_id (
+   int64_t     proposal_id)
 {
-   proposal_id_ = proposal_id;
+   next_proposal_id_ = proposal_id;
 }
 
-inline uint64_t
-command::proposal_id () const
+inline int64_t
+command::next_proposal_id () const
 {
-   return proposal_id_;
+   return next_proposal_id_;
+}
+
+inline void
+command::set_highest_proposal_id (
+   int64_t     proposal_id)
+{
+   highest_proposal_id_ = proposal_id;
+}
+
+inline int64_t
+command::highest_proposal_id () const
+{
+   return highest_proposal_id_;
 }
 
 inline void
@@ -62,6 +76,19 @@ command::workload () const
    return workload_;
 }
 
+inline void
+command::set_proposed_workload (
+   std::map <int64_t, std::string> const &      proposed_workload)
+{
+   proposed_workload_ = proposed_workload;
+}
+
+
+inline  std::map <int64_t, std::string> const &
+command::proposed_workload () const
+{
+   return proposed_workload_;
+}
 
 
 template <class Archive>
@@ -77,8 +104,11 @@ command::serialize (
    ar & host_address_;
    ar & host_port_;
 
-   ar & proposal_id_;
+   ar & next_proposal_id_;
+   ar & highest_proposal_id_;
+
    ar & workload_;
+   ar & proposed_workload_;
 }
 
 

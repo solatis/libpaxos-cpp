@@ -13,7 +13,7 @@ command_dispatcher::dispatch_command (
    boost::optional <enum error_code>    error,
    tcp_connection_ptr                   connection,
    detail::command const &              command,
-   detail::quorum::quorum &             quorum,
+   detail::quorum::server_view &        quorum,
    detail::paxos_context &              state)
 {
    if (error)

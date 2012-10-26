@@ -14,7 +14,7 @@
 #include "../../request_queue/queue.hpp"
 
 namespace paxos { namespace detail { namespace quorum { 
-class quorum;
+class client_view;
 }; }; };
 
 namespace paxos { namespace detail { namespace client { namespace protocol {
@@ -40,10 +40,10 @@ public:
     */
    static void
    step1 (      
-      std::string const &       byte_array,
-      detail::quorum::quorum &  quorum,
-      callback_type             callback,
-      queue_guard_type          guard);
+      std::string const &               byte_array,
+      detail::quorum::client_view &     quorum,
+      callback_type                     callback,
+      queue_guard_type                  guard);
 
 private:   
 

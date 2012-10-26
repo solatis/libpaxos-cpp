@@ -12,20 +12,16 @@
 
 namespace paxos {
 
-client::client (
-   paxos::configuration configuration)
-   : client (io_thread_.io_service (),
-             configuration)
+client::client ()
+   : client (io_thread_.io_service ())
 {
    io_thread_.launch ();
 }
 
 client::client (
-   boost::asio::io_service &    io_service,
-   paxos::configuration         configuration)
+   boost::asio::io_service &    io_service)
    : io_service_ (io_service),
-     quorum_ (io_service,
-              configuration),
+     quorum_ (io_service),
      request_queue_ (
         []
         (detail::client::protocol::request const &                                              request,
@@ -198,6 +194,7 @@ client::do_request (
                   /*!
                     No errors occured, so we have an actual return value.
                    */
+                  PAXOS_DEBUG ("client setting promise response: " << response);
                   promise->set_value (response);
                }
             }
