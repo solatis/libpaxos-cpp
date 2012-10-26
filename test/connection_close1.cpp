@@ -31,10 +31,10 @@ public:
     */
    virtual void
    prepare (      
-      paxos::detail::tcp_connection_ptr leader_connection,
-      paxos::detail::command const &    command,
-      paxos::detail::quorum::quorum &   quorum,
-      paxos::detail::paxos_context &    state) 
+      paxos::detail::tcp_connection_ptr         leader_connection,
+      paxos::detail::command const &            command,
+      paxos::detail::quorum::server_view &      quorum,
+      paxos::detail::paxos_context &            state) 
 
       {
          leader_connection->socket ().close ();
