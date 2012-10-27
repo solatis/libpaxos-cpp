@@ -41,9 +41,11 @@ server_view::our_endpoint () const
 bool
 server_view::has_majority ()
 {
- return 
-    static_cast <double> (this->live_servers ().size ()) 
-    >= (static_cast <double> (servers_.size ()) * configuration_.majority_factor ());
+   PAXOS_DEBUG ("has_majority live_servers.size () = " << this->live_servers ().size () << ", servers_.size () = " << servers_.size ());
+
+   return
+      static_cast <double> (this->live_servers ().size ()) 
+      >= (static_cast <double> (servers_.size ()) * configuration_.majority_factor ());
 }
 
 boost::optional <boost::asio::ip::tcp::endpoint>
