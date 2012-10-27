@@ -108,20 +108,27 @@ int main ()
       PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::no_majority);
    }
 
+   /*!
+     Note that we're re-adding servers in reverse order here; this is to ensure that
+     server3 doesn't become our leader while it's lagging behind.
+    */
+   paxos::server server3 ("127.0.0.1", 1339, callback, configuration3);
+   server3.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   
+   PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::no_majority);
+
+   paxos::server server2 ("127.0.0.1", 1338, callback, configuration2);
+   server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
+   boost::this_thread::sleep (
+      boost::posix_time::milliseconds (
+         paxos::configuration ().timeout ()));
+
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+   PAXOS_ASSERT_EQ (client.send ("foo").get (), "bar");
+
    paxos::server server1 ("127.0.0.1", 1337, callback, configuration1);
    server1.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
-   PAXOS_ASSERT_THROW (client.send ("foo").get (), paxos::exception::no_majority);
-
-   /*!
-     Reconnects our server and waits long enough for connection establishment
-     to be retried.
-   */
-   paxos::server server2 ("127.0.0.1", 1338, callback, configuration2);
-   paxos::server server3 ("127.0.0.1", 1339, callback, configuration3);
-
-   server2.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
-   server3.add ({{"127.0.0.1", 1337}, {"127.0.0.1", 1338}, {"127.0.0.1", 1339}});
 
    boost::this_thread::sleep (
       boost::posix_time::milliseconds (
