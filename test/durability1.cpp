@@ -3,12 +3,11 @@
   a later stage it reconnects, it gets properly catched up.
  */
 
-#include <boost/filesystem.hpp>
 #include <boost/thread/mutex.hpp>
 
 #include <paxos++/client.hpp>
 #include <paxos++/server.hpp>
-#include <paxos++/durable/sqlite.hpp>
+#include <paxos++/durable/heap.hpp>
 #include <paxos++/detail/util/debug.hpp>
 
 bool
@@ -40,16 +39,16 @@ int main ()
    paxos::configuration configuration2;
    paxos::configuration configuration3;
 
-   boost::filesystem::remove ("server1.sqlite");
-   boost::filesystem::remove ("server2.sqlite");
-   boost::filesystem::remove ("server3.sqlite");
-
+   /*!
+     Note that the configuration objects below outlive the server objects declared later in
+     the test, thus providing semi-durable storage.
+    */
    configuration1.set_durable_storage (
-      new paxos::durable::sqlite ("server1.sqlite"));
+      new paxos::durable::heap ());
    configuration2.set_durable_storage (
-      new paxos::durable::sqlite ("server2.sqlite"));
+      new paxos::durable::heap ());
    configuration3.set_durable_storage (
-      new paxos::durable::sqlite ("server3.sqlite"));
+      new paxos::durable::heap ());
 
 
    paxos::server::callback_type callback = 
@@ -126,10 +125,6 @@ int main ()
       
    } while (all_responses_equal (responses, 3) == false);
 
-
-   boost::filesystem::remove ("server1.sqlite");
-   boost::filesystem::remove ("server2.sqlite");
-   boost::filesystem::remove ("server3.sqlite");
 
    PAXOS_INFO ("test succeeded");
 }
