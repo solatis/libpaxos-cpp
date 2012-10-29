@@ -5,6 +5,7 @@
 
 [include tutorial/basic_lock_service_server.qbk]
 [include tutorial/basic_lock_service_client.qbk]
+[include tutorial/durable_lock_service_server.qbk]
 
 [heading Basic introduction]
 
@@ -16,11 +17,9 @@ The tutorial programs in this section introduce the fundamental concepts require
 
 [heading A distributed lock service]
 
-The tutorial programs in this section implement a distributed locking service. [/The examples build up in complexity and eventually introduce to you a production-ready distributed lock service.]
+The tutorial programs in this section implement a distributed locking service. The examples build up in complexity and eventually introduce to you a production-ready distributed lock service.
 
 * [link libpaxos_cpp.tutorial.basic_lock_service_server Lock service.1 - Basic server]
 * [link libpaxos_cpp.tutorial.basic_lock_service_client Lock service.1 - Basic client]
-[/* [link libpaxos_cpp.tutorial.durable_lock_service_server Lock service.2 - Durable server]]
-[/* [link libpaxos_cpp.tutorial.durable_lock_service_client Lock service.2 - Durable client]]
 
 [endsect]
