@@ -13,6 +13,33 @@ namespace paxos { namespace durable {
 
 /*!
   \brief Provides durable paxos::server backend based on sqlite 
+  \note Requires the sqlite development headers to be installed, and libpaxos-cpp to be configured 
+        with --enable-sqlite support
+
+   This class provides a durable storage backend based on sqlite. It opens a specific database
+   file, handles input/output to that file and maintains a durable state. When a paxos::server 
+   is restarted using a previously used database file, it continues from the previous state.
+
+   \par Thread Safety
+   \e Distinct \e objects: Safe, as long as different database files are used\n
+   \e Shared \e objects: Unsafe\n
+
+   \par Examples
+
+   Set up a paxos::server that uses a sqlite database file called "db.sqlite". 
+
+   \code{.cpp}
+
+   paxos::configuration configuration;
+   configuration.set_durable_storage (new paxos::durable::sqlite ("db.sqlite"));
+   paxos::server server ("127.0.0.1", 1337,
+                         [] (std::string const & input) -> std::string
+                         {
+                             return input;
+                         },
+                         configuration);
+
+   \endcode
  */
 class sqlite : public storage
 {
@@ -20,7 +47,7 @@ public:
 
    /*!
      \brief Constructor
-     \param filename    Filename to use to look for database file
+     \param filename    Location where sqlite database is stored
     */
    sqlite (
       std::string const &       filename);

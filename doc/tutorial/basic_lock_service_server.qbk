@@ -1,0 +1,139 @@
+[section:basic_lock_service_server Lock service.1 - Basic server]
+
+This section builds upon the knowledge we acquired in the basic introduction, and introduces a first, real-world practical example of the paxos library: a distributed locking service. The service we will develop here will be an in-memory lock service, and the data will be volatile: once one of the servers is shut down, it will be impossible to recover.
+
+First, let's include the headers this example will use.
+
+  #include <set>
+  #include <vector>
+  #include <string>
+
+  #include <boost/algorithm/string.hpp>
+
+  #include <paxos++/server.hpp>
+  
+  int main ()
+  {
+
+We will associate a lock with an id and a state. A certain id is locked when it appears in a set, and unlocked if otherwise. Let's declare the container that holds these locks.
+
+  std::set <std::string> locks;
+
+Next, we will define the callback function that maintains these locks. It will accept a command with the following definition:
+
+  command       ::= action ' ' lock_id
+  action        ::= 'lock' | 'unlock'
+  lock_id       ::= string
+
+As you can see from this definition, we will need to split the string to separate the action from the lock id.
+
+     paxos::server::callback_type callback = 
+         [& locks](int64_t proposal_id, std::string const & command) -> std::string
+         {
+           std::vector <std::string> tokens;
+           boost::split (tokens, command, boost::is_any_of (" ")); 
+
+           std::string const & type    = tokens.at (0);
+           std::string const & lock_id = tokens.at (1);
+
+           if (type == "lock")
+           {
+             if (locks.find (lock_id) == locks.end ())
+             {
+               locks.insert (lock_id);
+               return "success";
+             }
+             else
+             {
+               return "fail";
+             }
+           }
+           else if (type == "unlock")
+           {
+             if (locks.find (lock_id) != locks.end ())
+             {
+               locks.erase (lock_id);
+               return "success";
+             }
+             else
+             {
+               return "fail";
+             }
+           }
+         };
+
+
+As you can see, this is a very crude example on how to perform different actions on different command inputs, and returns "success" or "fail" based on the state of the locks container.
+
+Next, all we need to do is the same thing we did in our first basic example, which is to launch our server and block until the server shuts down.
+
+
+    paxos::server server ("127.0.0.1", 1337, callback);
+    server.add ("127.0.0.1", 1337);
+
+    server.wait ();
+  }
+
+See the [link libpaxos_cpp.tutorial.basic_lock_service_server.a00001 full source listing]
+
+[section:a00001 Source listing for Basic server]
+
+  #include <set>
+  #include <vector>
+  #include <string>
+
+  #include <boost/algorithm/string.hpp>
+
+  #include <paxos++/server.hpp>
+
+  int main ()
+  {
+     std::set <std::string> locks;
+  
+     paxos::server::callback_type callback =
+        [& locks](int64_t proposal_id, std::string const & command) -> std::string
+        {
+           std::vector <std::string> tokens;
+           boost::split (tokens, command, boost::is_any_of (" "));
+  
+           std::string const & type    = tokens.at (0);
+           std::string const & lock_id = tokens.at (1);
+  
+           if (type == "lock")
+           {
+              if (locks.find (lock_id) == locks.end ())
+              {
+                 locks.insert (lock_id);
+                 return "success";
+              }
+              else
+              {
+                 return "fail";
+              }
+           }
+           else if (type == "unlock")
+           {
+              if (locks.find (lock_id) != locks.end ())
+              {
+                 locks.erase (lock_id);
+                 return "success";
+              }
+              else
+              {
+                 return "fail";
+              }
+           }
+  
+           // Unrecognized command type
+           return "fail";
+        };
+
+     paxos::server server ("127.0.0.1", 1337, callback);
+     server.add ("127.0.0.1", 1337);
+  
+     server.wait ();
+  }
+
+[endsect]
+
+[endsect]

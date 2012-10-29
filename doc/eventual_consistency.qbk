@@ -1,0 +1,49 @@
+[section Eventual consistency]
+
+The [@http://research.microsoft.com/apps/pubs/default.aspx?id=64631 Paxos protocol] defines the following safeness / liveness requirements:
+
+[:['["If value C has been proposed, then eventually learner L will learn some value]]]
+
+It is important to realize that this also applies to learners that are not available to the live quorum: if a learner is temporarily disconnected from the quorum, it will eventually learn of all values proposed to the quorum while it was disconnected. This implies some sort of eventual consistency mechanism must be in place to ensure this property of the algorithm is not violated.
+
+
+[heading Implementation]
+
+libpaxos-cpp implements an eventual consistency algorithm that meets this requirement. It maintains a history of all recently proposed values within the quorum. When a node is reconnected to the quorum after being temporarily disconnected, the library employs a catch-up mechanism to bring the node up-to-date with all the proposed values while the node was disconnected.
+
+[heading Durable history]
+
+This implementation implies some sort of durably stored history must be in place; otherwise, when all nodes crash over a certain period of time, there is no way to recover all nodes to the correct state. In fact, it is impossible to know which node has the most recent state.
+
+To tackle this problem, we implement a backend to store the (recent) history on a durable storage device. 
+
+[heading Application requirements]
+
+In normal operation, your application's model that processes the proposed values is always in the most recent, consistent state. But the state between the Paxos protocol and your application's state can get out of sync. Specifically, the following two common scenario's can cause this to happen:
+
+* the application crashes between processing the request in your application and storing the proposed value in the durable history; when the application recovers, the last value will be proposed by your application twice.
+* you need to connect a new node to the quorum; you copy the state from one node in your quorum to the new node, but the Paxos library thinks you need to recover from a long history and multiple proposed values are re-processed by your application.
+
+To solve this issue of inconsistency within your application, we provide you with the "proposal_id" of a proposed value to your application's processing function. This proposal_id can be considered as a version number, and will always increment by 1. By associating your application's state with the most recent proposal_id it has received, you can determine whether you need to apply a certain operation or not. 
+
+For example, your processing function might look something like this:
+
+  std::string
+  callback (
+    int64_t proposal_id,
+    std::string const & value)
+    {
+      if (model.proposal_version () < proposal_id)
+      {
+        model.process (proposal_id,
+                       value);
+      }
+
+      assert (model.proposal_version () == proposal_id);
+    }
+
+This will ensure that, in case a certain value is accidentally processed twice, your model remains in a consistent state.
+
+For a more elaborate example on how to implement this correctly, see [link libpaxos_cpp.tutorial the tutorial section].
+
+[endsect]

@@ -29,35 +29,6 @@ namespace paxos {
   servers inside the quorum. It can be elected as a leader, and automatically handles failover
   in case another leader fails.
 
-  \par Callback function
-
-  When you set up a Paxos quorum, you can send one command from a paxos::client, and have that same
-  command arrive at all the paxos::server instances within the quorum. Your ultimate intention is the 
-  process that command at all the servers and return a return value from all your servers to the client.
-  
-  This means that you need to be able to hook a processing function inside the servers. We do
-  this by providing a callback function to the servers, with the following signature:
-  
-  \code{.cpp}
-  std::string callback (std::string const & message);
-  \endcode
-  
-  As you can see the callback function accepts a string, which is the message that is sent from
-  the client, and returns a string, which is the output that should be returned to the client.
-  Note that, although we use a std::string as the data type that holds the message, this data
-  is binary safe. A std::string is used more as a convenience since most data serialization
-  libraries allow one to directly generate a std::string representation of the data.
-  
-  \e Requirements \n
-  The callback function has several requirements: 
-
-  \li It should return the same result for the same message processed at all the different servers. 
-      In other words, if server1 replies to a message "foo" with result "bar", server2 must reply with 
-      the same result "bar". If not, a paxos::exception::inconsistent_response exception is thrown at 
-      the client.
-
-  \li It should never throw an exception. If an exception is thrown, the Paxos instance will
-      abort the program.
   
 
   \par Thread Safety
@@ -72,7 +43,7 @@ namespace paxos {
   \code{.cpp}
 
   paxos::server server ("127.0.0.1", 1337,
-                        [] (std::string const & input) -> std::string
+                        [] (int64_t proposal_id, std::string const & input) -> std::string
                         {
                             return input;
                         });
@@ -85,7 +56,7 @@ namespace paxos {
 
   \code{.cpp}
   
-  paxos::server::callback_type callback = [] (std::string const & input) -> std::string
+  paxos::server::callback_type callback = [] (int64_t proposal_id, std::string const & input) -> std::string
                                           {
                                              return output;
                                           });
@@ -118,9 +89,45 @@ class server
 public:
 
    /*!
-     \brief Callback function
+     \brief Callback function that is passed to the paxos::server constructor
+     \param proposal_id Uniquely identifies the current proposal. This number is guaranteed to increment
+                        between succeeding calls to this function and can be regarded as a form of a
+                        version number. For more information on why this parameter is passed and what you
+                        can do with it, see the [link libpaxos_cpp.eventual_consistency documentation 
+                        about eventual consistency].
+
+     \param message The message that is sent from the client. Note that, although we use a std::string as 
+                    the data type that holds the message, this data is binary safe. A std::string is used more 
+                    as a convenience since most data serialization libraries allow one to directly generate 
+                    a std::string representation of the data.
+
+     \returns The output that should be returned to the client.
+                    
+     When you set up a Paxos quorum, you can send one command from a paxos::client, and have that same
+     command arrive at all the paxos::server instances within the quorum. Your ultimate intention is the 
+     process that command at all the servers and return a return value from all your servers to the client.
+  
+     This means that you need to be able to hook a processing function inside the servers. We do
+     this by providing a callback function to the servers, with the following signature:
+  
+     \code{.cpp}
+     std::string callback (int64_t proposal_id, std::string const & message);
+     \endcode
+
+  
+     \par Requirements
+     The callback function has several requirements: 
+
+     \li It should return the same result for the same message processed at all the different servers. 
+     In other words, if server1 replies to a message "foo" with result "bar", server2 must reply with 
+     the same result "bar". If not, a paxos::exception::inconsistent_response exception is thrown at 
+     the client.
+
+     \li It should never throw an exception. If an exception is thrown, the Paxos instance will
+     abort the program.
+
    */
-   typedef detail::paxos_context::processor_type  callback_type;
+   typedef boost::function <std::string (int64_t proposal_id, std::string const & message)> callback_type;
 
 public:
 

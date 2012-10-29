@@ -10,10 +10,11 @@ From the high-level library's point of view, a Paxos server is responsible for p
 
 First, we will define a callback for our server. The callback is essentially the way the paxos library interface communicates with your backend: it will provide you with the input message received from the client, you process the message and generate an output message which is sent back to the client.
 
-In our example, we are going to keep it simple and define a callback function which only replies with "bar". Note that this uses the C++11 lambda interface to define the callback, but any function that accepts a string and responds with a string can be used.
+In our example, we are going to keep it simple and define a callback function which only replies with "bar". Note that this uses the C++11 lambda interface to define the callback, but any function that accepts a proposal_id, a string and responds with a string can be used.
+
 
      paxos::server::callback_type callback = 
-         [](std::string const &) -> std::string
+         [](int64_t proposal_id, std::string const &) -> std::string
          {
              return "bar";
          });
@@ -30,7 +31,7 @@ Now, in this example of a server of one quorum this might look a bit redundant, 
 
 And now call .wait () on the server to ensure our application does not exit until the internal worker thread has stopped (which should never happen).
 
-    server.wait ();  
+    server.wait ();
   }
 
 See the [link libpaxos_cpp.tutorial.basic_server.a00001 full source listing]
@@ -45,13 +46,13 @@ For more in-depth information and complex examples on how to setup a server in d
   int main ()
   {
      paxos::server server ("127.0.0.1", 1337,                           
-                           [](std::string const &) -> std::string
+                           [](int64_t proposal_id, std::string const &) -> std::string
                            {
                               return "bar";
                            });
   
      server.add ("127.0.0.1", 1337);
-     server.wait ()
+     server.wait ();
   }
 
 [endsect]

@@ -466,18 +466,7 @@
 
 <xsl:template name="escape-text">
   <xsl:param name="text"/>
-  <xsl:choose>
-    <xsl:when test="contains($text, '_')">
-      <xsl:value-of select="substring-before($text, '_')"/>
-      <xsl:text>\_</xsl:text>
-      <xsl:call-template name="escape-text">
-        <xsl:with-param name="text" select="substring-after($text, '_')"/>
-      </xsl:call-template>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:value-of select="$text"/>
-    </xsl:otherwise>
-  </xsl:choose>
+  <xsl:value-of select="$text"/>
 </xsl:template>
 
 

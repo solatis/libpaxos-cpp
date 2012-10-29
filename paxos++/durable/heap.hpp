@@ -10,6 +10,18 @@
 namespace paxos { namespace durable {
 /*!
   \brief Provides (non-)durable paxos::server backend based on RAM storage
+
+  This class provides a non-durable storage backend based on RAM usage. It is intended for
+  applications that either have a large enough quorum to ensure that at least one paxos::server
+  instance will always be available, or do not care about the durability of the operations
+  executed on the quorum.
+
+  This is the default storage backend provided by the paxos::configuration class.
+
+  \par Thread Safety
+  \e Distinct \e objects: Safe \n
+  \e Shared \e objects: Unsafe \n
+
  */
 class heap : public storage
 {

@@ -1,5 +1,13 @@
 [section Revision history]
 
+[heading libpaxos-cpp 0.6.0]
+Releasing version 0.6.0 of libpaxos-cpp, which implements:
+
+* eventual consistency for the learners inside the quorum;
+* a durable storage backend for the acceptors inside the quorum.
+
+This feature release allows a learner to be temporarily shut down or disconnected from the quorum, and automatically catch up with the rest of the quorum upon reconnection.
+
 [heading libpaxos-cpp 0.5.1]
 Bugfix release which fixes two important bugs:
 

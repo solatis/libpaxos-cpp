@@ -11,7 +11,7 @@
         (See accompanying file COPYING or copy at
             [@http://opensource.org/licenses/BSD-3-Clause])
     ]
-    [version 0.5.1]
+    [version 0.6.0]
 ]
 
 [template indexterm1[term1] '''<indexterm><primary>'''[term1]'''</primary></indexterm>''']
@@ -19,6 +19,7 @@
 
 [include getting_started.qbk]
 [include tutorial.qbk]
+[include eventual_consistency.qbk]
 [include reference.qbk]
 [include revision_history.qbk]
 
@@ -28,13 +29,16 @@ libpaxos-cpp is a C++ implementation of the Paxos distributed consensus protocol
 
 * Completely asynchronous, based on Boost.Asio;
 * Automated leader election, based on Chang and Roberts' algorithm;
+* Eventual consistency: a temporarely disconnected node is automatically recovered using a catch-up algorithm;
+* Durable storage backend for the eventual consistency based on [@http://sqlite.org/ SQLite];
 * Uses modern C++11 standards
 * All guarantees that the Paxos protocol provides are provided by this library.
 
 Of course, there are a few limitations and assumptions:
 
 * The network is secure: everyone that is able to communicate with the libpaxos-cpp processes are trusted;
-* At the moment, it only implements the Basic Paxos protocol, Fast Paxos and Multi Paxos are scheduled for futurue releases.
+* There are no weird routing issues inside the quorum;
+* At the moment, it only implements the Basic Paxos protocol, Multi Paxos is scheduled for a future release.
 
 [heading Support]
 

@@ -9,12 +9,13 @@
 -->
 
 <informaltable frame="all">
-  <tgroup cols="2">
+  <tgroup cols="3">
     <colspec colname="a"/>
     <colspec colname="b"/>
+    <colspec colname="c"/>
     <thead>
       <row>
-        <entry valign="center" namest="a" nameend="b">
+        <entry valign="center" namest="a" nameend="c">
           <bridgehead renderas="sect2">Paxos</bridgehead>
         </entry>
       </row>
@@ -27,6 +28,13 @@
             <member><link linkend="libpaxos_cpp.reference.client">client</link></member>
             <member><link linkend="libpaxos_cpp.reference.configuration">configuration</link></member>
             <member><link linkend="libpaxos_cpp.reference.server">server</link></member>
+          </simplelist>
+        </entry>
+        <entry valign="top">
+          <bridgehead renderas="sect3">Durable storage</bridgehead>
+          <simplelist type="vert" columns="1">
+            <member><link linkend="libpaxos_cpp.reference.durable__heap">heap</link></member>
+            <member><link linkend="libpaxos_cpp.reference.durable__sqlite">sqlite</link></member>
           </simplelist>
         </entry>
         <entry valign="top">

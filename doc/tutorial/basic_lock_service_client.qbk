@@ -1,0 +1,68 @@
+[section:basic_lock_service_client Lock service.1 - Basic client]
+
+This section describes the client that connects to our distributed lock service's server. It describes a trivial client that executes a few lock commands and verifies the correct result.
+
+First, let's include our headers and define the client object.
+
+  #include <paxos++/client.hpp>
+  
+  int main ()
+  {
+     paxos::client client;
+     client.add ("127.0.0.1", 1337);
+
+Now that we have this client, let's attempt to lock the lock with id "foo" and verify that it results in the proper command:
+
+  assert (client.send ("lock foo").get () == "success");
+
+Now, let's try to re-acquire this lock and expect a failure:
+
+  assert (client.send ("lock foo").get () == "fail");
+
+However, acquiring a lock with another id should succeed:
+
+  assert (client.send ("lock bar").get () == "success");
+
+And re-acquiring that lock should fail:
+
+  assert (client.send ("lock bar").get () == "fail");
+
+Now, let's release both locks and verify it succeeds:
+
+  assert (client.send ("unlock foo").get () == "success");
+  assert (client.send ("unlock bar").get () == "success");
+
+And verify re-releasing those locks fails:
+
+  assert (client.send ("unlock foo").get () == "fail");
+  assert (client.send ("unlock bar").get () == "fail");
+
+
+
+See the [link libpaxos_cpp.tutorial.basic_lock_service_client.a00001 full source listing]
+
+[section:a00001 Source listing for Basic client]
+
+  #include <paxos++/client.hpp>
+  
+  int main ()
+  {
+     paxos::client client;
+     client.add ("127.0.0.1", 1337);
+  
+     assert (client.send ("lock foo").get () == "success");
+     assert (client.send ("lock foo").get () == "fail");
+  
+     assert (client.send ("lock bar").get () == "success");
+     assert (client.send ("lock bar").get () == "fail");   
+  
+     assert (client.send ("unlock foo").get () == "success");
+     assert (client.send ("unlock bar").get () == "success");
+  
+     assert (client.send ("unlock foo").get () == "fail");
+     assert (client.send ("unlock bar").get () == "fail");
+  }
+
+[endsect]
+
+[endsect]

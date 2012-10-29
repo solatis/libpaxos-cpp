@@ -28,6 +28,17 @@ public:
 
    /*!
      \brief Stores an accepted value
+     \param proposal_id The id of the proposal to store
+     \param byte_array  The value that is associated with the proposal
+
+     \par Preconditions
+     
+     highest_proposal_id () == (proposal_id - 1)
+
+     \par Postconditions
+
+     highest_proposal_id () == proposal_id
+
     */
    virtual void
    store (

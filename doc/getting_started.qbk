@@ -6,7 +6,7 @@
 
 You can get the latest prepackaged distribution online:
 
-* [@http://www.leonmergen.com/downloads/libpaxos-cpp-0.5.1.tar.gz]
+* [@http://www.leonmergen.com/downloads/libpaxos-cpp-0.6.0.tar.gz]
 
 Alternatively, you can [@http://www.leonmergen.com/downloads/ browse older releases].
 
@@ -36,9 +36,11 @@ libpaxos-cpp follows the normal autotools flow of installing libraries:
   wget http://www.leonmergen.com/download/libpaxos-cpp-VERSION.tar.gz
   tar -xzf libpaxos-cpp-VERSION.tar.gz
   cd libpaxos-cpp-VERSION
-  ./configure
+  ./configure --enable-sqlite
   make
   make check
   make install
+
+You can optionally choose to not --enable-sqlite, although that means the [link libpaxos_cpp.eventual_consistency eventual consistency properties] of libpaxos-cpp are lost.
 
 [endsect]

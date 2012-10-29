@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([libpaxos-cpp], [0.5.1], http://wwww.leonmergen.com/libpaxos-cpp/)
+AC_INIT([libpaxos-cpp], [0.6.0], http://wwww.leonmergen.com/libpaxos-cpp/)
 AC_CONFIG_SRCDIR([paxos++/server.hpp])
 AC_CONFIG_HEADER([config.h])
 
@@ -67,5 +67,5 @@ AC_PROG_CXX
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
-AC_CONFIG_FILES([Makefile paxos++/Makefile test/Makefile])
+AC_CONFIG_FILES([Makefile paxos++/Makefile examples/Makefile examples/introduction_1/Makefile examples/lock_service_1/Makefile test/Makefile])
 AC_OUTPUT

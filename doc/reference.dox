@@ -21,7 +21,7 @@ SHORT_NAMES            = NO
 JAVADOC_AUTOBRIEF      = NO
 MULTILINE_CPP_IS_BRIEF = YES
 DETAILS_AT_TOP         = YES
-INHERIT_DOCS           = NO
+INHERIT_DOCS           = YES
 SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 2
 ALIASES                = 
@@ -75,6 +75,9 @@ WARN_LOGFILE           =
 INPUT                  = ./../paxos++/client.hpp \
                          ./../paxos++/configuration.hpp \
                          ./../paxos++/server.hpp \
+                         ./../paxos++/durable/heap.hpp \
+                         ./../paxos++/durable/storage.hpp \
+                         ./../paxos++/durable/sqlite.hpp \
                          ./../paxos++/exception/exception.hpp
 
 FILE_PATTERNS          = 
