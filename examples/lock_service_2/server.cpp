@@ -1,12 +1,11 @@
-#include <set>
 #include <vector>
 #include <string>
-
-#include <iostream>
 
 #include <boost/algorithm/string.hpp>
 
 #include <paxos++/server.hpp>
+#include <paxos++/configuration.hpp>
+#include <paxos++/durable/sqlite.hpp>
 
 #include "datastore.hpp"
 
@@ -23,7 +22,6 @@ int main ()
               This is a catchup which accidentally re-applies an already applied
               operation.
             */
-            std::cerr << "skipping proposal id: " << proposal_id << std::endl;
             return "success";
          }
 
@@ -64,7 +62,13 @@ int main ()
          return "fail";
       };
 
-   paxos::server server ("127.0.0.1", 1337, callback);
+
+   paxos::configuration configuration;
+
+   configuration.set_durable_storage (
+      new paxos::durable::sqlite ("paxos.sqlite"));
+
+   paxos::server server ("127.0.0.1", 1337, callback, configuration);
    server.add ("127.0.0.1", 1337);
 
    server.wait ();

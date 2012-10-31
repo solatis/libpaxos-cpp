@@ -21,5 +21,6 @@ The tutorial programs in this section implement a distributed locking service. T
 
 * [link libpaxos_cpp.tutorial.basic_lock_service_server Lock service.1 - Basic server]
 * [link libpaxos_cpp.tutorial.basic_lock_service_client Lock service.1 - Basic client]
+* [link libpaxos_cpp.tutorial.durable_lock_service_server Lock service.2 - Durable server]
 
 [endsect]

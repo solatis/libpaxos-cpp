@@ -41,7 +41,6 @@ private:
 
 private:
 
-   std::string  filename_;
    sqlite3 *    db_;
 };
 

@@ -649,7 +649,7 @@
 <xsl:choose>
   <xsl:when test="count(name) &gt; 0">
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="name"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="name"/>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="name"/>]]
     [<xsl:call-template name="escape-name"><xsl:with-param name="text" select="briefdescription"/></xsl:call-template>]
   </xsl:when>
   <xsl:otherwise>
@@ -670,7 +670,7 @@
     </xsl:variable>
     <xsl:variable name="type-ref-id" select="@refid"/>
     [[link libpaxos_cpp.reference.<xsl:value-of select="$type-id"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="$unqualified-type-name"/>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="$unqualified-type-name"/>]]
     [<xsl:value-of select="(/doxygen//compounddef[@id=$type-ref-id])[1]/briefdescription"/>]
   </xsl:otherwise>
 </xsl:choose>
@@ -714,7 +714,7 @@
   <xsl:if test="$overload-position = 1">
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="$id"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="$escaped-name"/><xsl:text>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="$escaped-name"/><xsl:text>]]
     [</xsl:text><xsl:value-of select="briefdescription"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
@@ -762,7 +762,7 @@
   <xsl:if test="$overload-position = 1">
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="$id"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="$name"/><xsl:text>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="$name"/><xsl:text>]]
     [</xsl:text><xsl:value-of select="briefdescription"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
@@ -811,7 +811,7 @@
   <xsl:if test="$overload-position = 1">
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="$id"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="$name"/><xsl:text>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="$name"/><xsl:text>]]
     [</xsl:text><xsl:value-of select="briefdescription"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
@@ -838,7 +838,7 @@
   <xsl:sort select="name"/>
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="name"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="name"/>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="name"/>]]
     [<xsl:value-of select="briefdescription"/>]
   ]
 </xsl:for-each>
@@ -853,7 +853,7 @@
   <xsl:sort select="name"/>
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="name"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="name"/>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="name"/>]]
     [<xsl:value-of select="briefdescription"/>]
   ]
 </xsl:for-each>
@@ -890,7 +890,7 @@
   <xsl:if test="$overload-position = 1">
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="$id"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="$name"/><xsl:text>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="$name"/><xsl:text>]]
     [</xsl:text><xsl:value-of select="briefdescription"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">
@@ -938,7 +938,7 @@
   <xsl:if test="$overload-position = 1">
   [
     [[link libpaxos_cpp.reference.<xsl:value-of select="$class-id"/>.<xsl:value-of select="$id"/>
-      <xsl:text> </xsl:text>[*<xsl:value-of select="$name"/><xsl:text>]]]
+      <xsl:text> </xsl:text><xsl:value-of select="$name"/><xsl:text>]]
     [</xsl:text><xsl:value-of select="briefdescription"/>
   </xsl:if>
   <xsl:if test="not($overload-position = 1) and not(briefdescription = preceding-sibling::*/briefdescription)">

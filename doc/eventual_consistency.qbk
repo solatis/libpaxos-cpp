@@ -4,7 +4,7 @@ The [@http://research.microsoft.com/apps/pubs/default.aspx?id=64631 Paxos protoc
 
 [:['["If value C has been proposed, then eventually learner L will learn some value]]]
 
-It is important to realize that this also applies to learners that are not available to the live quorum: if a learner is temporarily disconnected from the quorum, it will eventually learn of all values proposed to the quorum while it was disconnected. This implies some sort of eventual consistency mechanism must be in place to ensure this property of the algorithm is not violated.
+It is important to realize that this also applies to learners that are not available to the live quorum: if a learner is temporarily disconnected from the quorum, it will eventually have to learn of all values proposed to the quorum while it was disconnected. This implies some sort of eventual consistency mechanism must be in place to ensure this property of the algorithm is not violated.
 
 
 [heading Implementation]
@@ -19,10 +19,14 @@ To tackle this problem, we implement a backend to store the (recent) history on 
 
 [heading Application requirements]
 
-In normal operation, your application's model that processes the proposed values is always in the most recent, consistent state. But the state between the Paxos protocol and your application's state can get out of sync. Specifically, the following two common scenario's can cause this to happen:
+In normal operation, your application's model that processes the proposed values is always in the most recent, consistent state. But the state between the Paxos protocol and your application's state can get out of sync. Specifically, there are two things that happen when a Paxos request is accepted at a server:
 
-* the application crashes between processing the request in your application and storing the proposed value in the durable history; when the application recovers, the last value will be proposed by your application twice.
-* you need to connect a new node to the quorum; you copy the state from one node in your quorum to the new node, but the Paxos library thinks you need to recover from a long history and multiple proposed values are re-processed by your application.
+# your application processes the proposal and alters its state;
+# libpaxos-cpp stores the proposal in the durable log history and marks the proposal as processed.
+
+If the application crashes in between these two actions, the Paxos state and your application's state go out of sync. This is a rare situation to occur, but it does need to be accounted for.
+
+[h5 Proposal id]
 
 To solve this issue of inconsistency within your application, we provide you with the "proposal_id" of a proposed value to your application's processing function. This proposal_id can be considered as a version number, and will always increment by 1. By associating your application's state with the most recent proposal_id it has received, you can determine whether you need to apply a certain operation or not. 
 
@@ -44,6 +48,43 @@ For example, your processing function might look something like this:
 
 This will ensure that, in case a certain value is accidentally processed twice, your model remains in a consistent state.
 
-For a more elaborate example on how to implement this correctly, see [link libpaxos_cpp.tutorial the tutorial section].
+[important You are free to ignore the proposal id. However, if you choose to do so, it is important to realize that whenever your application experiences an unclean shutdown, it is impossible for libpaxos-cpp to guarantee your application's state and the state of the durable log history are in sync. In that case, you must always completely re-sync from a node that cleanly shut down. Therefore, it is recommended that you take the effort to implement this correctly.]
+
+For a more elaborate example on how to implement this correctly, see the [link libpaxos_cpp.tutorial.durable_lock_service_server durable lock service tutorial].
+
+
+[heading Adding a new server]
+
+Adding a new server to the quorum without shutting down the entire quorum can be tricky. Consider these facts:
+
+* the quorum will only have a history of recently proposed values, and as such is unable to sync an empty node's state from scratch;
+* even if it would keep a history of everything since the first launch of the quorum, re-playing such a long log history can take ages.
+
+It would be easier if you could just copy an existing node's state and use that as a base for the new node. And this is exactly the steps we recommend.
+
+On the existing server:
+
+  user@server1 $ killall -SIGTERM application
+  user@server1 $ scp ./application.data user@server2:/home/user/application.data
+  user@server1 $ ./application
+
+On the new server:
+
+  user@server2 $ ./application
+
+Note that we completely discard the entire history of Paxos logs. This will make the Paxos library send the new server [*all] the recent history. If this is not what you want, you should copy the Paxos state along with your application state.
+
+On the existing server:
+
+  user@server1 $ killall -SIGTERM application
+  user@server1 $ scp ./application.data user@server2:/home/user/application.data
+  user@server1 $ scp ./paxos.sqlite user@server2:/home/user/paxos.sqlite
+  user@server1 $ ./application
+
+On the new server:
+
+  user@server2 $ ./application
+
+This, of course, assumes you use the [link libpaxos_cpp.reference.durable__sqlite sqlite durable storage backend] with the filename "paxos.sqlite".
 
 [endsect]

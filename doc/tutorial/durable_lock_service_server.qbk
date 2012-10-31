@@ -1,11 +1,13 @@
-[section:durable_lock_service_server Lock service.1 - Durable server]
+[section:durable_lock_service_server Lock service.2 - Durable server]
 
-See the [link libpaxos_cpp.tutorial.durable_lock_service_server.a00001 full source listing]
+In the previous example we built a [link libpaxos_cpp.tutorial.basic_lock_service_server lock service server] and client. There was one severe limitation about this lock service, though: it will not survive a shutdown or crash of the quorum. 
 
-[section:a00001 Source listing for Durable server]
+In this section we will improve the lock service to be able to survive a crash and complete our full production-ready distributed locking service. The example describes three separate files: server.cpp, datastore.hpp and datastore.cpp. We will discuss the implementation of each file below.
 
 
 [heading server.cpp]
+
+This file is similar to the server we implemented in the previous example, but will not manage the locks itself anymore; instead, it will store and retrieve the locks using an external datastore. First, let's define our includes again.
 
   #include <vector>
   #include <string>
@@ -13,66 +15,516 @@ See the [link libpaxos_cpp.tutorial.durable_lock_service_server.a00001 full sour
   #include <boost/algorithm/string.hpp>
   
   #include <paxos++/server.hpp>
+  #include <paxos++/configuration.hpp>
+  #include <paxos++/durable/sqlite.hpp>
   
   #include "datastore.hpp"
   
   int main ()
   {
-     datastore store;
+    datastore store;
   
-     paxos::server::callback_type callback =
-        [& store](int64_t proposal_id, std::string const & command) -> std::string
-        {
-           if (proposal_id < store.most_recent_proposal_id ())
-           {
-              /*! 
-                This is a catchup which accidentally re-applies an already applied
-                operation.
-              */
-              return "success";
-           }
+
+As you can see, we include and define a datastore in our main function: this datastore will be our interface to the current state of our application.
+
+Next, we will define our callback function. For clarity, we will describe this function in several parts.
+
+    paxos::server::callback_type callback =
+       [& store](int64_t proposal_id, std::string const & command) -> std::string
+       {
+          if (proposal_id < store.most_recent_proposal_id ())
+          {
+             return "success";
+          }
+
+As you can see above, the first thing we do is compare the incoming proposal id with the proposal id of the value we receive. In some situations, it's possible that we receive a value already processed by our application; this code ensures that we determine whether this is the case, and ignore the command if so. For more information on why this is, see the documentation about [link libpaxos_cpp.eventual_consistency eventual consistency].
+
+Next, we will define the rest of our callback function. This is very similar to our first lock service and uses the same protocol, but instead of maintaining the locks itself, it forwards this logic to our datastore.
+
+          std::vector <std::string> tokens;
+          boost::split (tokens, command, boost::is_any_of (" "));
   
-           std::vector <std::string> tokens;
-           boost::split (tokens, command, boost::is_any_of (" "));
+          std::string const & type    = tokens.at (0);
+          std::string const & lock_id = tokens.at (1);
   
-           std::string const & type    = tokens.at (0);
-           std::string const & lock_id = tokens.at (1);
+          if (type == "lock")
+          {
+             if (store.has_lock (lock_id) == false)
+             {
+                store.acquire_lock (proposal_id,
+                                    lock_id);
+                return "success";
+             }
+             else
+             {
+                return "fail";
+             }
+          }
+          else if (type == "unlock")
+          {
+             if (store.has_lock (lock_id) == true)
+             {
+                store.release_lock (proposal_id,
+                                    lock_id);
+                return "success";
+             }
+             else
+             {
+                return "fail";
+             }
+          }
   
-           if (type == "lock")
-           {
-              if (store.has_lock (lock_id) == false)
-              {
-                 store.acquire_lock (proposal_id,
-                                     lock_id);
-                 return "success";
-              }
-              else
-              {
-                 return "fail";
-              }
-           }
-           else if (type == "unlock")
-           {
-              if (store.has_lock (lock_id) == true)
-              {
-                 store.release_lock (proposal_id,
-                                     lock_id);
-                 return "success";
-              }
-              else
-              {
-                 return "fail";
-              }
-           }
+          return "fail";
+       };
+
+Now that we have defined our callback function, it is time to define our paxos server. Since we're building a durable server here, we will also provide a durable storage of the log history. Once again, for more information about this, see the documentation about [link libpaxos_cpp.eventual_consistency eventual consistency].
+
+    paxos::configuration configuration;
   
-           // Unrecognized command type
-           return "fail";
-        };
+    configuration.set_durable_storage (
+       new paxos::durable::sqlite ("paxos.sqlite"));
+
+As you can see, we now have a configuration that provides a durable paxos history based on sqlite, which will be stored in paxos.sqlite. We're now ready to start our server and ensure our server uses the configuration we just declared.
   
-     paxos::server server ("127.0.0.1", 1337, callback);
-     server.add ("127.0.0.1", 1337);
+    paxos::server server ("127.0.0.1", 1337, callback, configuration);
+    server.add ("127.0.0.1", 1337);
   
-     server.wait ();
+    server.wait ();
+  }
+
+And with this, our server defintion is done. It's now time to implement our datastore.
+
+[heading datastore.hpp]
+
+The interface to our datastore is pretty simple. In the previous section you have already seen a few functions we use, we will describe their responsibilities below.
+
+First, let's include some headers. Note that we will be using sqlite as our persistent data store here.
+
+  #ifndef DATASTORE_HPP
+  #define DATASTORE_HPP
+  
+  #include <stdint.h>
+  #include <string>
+  
+  #include <sqlite3.h>
+  
+  class datastore
+  {
+  public:
+
+
+We need a constructor which sets up our sqlite connection, and a destructor which closes it.
+  
+     datastore ();
+     ~datastore ();
+
+You could see in server.cpp that we require to know the most recent proposal id from our datastore, to know the latest "version" of the data stored in our datastore.
+  
+     int64_t
+     most_recent_proposal_id ();
+
+
+We need a function that determines whether a lock is currently acquired or not.
+  
+     bool
+     has_lock (
+        std::string const &       lock_id);
+
+We need a function that acquires a lock. Note that, since this is an operation that changes the state of our data, we also write the latest proposal id along with it.
+  
+     void
+     acquire_lock (
+        int64_t                   proposal_id,
+        std::string const &       lock_id);
+
+
+We need a function that releases a lock. Once again, the proposal id is written along with it.
+  
+     void
+     release_lock (
+        int64_t                   proposal_id,
+        std::string const &       lock_id);
+
+
+Now we define a few private member functions which are used to initially setup our tables.
+  
+  private:  
+  
+     bool
+     has_table ();
+
+     void
+     create_tables ();
+  
+And finally, we use a single member variable which describes our sqlite state.
+
+  private:
+  
+     sqlite3 *    db_;
+  };
+  
+  #endif
+
+[heading datastore.cpp]
+
+This class implements the actual communications with our SQLite backend. Note that a lot of this code is just SQLite crud and has very little relevance to libpaxos-cpp, but we provide this implementation for you to illustrate the way you can (and should) associate a proposal id with the state of your data.
+
+First of all, let's include some headers and define our constructor.
+
+  #include <iostream>
+  #include <assert.h>
+  
+  #include <boost/lexical_cast.hpp>
+  
+  #include "datastore.hpp"
+  
+  datastore::datastore ()
+  {
+
+Now, we're going to open the database "locks.db" where the lock state of our distributed lock service is stored.
+
+     assert (sqlite3_open ("locks.sqlite", &db_) == SQLITE_OK);
+     assert (db_ != NULL);
+  
+Now, if this is the first time this application is ran, we must create our database tables.
+
+     if (this->has_table () == false)
+     {
+        this->create_tables ();
+     }
+  }
+
+Let's define our destructor. All it needs to do is cleanly shut down our database.
+
+  datastore::~datastore ()
+  {
+     assert (sqlite3_close (db_) == SQLITE_OK);
+  }
+
+We are going to define our has_table () function. It looks in the sqlite_master table to detect whether our tables already exist or not and returns the correct boolean value.
+
+  bool
+  datastore::has_table ()
+  {
+     std::string query = 
+        "SELECT "
+        "  COUNT (*) "
+        "FROM "
+        "  sqlite_master "
+        "WHERE "
+        "  type = 'table' "
+        "  AND (name = 'locks' OR name = 'proposal_id')";
+  
+     sqlite3_stmt * prepared_statement = 0;
+     assert (sqlite3_prepare (db_,
+                              query.c_str (),
+                              query.length (),
+                              &prepared_statement,
+                              NULL) == SQLITE_OK);
+  
+     int64_t result = 0;
+  
+     while (sqlite3_step (prepared_statement) == SQLITE_ROW)
+     {
+        assert (result == 0);
+        assert (sqlite3_column_count (prepared_statement) == 1);
+  
+        result = sqlite3_column_int64 (prepared_statement, 0);
+     }
+  
+     assert (sqlite3_finalize (prepared_statement) == SQLITE_OK);
+  
+     return result == 2;
+  }
+
+Now, we're going to define our create_tables () function.
+
+  void
+  datastore::create_tables ()
+  {
+
+We have a "locks" table which only stores a lock id. If a lock is in the table, the lock is acquired, if not, the lock is currently released.
+
+     assert (
+        sqlite3_exec (db_,
+                      "CREATE TABLE locks ("
+                      "  id TEXT PRIMARY KEY ASC) ",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+
+Create our table where we will store our proposal id. It will only contain a single row with our proposal id in it.
+  
+     assert (
+        sqlite3_exec (db_,
+                      "CREATE TABLE proposal_id ("
+                      "  id INTEGER PRIMARY KEY ASC) ",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+
+And initialize our proposal id with a default value of 0.
+  
+     assert (
+        sqlite3_exec (db_,
+                      "INSERT INTO proposal_id VALUES (0)",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+  }
+
+
+We are going to define our most_recent_proposal_id () function. All it does is select our proposal id from the proposal_id table and return it. It also verifies that there always is exactly one row.
+
+  int64_t
+  datastore::most_recent_proposal_id ()
+  {
+     std::string query = 
+        "SELECT "
+        "  id "
+        "FROM "
+        "  proposal_id ";
+  
+     sqlite3_stmt * prepared_statement = 0;
+     assert (sqlite3_prepare (db_,
+                              query.c_str (),
+                              query.length (),
+                              &prepared_statement,
+                              NULL) == SQLITE_OK);
+  
+  
+     int64_t proposal_id = -1;
+  
+     while (sqlite3_step (prepared_statement) == SQLITE_ROW)
+     {
+        assert (proposal_id == -1);
+        assert (sqlite3_column_count (prepared_statement) == 1);
+  
+        proposal_id = sqlite3_column_int64 (prepared_statement, 0);
+     }
+  
+     assert (sqlite3_finalize (prepared_statement) == SQLITE_OK);   
+  
+     return proposal_id;
+  }
+
+
+We are going to define our has_lock function. It counts the amount of times our lock appears in our locks table. If there is exactly one lock, it returns true, otherwise it returns false.
+
+  bool
+  datastore::has_lock (
+     std::string const &  lock_id)
+  {
+     std::string query = 
+        "SELECT "
+        "  COUNT (*) "
+        "FROM "
+        "  locks "
+        "WHERE "
+        "  id = '" + lock_id + "'";
+  
+     sqlite3_stmt * prepared_statement = 0;
+     assert (sqlite3_prepare (db_,
+                              query.c_str (),
+                              query.length (),
+                              &prepared_statement,
+                              NULL) == SQLITE_OK);
+  
+     int64_t result = 0;
+  
+     while (sqlite3_step (prepared_statement) == SQLITE_ROW)
+     {
+        assert (result == 0);
+        assert (sqlite3_column_count (prepared_statement) == 1);
+  
+        result = sqlite3_column_int64 (prepared_statement, 0);
+     }
+  
+     assert (0 <= result && result <= 1);
+     assert (sqlite3_finalize (prepared_statement) == SQLITE_OK);
+  
+     std::cout << "lock_id = '" << lock_id << "', result = " << result << std::endl;
+  
+     return result == 1;   
+  }
+
+
+Now we are going to define our acquire_lock function.
+
+  void
+  datastore::acquire_lock (
+     int64_t              proposal_id,
+     std::string const &  lock_id)
+  {
+
+Since we want to do multiple data modification operations and want them to occur atomically (either they are all applied or none of them are applied), let's start a transaction.
+
+     assert (
+        sqlite3_exec (db_,
+                      "BEGIN",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+
+Insert our lock into the table.
+  
+     assert (
+        sqlite3_exec (db_,
+                      std::string ("INSERT INTO locks (id) VALUES ('" + lock_id + "')").c_str (),
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+  
+Update our most recent proposal id.
+
+     assert (
+        sqlite3_exec (db_,
+                      std::string ("UPDATE "
+                                   "  proposal_id "
+                                   "SET "
+                                   "  id = " + boost::lexical_cast <std::string> (proposal_id)).c_str (),
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);   
+
+And commit the data.
+  
+     assert (
+        sqlite3_exec (db_,
+                      "COMMIT",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+     
+  }
+
+Our release_lock function works similarly to the acquire_lock function, but instead of inserting a lock it removes the lock.
+
+  void
+  datastore::release_lock (
+     int64_t              proposal_id,
+     std::string const &  lock_id)
+  {
+
+One again, start transaction.
+
+     assert (
+        sqlite3_exec (db_,
+                      "BEGIN",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+
+
+Delete our lock from the table.
+  
+     assert (
+        sqlite3_exec (db_,
+                      std::string ("DELETE FROM locks WHERE id = '" + lock_id + "'").c_str (),
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+
+Update our most recent proposal id.
+  
+     assert (
+        sqlite3_exec (db_,
+                      std::string ("UPDATE "
+                                   "  proposal_id "
+                                   "SET "
+                                   "  id = " + boost::lexical_cast <std::string> (proposal_id)).c_str (),
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);   
+
+And commit our transaction.
+  
+     assert (
+        sqlite3_exec (db_,
+                      "COMMIT",
+                      NULL,
+                      NULL,
+                      NULL) == SQLITE_OK);
+     
+  }
+
+And with that code, our distributed lock service is now completed. You have now learned how to build a durable service using libpaxos-cpp.
+
+See the [link libpaxos_cpp.tutorial.durable_lock_service_server.a00001 full source listing].
+
+[section:a00001 Source listing for Durable server]
+
+
+[heading server.cpp]
+  #include <vector>
+  #include <string>
+  
+  #include <boost/algorithm/string.hpp>
+  
+  #include <paxos++/server.hpp>
+  #include <paxos++/configuration.hpp>
+  #include <paxos++/durable/sqlite.hpp>
+  
+  #include "datastore.hpp"
+  
+  int main ()
+  {
+    datastore store;
+  
+    paxos::server::callback_type callback =
+       [& store](int64_t proposal_id, std::string const & command) -> std::string
+       {
+          if (proposal_id < store.most_recent_proposal_id ())
+          {
+             return "success";
+          }
+  
+          std::vector <std::string> tokens;
+          boost::split (tokens, command, boost::is_any_of (" "));
+  
+          std::string const & type    = tokens.at (0);
+          std::string const & lock_id = tokens.at (1);
+  
+          if (type == "lock")
+          {
+             if (store.has_lock (lock_id) == false)
+             {
+                store.acquire_lock (proposal_id,
+                                    lock_id);
+                return "success";
+             }
+             else
+             {
+                return "fail";
+             }
+          }
+          else if (type == "unlock")
+          {
+             if (store.has_lock (lock_id) == true)
+             {
+                store.release_lock (proposal_id,
+                                    lock_id);
+                return "success";
+             }
+             else
+             {
+                return "fail";
+             }
+          }
+  
+          return "fail";
+       };
+  
+  
+    paxos::configuration configuration;
+  
+    configuration.set_durable_storage (
+       new paxos::durable::sqlite ("paxos.sqlite"));
+  
+    paxos::server server ("127.0.0.1", 1337, callback, configuration);
+    server.add ("127.0.0.1", 1337);
+  
+    server.wait ();
   }
 
 
@@ -121,7 +573,6 @@ See the [link libpaxos_cpp.tutorial.durable_lock_service_server.a00001 full sour
   
   private:
   
-     std::string  filename_;
      sqlite3 *    db_;
   };
   
@@ -229,9 +680,6 @@ See the [link libpaxos_cpp.tutorial.durable_lock_service_server.a00001 full sour
      int64_t              proposal_id,
      std::string const &  lock_id)
   {
-  
-     std::cout << "acquiring lock_id = '" << lock_id << "'" << std::endl;
-  
      assert (
         sqlite3_exec (db_,
                       "BEGIN",
@@ -271,8 +719,6 @@ See the [link libpaxos_cpp.tutorial.durable_lock_service_server.a00001 full sour
      int64_t              proposal_id,
      std::string const &  lock_id)
   {
-     std::cout << "releasing lock_id = '" << lock_id << "'" << std::endl;
-  
      assert (
         sqlite3_exec (db_,
                       "BEGIN",

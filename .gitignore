@@ -40,6 +40,13 @@ doc/xml/
 doc/reference.tags
 doc/reference.qbk
 
+examples/introduction_1/client
+examples/introduction_1/server
+examples/lock_service_1/client
+examples/lock_service_1/server
+examples/lock_service_2/client
+examples/lock_service_2/server
+
 test/basic1
 test/basic2
 test/basic3
