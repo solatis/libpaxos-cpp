@@ -16,14 +16,36 @@
 namespace paxos { namespace detail { namespace request_queue {
 
 /*!
-  \brief Our queue with pending Paxos requests as received by leader
+  \brief Provides queue with pending requests
 
-  When a request is being processed, this request is put on this queue and being processed.
-  The guard then uses RAII to "lock" this queue while a request is being processed, and
-  releases this lock & checks for additional requests on the queue when it goes our of scope.
+  This component is used by in two different places in the paxos library:
 
-  It is therefore important that all paxos implementations acquire such a lock.
+  * incoming requests are enqueued here by the leader;
+  * outgoing requests are enqueued here by the client.
+
+  The reasons for this is two-fold:
+
+  * the Paxos protocol requires that only one instance of the protocol can be active at
+    the same time;
+  * Boost.Asio doesn't allow us to do multiple async_write / async_read calls at the same
+    time.
+
+  The Boost.Asio problem is one we can overcome, but the Paxos protocol we can't: before a new
+  Paxos proposal is sent to the learners, we must first ensure all previous proposals have 
+  neded.
+
+  To solve this problem, we provide this queue class. It is a bit of a "magic" queue: new
+  requests put on this queue are automatically processed using the callback provided, and
+  it ensures a maximum of one request is processed at the same time.
+
+  The magic is in the fact that it provides a so-called "queue guard": the callback automatically
+  gets this guard as part of its function parameters, and as soon as this guard goes out of scope,
+  a new request is processed.
+
+  Since the thread putting new requests on the queue doesn't necessarily have to be the same
+  thread as the one that pulls requests off the queue, this class is thread safe.
  */
+
 template <typename Type>
 class queue
 {

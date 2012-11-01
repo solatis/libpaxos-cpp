@@ -15,9 +15,6 @@ AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AC_ARG_ENABLE([debug],
         AS_HELP_STRING([--enable-debug], [Enable debugging output]))
 
-AC_ARG_ENABLE([log4cxx],
-        AS_HELP_STRING([--enable-log4cxx], [Enable debugging output via log4cxx]))
-
 AC_ARG_ENABLE([sqlite],
         AS_HELP_STRING([--enable-sqlite], [Enable sqlite durable backend]))
 
@@ -42,12 +39,8 @@ do
         INCLUDEDIRS="$INCLUDEDIRS -I$dir"
 done
 
-AS_IF([test "x$enable_log4cxx" == "xyes"], [
-            AC_DEFINE([HAVE_LOG4CXX], [1], [Define if log4cxx is enabled])
-            AC_SUBST(LINK_LOG4CXX, [-llog4cxx])
-])
-
 AM_CONDITIONAL(HAVE_SQLITE, test "x$enable_sqlite" = "xyes")
+AM_CONDITIONAL(HAVE_DEBUG, test "x$enable_debug" = "xyes")
 
 DEBUG=""
 AS_IF([test "x$enable_debug" == "xyes"], [

@@ -1,7 +1,11 @@
-LDADD = -lboost_system -lboost_serialization -lboost_thread ../paxos++/libpaxos.la $(LINK_LOG4CXX)
+LDADD = -lboost_system -lboost_serialization -lboost_thread ../paxos++/libpaxos.la
 
 if HAVE_SQLITE
 LDADD += -lsqlite3
+endif
+
+if HAVE_DEBUG
+LDADD += -llog4cxx
 endif
 
 check_PROGRAMS = \

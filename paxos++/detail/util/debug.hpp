@@ -19,21 +19,7 @@
 /*!
   Include the proper logging facility.
  */
-#if defined (HAVE_CONFIG_H)
-
-#include "config.h"
-
-#if defined (HAVE_LOG4CXX)
 #include "debug_log_log4cxx.hpp"
-#else /*! HAVE_LOG4CXX */
-#include "debug_log_default.hpp"
-#endif /*! HAVE_LOG4CXX */
-#else /*! HAVE_CONFIG_H */
-#include "debug_log_default.hpp"
-#endif /*! HAVE_CONFIG_H */
-/*!
-  End logging facility
- */
 
 #else //!
 
