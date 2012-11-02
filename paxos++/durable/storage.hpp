@@ -29,15 +29,25 @@ public:
     */
    virtual ~storage ();
 
-   /*!
-     \brief Sets the minimum history to keep in storage
 
-     The storage component should never clean logs if we have less than this amount
-     of logs in history.
-    */
+   /*!
+     \brief Controls the amount of proposed values that should be stored in the durable::storage
+     \param amount The minimal amount of values to store
+
+     This controls the amount of proposed values that should at least be stored in the 
+     durable::storage. Periodically, libpaxos-cpp issues a cleanup command to the durable::storage
+     component to remove old proposed values that aren't used anymore. This variable controls the
+     greediness of this cleanup mechanism.
+
+     Note that, if a follower in the paxos quorum is temporarily unreachable, a cleanup will never
+     be issued for the values proposed while the follower is unreachable. The storage component 
+     never cleans logs if we have less than this amount of logs in history.
+
+     Defaults to 10000.
+   */
    void
    set_history_size (
-      int64_t  history_size);
+      int64_t   amount);
 
    /*!
      \brief Access to the amount of values to keep in storage

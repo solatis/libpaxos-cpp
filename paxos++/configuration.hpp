@@ -64,25 +64,6 @@ public:
    double
    majority_factor () const;
 
-
-   /*!
-     \brief Controls the amount of proposed values that should be stored in the durable::storage
-     \param amount The minimal amount of values to store
-
-     This controls the amount of proposed values that should at least be stored in the 
-     durable::storage. Periodically, libpaxos-cpp issues a cleanup command to the durable::storage
-     component to remove old proposed values that aren't used anymore. This variable controls the
-     greediness of this cleanup mechanism.
-
-     Note that, if a follower in the paxos quorum is temporarily unreachable, a cleanup will never
-     be issued for the values proposed while the follower is unreachable.
-
-     Defaults to 10000.
-   */
-   void
-   set_history_size (
-      int64_t   amount);
-
    /*!
      \brief Adjusts the strategy used for internal paxos protocol
      \note Takes over ownership of \c factory
