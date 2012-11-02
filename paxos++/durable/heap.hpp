@@ -29,11 +29,6 @@ public:
 
 public:
 
-   virtual void
-   store (
-      int64_t                   proposal_id,
-      std::string const &       byte_array);
-
    virtual std::map <int64_t, std::string>
    retrieve (
       int64_t                   proposal_id);
@@ -41,7 +36,18 @@ public:
    virtual int64_t
    highest_proposal_id ();
 
-private:
+protected:
+
+
+   virtual void
+   store (
+      int64_t                   proposal_id,
+      std::string const &       byte_array);
+
+   virtual void
+   remove (
+      int64_t                   proposal_id);
+
 
 private:
 

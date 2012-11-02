@@ -42,6 +42,13 @@ configuration::majority_factor () const
 }
 
 void
+configuration::set_history_size (
+   int64_t  amount)
+{
+   durable_storage_->set_history_size (amount);
+}
+
+void
 configuration::set_strategy_factory (
    detail::strategy::factory *  factory)
 {
@@ -59,7 +66,12 @@ void
 configuration::set_durable_storage (
    durable::storage *   storage)
 {
+   int64_t history_size =       durable_storage_->history_size ();
+
    durable_storage_.reset (storage);
+
+   durable_storage_->set_history_size (history_size);
+
 }
 
 durable::storage &

@@ -430,8 +430,8 @@ strategy::accept (
         proposal/value in our durable storage backend so other nodes can catch up 
         if they're disconnected for a short timespan.
       */
-      storage_.store (i.first,
-                      i.second);
+      storage_.accept (i.first,
+                       i.second);
 
       /*!
         This is a bit of a hack, but we need to let the quorum know that our own

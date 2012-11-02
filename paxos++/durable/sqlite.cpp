@@ -29,46 +29,6 @@ sqlite::sqlite (
    PAXOS_ASSERT_EQ (sqlite3_close (db_), SQLITE_OK);
 }
 
-/*! virtual */ void
-sqlite::store (
-   int64_t              proposal_id,
-   std::string const &  byte_array)
-{
-   PAXOS_ASSERT_GT (proposal_id, 0);
-
-   /*!
-     This is a sanity check which could really be removed in production, but let's just
-     keep it here for now. It ensures important things are sane, and we do not have any
-     "gaps" in our history.
-    */
-   PAXOS_ASSERT_EQ (highest_proposal_id (), (proposal_id - 1));
-
-   std::string query =
-      "INSERT INTO "
-      "  history ("
-      "    id, "
-      "    byte_array) "
-      "VALUES (" 
-      "  " + boost::lexical_cast <std::string> (proposal_id) + ", "
-      "  ?)";
-
-   PAXOS_DEBUG ("executing query: " << query);
-
-   sqlite3_stmt * prepared_statement = 0;
-   PAXOS_ASSERT_EQ (sqlite3_prepare (db_,
-                                     query.c_str (),
-                                     query.length (),
-                                     &prepared_statement,
-                                     NULL), SQLITE_OK);
-
-   PAXOS_ASSERT_EQ (sqlite3_bind_blob (prepared_statement, 1, 
-                                       byte_array.c_str (), byte_array.length (), 
-                                       SQLITE_TRANSIENT), SQLITE_OK);
-
-   PAXOS_ASSERT_EQ (sqlite3_step (prepared_statement), SQLITE_DONE);
-   PAXOS_ASSERT_EQ (sqlite3_finalize (prepared_statement), SQLITE_OK);
-}
-
 /*! virtual */ std::map <int64_t, std::string>
 sqlite::retrieve (
    int64_t      proposal_id)
@@ -147,6 +107,63 @@ sqlite::highest_proposal_id ()
 
    return result;
 }
+
+/*! virtual */ void
+sqlite::store (
+   int64_t              proposal_id,
+   std::string const &  byte_array)
+{
+   PAXOS_ASSERT_GT (proposal_id, 0);
+
+   /*!
+     This is a sanity check which could really be removed in production, but let's just
+     keep it here for now. It ensures important things are sane, and we do not have any
+     "gaps" in our history.
+    */
+   PAXOS_ASSERT_EQ (highest_proposal_id (), (proposal_id - 1));
+
+   std::string query =
+      "INSERT INTO "
+      "  history ("
+      "    id, "
+      "    byte_array) "
+      "VALUES (" 
+      "  " + boost::lexical_cast <std::string> (proposal_id) + ", "
+      "  ?)";
+
+   PAXOS_DEBUG ("executing query: " << query);
+
+   sqlite3_stmt * prepared_statement = 0;
+   PAXOS_ASSERT_EQ (sqlite3_prepare (db_,
+                                     query.c_str (),
+                                     query.length (),
+                                     &prepared_statement,
+                                     NULL), SQLITE_OK);
+
+   PAXOS_ASSERT_EQ (sqlite3_bind_blob (prepared_statement, 1, 
+                                       byte_array.c_str (), byte_array.length (), 
+                                       SQLITE_TRANSIENT), SQLITE_OK);
+
+   PAXOS_ASSERT_EQ (sqlite3_step (prepared_statement), SQLITE_DONE);
+   PAXOS_ASSERT_EQ (sqlite3_finalize (prepared_statement), SQLITE_OK);
+}
+
+void
+sqlite::remove (
+   int64_t      proposal_id)
+{
+   PAXOS_ASSERT_EQ (
+      sqlite3_exec (db_,
+                    std::string (
+                       "DELETE FROM "
+                       "  history "
+                       "WHERE"
+                       " id < " + boost::lexical_cast <std::string> (proposal_id)).c_str (),
+                    NULL,
+                    NULL,
+                    NULL), SQLITE_OK);
+}
+
 
 void
 sqlite::create_table ()

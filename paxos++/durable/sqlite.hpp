@@ -33,7 +33,7 @@ namespace paxos { namespace durable {
    paxos::configuration configuration;
    configuration.set_durable_storage (new paxos::durable::sqlite ("db.sqlite"));
    paxos::server server ("127.0.0.1", 1337,
-                         [] (std::string const & input) -> std::string
+                         [] (int64_t proposal_id, std::string const & input) -> std::string
                          {
                              return input;
                          },
@@ -59,17 +59,24 @@ public:
 
 public:
 
-   virtual void
-   store (
-      int64_t                   proposal_id,
-      std::string const &       byte_array);
-
    virtual std::map <int64_t, std::string>
    retrieve (
       int64_t                                                   proposal_id);
 
    virtual int64_t
    highest_proposal_id ();
+
+protected:
+
+   virtual void
+   store (
+      int64_t                   proposal_id,
+      std::string const &       byte_array);
+
+   virtual void
+   remove (
+      int64_t                   proposal_id);
+
 
 private:
 
@@ -78,7 +85,6 @@ private:
 
    void
    create_table ();
-
 
 private:
 
