@@ -144,7 +144,7 @@ public:
       std::string const &               server,
       uint16_t                          port,
       callback_type const &             callback,
-      paxos::configuration              configuration = paxos::configuration ());
+      paxos::configuration &            configuration = default_configuration_);
    
    /*!
      \brief Opens socket to listen on port
@@ -159,7 +159,7 @@ public:
       std::string const &               server,
       uint16_t                          port,
       callback_type const &             callback,
-      paxos::configuration              configuration = paxos::configuration ());
+      paxos::configuration &            configuration = default_configuration_);
 
    /*!
      \brief Destructor
@@ -217,6 +217,7 @@ private:
 
 private:
    
+   static paxos::configuration          default_configuration_;
    detail::io_thread                    io_thread_;
    boost::asio::ip::tcp::acceptor       acceptor_;
    detail::quorum::server_view          quorum_;

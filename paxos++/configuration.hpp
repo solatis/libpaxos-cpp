@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace paxos { namespace durable {
@@ -22,7 +23,7 @@ namespace paxos {
 /*!
   \brief Provides runtime configurable parameters to paxos::client and paxos::server
  */
-class configuration
+class configuration : private boost::noncopyable
 {
 
 public:

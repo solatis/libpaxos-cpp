@@ -85,5 +85,25 @@ view::connection_died (
     */
 }
 
+int64_t
+view::lowest_proposal_id () const
+{
+   int64_t lowest_proposal_id = -1;
+
+   for (auto const & i : servers_)
+   {
+      if (lowest_proposal_id == -1)
+      {
+         lowest_proposal_id = i.second.highest_proposal_id ();
+      }
+      else
+      {
+         lowest_proposal_id = std::min (lowest_proposal_id,
+                                        i.second.highest_proposal_id ());
+      }
+   }
+
+   return lowest_proposal_id;
+}
 
 }; }; };

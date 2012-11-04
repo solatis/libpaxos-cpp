@@ -12,6 +12,10 @@
 
 #include <boost/function.hpp>
 
+namespace paxos { namespace detail { namespace quorum {
+class view;
+}; }; };
+
 namespace paxos { namespace durable {
 
 /*!
@@ -58,14 +62,18 @@ public:
 
    /*!
      \brief Accepts a new value
+     \param proposal_id Proposal id of value
+     \param byte_array The actual value
+     \param quorum The view of the quorum this proposal is accepted in
 
      This function calls store (), and if the size of the history is growing too large
      calls for a cleanup.
     */
    void
    accept (
-      int64_t                   proposal_id,
-      std::string const &       byte_array);
+      int64_t                           proposal_id,
+      std::string const &               byte_array,
+      detail::quorum::view const &      quorum);
 
    /*!
      \brief Looks up all recently accepted values higher than with \c proposal_id

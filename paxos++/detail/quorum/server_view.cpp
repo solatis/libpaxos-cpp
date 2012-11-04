@@ -14,7 +14,7 @@ server_view::server_view (
    boost::asio::ip::tcp::endpoint const &       endpoint,
    paxos::configuration const &                 configuration)
    : view::view (io_service),
-     configuration_ (configuration),
+     majority_factor_ (configuration.majority_factor ()),
      our_endpoint_ (endpoint)
 {
    this->add (endpoint);
@@ -45,7 +45,7 @@ server_view::has_majority ()
 
    return
       static_cast <double> (this->live_servers ().size ()) 
-      >= (static_cast <double> (servers_.size ()) * configuration_.majority_factor ());
+      >= (static_cast <double> (servers_.size ()) * majority_factor_);
 }
 
 boost::optional <boost::asio::ip::tcp::endpoint>

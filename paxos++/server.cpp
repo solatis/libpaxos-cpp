@@ -15,12 +15,15 @@
 
 namespace paxos {
 
+/*! static */ paxos::configuration paxos::server::default_configuration_;
+
+
 
 server::server (
    std::string const &                  host,
    uint16_t                             port,
    callback_type const &                processor,
-   paxos::configuration                 configuration)
+   paxos::configuration &               configuration)
    : server (io_thread_.io_service (),
              host,
              port,
@@ -35,7 +38,7 @@ server::server (
    std::string const &                  host,
    uint16_t                             port,
    callback_type const &                processor,
-   paxos::configuration                 configuration)
+   paxos::configuration &               configuration)
    : acceptor_ (io_service,
                 boost::asio::ip::tcp::endpoint (
                    boost::asio::ip::address::from_string (host), port)),

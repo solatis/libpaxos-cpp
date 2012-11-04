@@ -1,3 +1,4 @@
+#include "../detail/quorum/view.hpp"
 #include "storage.hpp"
 
 namespace paxos { namespace durable {
@@ -26,8 +27,9 @@ storage::history_size () const
 
 void
 storage::accept (
-   int64_t              proposal_id,
-   std::string const &  byte_array)
+   int64_t                      proposal_id,
+   std::string const &          byte_array,
+   detail::quorum::view const & quorum)
 {
    store (proposal_id,
           byte_array);
@@ -49,7 +51,15 @@ storage::accept (
        */
        && proposal_id > history_size_)
    {
-      remove (proposal_id - history_size_);
+      /*!
+        We should never remove a proposal id that's not yet been processed by any node
+       */
+      int64_t highest_proposal_id_to_remove = 
+         std::min (
+            (proposal_id - history_size_),
+            quorum.lowest_proposal_id ());
+
+      remove (highest_proposal_id_to_remove);
    }
 }
 

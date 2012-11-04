@@ -431,7 +431,8 @@ strategy::accept (
         if they're disconnected for a short timespan.
       */
       storage_.accept (i.first,
-                       i.second);
+                       i.second,
+                       quorum);
 
       /*!
         This is a bit of a hack, but we need to let the quorum know that our own

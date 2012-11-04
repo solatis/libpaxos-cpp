@@ -58,7 +58,7 @@ private:
 
 private:
 
-   paxos::configuration                 configuration_;
+   double                               majority_factor_;
    boost::asio::ip::tcp::endpoint       our_endpoint_;
 
 };

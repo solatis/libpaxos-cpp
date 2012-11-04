@@ -73,6 +73,13 @@ public:
    connection_died (
       boost::asio::ip::tcp::endpoint const &    endpoint);
 
+
+   /*!
+     \brief Returns the highest proposal id of the server that is lagging behind the most
+    */
+   int64_t
+   lowest_proposal_id () const;
+
 protected:
 
    std::map <boost::asio::ip::tcp::endpoint, detail::quorum::server>    servers_;
