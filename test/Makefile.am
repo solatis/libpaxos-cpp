@@ -17,7 +17,8 @@ check_PROGRAMS = \
 	connection_close1 \
 	connection_close2 \
 	durability1 \
-	durability2
+	durability2 \
+	durability3
 
 basic1_SOURCES      	  = basic1.cpp
 basic2_SOURCES      	  = basic2.cpp
@@ -28,6 +29,7 @@ connection_close1_SOURCES = connection_close1.cpp
 connection_close2_SOURCES = connection_close2.cpp
 durability1_SOURCES       = durability1.cpp
 durability2_SOURCES       = durability2.cpp
+durability3_SOURCES       = durability3.cpp
 
 TESTS= \
 	basic1 \
@@ -38,5 +40,6 @@ TESTS= \
 	connection_close1 \
 	connection_close2 \
 	durability1 \
-	durability2
+	durability2 \
+	durability3
 

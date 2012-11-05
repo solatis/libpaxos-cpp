@@ -1,3 +1,4 @@
+#include "../detail/util/debug.hpp"
 #include "../detail/quorum/view.hpp"
 #include "storage.hpp"
 
@@ -29,10 +30,12 @@ void
 storage::accept (
    int64_t                      proposal_id,
    std::string const &          byte_array,
-   detail::quorum::view const & quorum)
+   int64_t                      lowest_proposal_id)
 {
    store (proposal_id,
           byte_array);
+
+   PAXOS_DEBUG ("proposal_id = " << proposal_id << ", history_size_ = " << history_size_);
 
    /*!
      We do not want to issue a cleanup () after every call to accept (), since that
@@ -57,7 +60,9 @@ storage::accept (
       int64_t highest_proposal_id_to_remove = 
          std::min (
             (proposal_id - history_size_),
-            quorum.lowest_proposal_id ());
+            lowest_proposal_id);
+
+      PAXOS_DEBUG ("highest_proposal_id_to_remove = " << highest_proposal_id_to_remove);
 
       remove (highest_proposal_id_to_remove);
    }

@@ -24,7 +24,20 @@ heap::highest_proposal_id ()
       return 0;
    }
 
+   PAXOS_DEBUG (this << " highest_proposal_id = " << data_.rbegin ()->first);
+
    return data_.rbegin ()->first;
+}
+
+/*! virtual */ int64_t
+heap::lowest_proposal_id ()
+{
+   if (data_.empty () == true)
+   {
+      return 0;
+   }
+
+   return data_.begin ()->first;
 }
 
 
@@ -33,8 +46,10 @@ heap::store (
    int64_t                   proposal_id,
    std::string const &       byte_array)
 {
-   PAXOS_ASSERT (
-      proposal_id == highest_proposal_id () + 1);
+   PAXOS_DEBUG (this << " proposal_id = " << proposal_id << ", highest_proposal_id = " << highest_proposal_id ());
+
+   PAXOS_ASSERT_EQ (
+      proposal_id, highest_proposal_id () + 1);
 
    data_[proposal_id] = byte_array;
 }
@@ -55,8 +70,13 @@ heap::remove (
       return;
    }
 
+   PAXOS_DEBUG (this << " deleting all data since " << proposal_id);
+
    data_.erase (data_.begin (),
                 data_.find (proposal_id));
+   data_.erase (proposal_id);
+
+   PAXOS_ASSERT_EQ (lowest_proposal_id (), proposal_id + 1);
 
 }
 

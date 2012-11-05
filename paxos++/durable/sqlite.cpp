@@ -108,6 +108,42 @@ sqlite::highest_proposal_id ()
    return result;
 }
 
+
+/*! virtual */ int64_t
+sqlite::lowest_proposal_id ()
+{
+   std::string query = 
+      "SELECT "
+      "  MIN (id) "
+      "FROM "
+      "  history";
+
+   PAXOS_DEBUG ("executing query: " << query);
+
+   sqlite3_stmt * prepared_statement = 0;
+   PAXOS_ASSERT_EQ (sqlite3_prepare (db_,
+                                     query.c_str (),
+                                     query.length (),
+                                     &prepared_statement,
+                                     NULL), SQLITE_OK);
+
+   int64_t result = 0;
+
+   while (sqlite3_step (prepared_statement) == SQLITE_ROW)
+   {
+      PAXOS_ASSERT_EQ (result, 0);
+      PAXOS_ASSERT_EQ (sqlite3_column_count (prepared_statement), 1);
+
+      result = sqlite3_column_int64 (prepared_statement, 0);
+
+      PAXOS_ASSERT_GE (result, 0);
+   }
+
+   PAXOS_ASSERT_EQ (sqlite3_finalize (prepared_statement), SQLITE_OK);
+
+   return result;
+}
+
 /*! virtual */ void
 sqlite::store (
    int64_t              proposal_id,

@@ -367,6 +367,15 @@ strategy::send_accept (
                                      byte_array);
    }   
 
+   /*!
+     The leader communicates the lowest proposal id currently processed by all hosts
+     when sending an accept command, because:
+     - the followers can then discard any history that has been processed by all hosts already;
+     - the leader is the only host in the quorum that always has the most up-to-date view of
+       the quorum (the followers do not communicate with each other).
+    */
+   command.set_lowest_proposal_id (quorum.lowest_proposal_id ());
+
    this->add_local_host_information (quorum, command);
 
    PAXOS_DEBUG ("step5 writing command");   
@@ -413,12 +422,13 @@ strategy::accept (
 
    for (auto const & i : command.proposed_workload ())
    {
-      PAXOS_ASSERT (i.first == this->proposal_id () + 1);
+      PAXOS_DEBUG ("follower " << quorum.our_endpoint () << " storing proposed workload for id = " << i.first << ", our highest proposal_id = " << this->proposal_id ());
+
+      PAXOS_ASSERT_EQ (i.first, this->proposal_id () + 1);
 
       /*! 
         First, process the workload and set it as output of the response
       */
-      PAXOS_DEBUG ("follower " << quorum.our_endpoint () << " storing proposed workload for id = " << i.first);
       response.add_proposed_workload (i.first,
                                       state.processor () (i.first,
                                                           i.second));
@@ -432,7 +442,7 @@ strategy::accept (
       */
       storage_.accept (i.first,
                        i.second,
-                       quorum);
+                       command.lowest_proposal_id ());
 
       /*!
         This is a bit of a hack, but we need to let the quorum know that our own
@@ -449,7 +459,7 @@ strategy::accept (
    }
    
 
-   PAXOS_DEBUG ("step6 writing command");   
+   PAXOS_DEBUG ("step6 writing command");
 
    this->add_local_host_information (quorum, response);
 
@@ -647,7 +657,6 @@ strategy::process_remote_host_information (
 /*! virtual */ int64_t
 strategy::proposal_id ()
 {
-   PAXOS_DEBUG ("storage = " << &storage_);
    return storage_.highest_proposal_id ();
 }
 

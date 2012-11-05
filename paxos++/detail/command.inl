@@ -5,7 +5,8 @@ inline command::command ()
    : type_ (type_invalid),
      error_code_ (no_error),
      next_proposal_id_ (-1),
-     highest_proposal_id_ (-1)
+     highest_proposal_id_ (-1),
+     lowest_proposal_id_ (-1)
 {
 }
 
@@ -64,6 +65,19 @@ command::highest_proposal_id () const
 }
 
 inline void
+command::set_lowest_proposal_id (
+   int64_t     proposal_id)
+{
+   lowest_proposal_id_ = proposal_id;
+}
+
+inline int64_t
+command::lowest_proposal_id () const
+{
+   return lowest_proposal_id_;
+}
+
+inline void
 command::set_workload (
    std::string const &       byte_array)
 {
@@ -106,6 +120,7 @@ command::serialize (
 
    ar & next_proposal_id_;
    ar & highest_proposal_id_;
+   ar & lowest_proposal_id_;
 
    ar & workload_;
    ar & proposed_workload_;

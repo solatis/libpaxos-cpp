@@ -36,6 +36,9 @@ public:
    virtual int64_t
    highest_proposal_id ();
 
+   virtual int64_t
+   lowest_proposal_id ();
+
 protected:
 
 

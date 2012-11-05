@@ -143,9 +143,37 @@ public:
    server (
       std::string const &               server,
       uint16_t                          port,
+      callback_type const &             callback);
+
+   /*!
+     \brief Opens socket to listen on port
+     \param server        IPv4 or IPv6 address we're listening at for new connections
+     \param port          Port we're listening at to new connections
+     \param callback      Callback used to process workload
+     \param configuration (Optional) Runtime configuration
+
+     This constructor launches its own background thread with i/o context.
+   */
+   server (
+      std::string const &               server,
+      uint16_t                          port,
       callback_type const &             callback,
-      paxos::configuration &            configuration = default_configuration_);
-   
+      paxos::configuration &            configuration);
+
+   /*!
+     \brief Opens socket to listen on port
+     \param io_service    Boost.Asio io_service object, which represents the link to the OS'es i/o services
+     \param server        IPv4 or IPv6 address we're listening at for new connections
+     \param port          Port we're listening at to new connections
+     \param callback      Callback used to process workload
+     \param configuration (Optional) Runtime configuration
+   */
+   server (
+      boost::asio::io_service &         io_service,
+      std::string const &               server,
+      uint16_t                          port,
+      callback_type const &             callback);
+
    /*!
      \brief Opens socket to listen on port
      \param io_service    Boost.Asio io_service object, which represents the link to the OS'es i/o services
@@ -159,7 +187,7 @@ public:
       std::string const &               server,
       uint16_t                          port,
       callback_type const &             callback,
-      paxos::configuration &            configuration = default_configuration_);
+      paxos::configuration &            configuration);
 
    /*!
      \brief Destructor
@@ -217,7 +245,7 @@ private:
 
 private:
    
-   static paxos::configuration          default_configuration_;
+   paxos::configuration                 default_configuration_;
    detail::io_thread                    io_thread_;
    boost::asio::ip::tcp::acceptor       acceptor_;
    detail::quorum::server_view          quorum_;

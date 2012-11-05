@@ -12,10 +12,6 @@
 
 #include <boost/function.hpp>
 
-namespace paxos { namespace detail { namespace quorum {
-class view;
-}; }; };
-
 namespace paxos { namespace durable {
 
 /*!
@@ -62,18 +58,18 @@ public:
 
    /*!
      \brief Accepts a new value
-     \param proposal_id Proposal id of value
-     \param byte_array The actual value
-     \param quorum The view of the quorum this proposal is accepted in
+     \param proposal_id         Proposal id of value
+     \param byte_array          The actual value
+     \param lowest_proposal_id  Highest proposal_id that has been accepted by the entire quorum
 
      This function calls store (), and if the size of the history is growing too large
      calls for a cleanup.
     */
    void
    accept (
-      int64_t                           proposal_id,
-      std::string const &               byte_array,
-      detail::quorum::view const &      quorum);
+      int64_t                   proposal_id,
+      std::string const &       byte_array,
+      int64_t                   lowest_proposal_id);
 
    /*!
      \brief Looks up all recently accepted values higher than with \c proposal_id
@@ -92,6 +88,15 @@ public:
     */
    virtual int64_t
    highest_proposal_id () = 0;
+
+   /*!
+     \brief Looks up the lowest proposal id currently stored
+     \returns Returns the lowest proposal id in history, or 0 if no previous proposals are stored
+
+     This functionality is not really required by the paxos library, but is used by the test cases.
+    */
+   virtual int64_t
+   lowest_proposal_id () = 0;
 
 protected:
 

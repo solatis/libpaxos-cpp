@@ -140,7 +140,3 @@ int main ()
 
    PAXOS_INFO ("test succeeded");
 }
-
-
-
-

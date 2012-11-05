@@ -56,3 +56,4 @@ test/connection_close1
 test/connection_close2
 test/durability1
 test/durability2
+test/durability3

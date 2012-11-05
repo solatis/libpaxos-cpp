@@ -123,6 +123,20 @@ public:
 
 
    /*!
+     \brief Sets the highest proposal id that has been processed by all hosts
+    */
+   void
+   set_lowest_proposal_id (
+      int64_t                   proposal_id);
+
+   /*!
+     \brief The highest proposal id processed by all hosts
+    */
+   int64_t
+   lowest_proposal_id () const;
+
+
+   /*!
      \brief Sets a single workload entry
 
      This is sent from client to leader.
@@ -178,6 +192,7 @@ private:
 
    int64_t                                              next_proposal_id_;
    int64_t                                              highest_proposal_id_;
+   int64_t                                              lowest_proposal_id_;
 
    std::string                                          workload_;
    std::map <int64_t, std::string>                      proposed_workload_;
