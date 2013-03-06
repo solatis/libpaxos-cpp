@@ -47,7 +47,7 @@ AS_IF([test "x$enable_debug" == "xyes"], [
         DEBUG="-Wall -Werror -g -ggdb -DDEBUG"
 ])
 
-CXXFLAGS="$CXXFLAGS -std=c++11 $INCLUDEDIRS $DEBUG $BOOST_LOG"
+CXXFLAGS="$CXXFLAGS -std=gnu++0x $INCLUDEDIRS $DEBUG $BOOST_LOG"
 LDFLAGS="$LDFLAGS $LIBDIRS"
 
 AC_PROG_CC

@@ -1,4 +1,4 @@
-LDADD = -lboost_system -lboost_serialization -lboost_thread ../paxos++/libpaxos.la
+LDADD = ../paxos++/libpaxos.la -lboost_system -lboost_serialization -lboost_thread
 
 if HAVE_SQLITE
 LDADD += -lsqlite3

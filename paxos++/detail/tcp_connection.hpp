@@ -46,7 +46,7 @@ class tcp_connection
 {
 public:
 
-   friend detail::parser;
+   friend class detail::parser;
 
    typedef boost::function <void (boost::optional <enum error_code>,
                                   command const &)>                     read_callback;
